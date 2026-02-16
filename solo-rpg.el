@@ -49,7 +49,7 @@
   total)   ;; Sum of all rolls + mod
 
 (defun solo-rpg-dice-string-parse (dice-string)
-  "Ask for DICE-STRING and parse it, returning a solo-rpg-dice-roll struct."
+  "ask for DICE-STRING and parse it, returning a solo-rpg-dice-roll struct."
   (interactive "sEnter dice string (for example 2d6+2): ")
   (unless (string-match "^\\([0-9]+\\)*d\\([0-9]+\\)*\\([+-][0-9]+\\)?"
                         dice-string)
@@ -66,3 +66,64 @@
      :rolls nil                      ; No rolls have been made yet
      :total nil)))                   ; No totals, because no rolls yet
     
+(defun solo-rpg-dice-roll-calculate (roll-struct)
+    "Roll the dice in the specified ROLL-STRUCT and fill in the results.
+Returns the updated struct."
+
+  ;; Get the data from the struct.
+  (let* ((count (solo-rpg-dice-roll-count roll-struct))
+         (sides (solo-rpg-dice-roll-sides roll-struct))
+         (mod   (solo-rpg-dice-roll-mod   roll-struct))
+
+         ;; Generate random numbers. We use cl-loop to repeat the action
+         ;; 'count' times (count = number of dice)
+         (results (cl-loop repeat count
+                           ;; (random sides returns 0 to sides-1.
+                           ;; So we add 1.
+                           ;; "collect" is a keyword for the cl-loop macro which
+                           ;; builds a list.
+                           ;; cl-loop is like a whole language of its own.
+                           collect (+ 1 (random sides))))
+         ;; Calculate the grand total.
+         ;; Sum the results and add the modifier.
+         (sum (apply #'+ results))      ; #' is used to quote functions
+                                        ; apply is used to step through results
+         (grand-total (+ sum mod)))
+
+    ;; Update the struct slots with 'setf' - "set field"
+    (setf (solo-rpg-dice-roll-rolls roll-struct) results)
+    (setf (solo-rpg-dice-roll-total roll-struct) grand-total)
+
+    ;; Return the updated struct
+    roll-struct))
+
+(defun solo-rpg-dice-roll-string (roll-struct)
+  "Return a string of the ROLL-STRUCT, meant for displaying to the user."
+  (let* ((mod-string (if (not (= 0 (solo-rpg-dice-roll-mod roll-struct)))
+                         (format "%+d" (solo-rpg-dice-roll-mod roll-struct))
+                       ""))
+         (rolls-string (mapconcat (lambda (x) (format "[%d]" x))
+                      (solo-rpg-dice-roll-rolls roll-struct)
+                      "+")))
+    (format "%dd%d%s = %s%s = %d"
+            (solo-rpg-dice-roll-count roll-struct)
+            (solo-rpg-dice-roll-sides roll-struct)
+            mod-string
+            rolls-string
+            mod-string
+            (solo-rpg-dice-roll-total roll-struct))))
+
+(defun solo-rpg-dice-roll-cast (dice-string)
+  "Take DICE-STRING, parse it, make the roll, and return a user-displayable result."
+  (solo-rpg-dice-roll-string (solo-rpg-dice-roll-calculate (solo-rpg-dice-string-parse
+                                                            dice-string))))
+
+(defun solo-rpg-dice-roll-message (dice-string)
+  "Ask for DICE-STRING, roll the dice, display result in message window."
+  (interactive "sEnter dice string (for example '2d6+2'): ")
+  (message (solo-rpg-dice-roll-cast dice-string)))
+
+(defun solo-rpg-dice-roll-insert (dice-string)
+  "Ask for DICE-STRING, roll the dice, output the result in the current buffer."
+  (interactive "sEnter dice string (for example '2d6+2'): ")
+  (insert (solo-rpg-dice-roll-cast dice-string)))
