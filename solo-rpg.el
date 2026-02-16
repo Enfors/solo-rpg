@@ -127,3 +127,259 @@ Returns the updated struct."
   "Ask for DICE-STRING, roll the dice, output the result in the current buffer."
   (interactive "sEnter dice string (for example '2d6+2'): ")
   (insert (solo-rpg-dice-roll-cast dice-string)))
+
+;;; Action / Theme oracle:
+
+(defun solo-rpg-table-get-random (table)
+  "Return random element from TABLE."
+  (aref table (random (length table))))
+
+(defun solo-rpg-oracle-action-theme ()
+  "Return '(action) / (theme)' where action and theme are random."
+  (format "%s / %s"
+          (solo-rpg-table-get-random solo-rpg-oracle-actions)
+          (solo-rpg-table-get-random solo-rpg-oracle-themes)))
+
+(defun solo-rpg-oracle-action-theme-message ()
+  "Show '(action) / (theme)' in the message buffer."
+  (message (solo-rpg-oracle-action-theme)))
+
+(defun solo-rpg-oracle-action-theme-insert ()
+  "Insert '(action) / (theme)' in the current buffer."
+  (insert (solo-rpg-oracle-action-theme)))
+
+;;; Minor mode:
+
+;;;###autoload
+(define-minor-mode solo-rpg-mode
+  "Minor mode with tools for playing solo roleplaying games.
+
+\\{solo-rpg-mode-map}"
+  :init-value nil
+  :global nil
+  :group 'solo-rpg
+  :lighter " SoloRPG"
+  :keymap
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-d i") 'solo-rpg-dice-roll-insert)
+    (define-key map (kbd "C-c C-d m") 'solo-rpg-dice-roll-message)
+    (define-key map (kbd "C-c C-o i") 'solo-rpg-oracle-action-theme-insert)
+    (define-key map (kbd "C-c C-o m") 'solo-rpg-oracle-action-theme-message)
+    map)
+
+  (if solo-rpg-mode
+      ;; If ON:
+      (message "Solo-RPG-mode enabled.")
+    (message "Solo-RPG-mode disabled.")))
+
+
+;;; Tables
+(defconst solo-rpg-oracle-actions
+  ["Abandon"
+   "Accept"
+   "Accuse"
+   "Ambush"
+   "Assault"
+   "Assist"
+   "Attack"
+   "Avoid"
+   "Balance"
+   "Begin"
+   "Believe"
+   "Betray"
+   "Beware"
+   "Break"
+   "Build"
+   "Burn"
+   "Cancel"
+   "Collect"
+   "Collide"
+   "Compete"
+   "Create"
+   "Damage"
+   "Deal"
+   "Deceive"
+   "Decide"
+   "Defeat"
+   "Defend"
+   "Demolish"
+   "Deny"
+   "Destroy"
+   "Detect"
+   "Determine"
+   "Disable"
+   "Dominate"
+   "Elaborate"
+   "Eliminate"
+   "Emerge"
+   "Empower"
+   "Endanger"
+   "Engage"
+   "Enhance"
+   "Erase"
+   "Escape"
+   "Fabricate"
+   "Fail"
+   "Fear"
+   "Fight"
+   "Flee"
+   "Follow"
+   "Forget"
+   "Fortify"
+   "Gain"
+   "Grow"
+   "Halt"
+   "Heal"
+   "Hide"
+   "Hinder"
+   "Hurt"
+   "Impersonate"
+   "Implicate"
+   "Interrupt"
+   "Investigate"
+   "Keep"
+   "Lead"
+   "Learn"
+   "Leverage"
+   "Locate"
+   "Mediate"
+   "Mislead"
+   "Negate"
+   "Obey"
+   "Observe"
+   "Oppress"
+   "Promise"
+   "Protect"
+   "Pursue"
+   "Raid"
+   "Raise"
+   "Recover"
+   "Reject"
+   "Relocate"
+   "Remove"
+   "Restrict"
+   "Reveal"
+   "Ruin"
+   "Sabotage"
+   "Save"
+   "Search"
+   "Stop"
+   "Talk"
+   "Tempt"
+   "Terminate"
+   "Value"
+   "Venture"
+   "Verify"
+   "Vilify"
+   "Violate"
+   "Warn"
+   "Weaken"
+   "Withdraw"]
+  "A d100 table of Action words for the Action/Theme oracle.")
+
+(defconst solo-rpg-oracle-themes
+  ["Allegations"
+   "Alliances"
+   "Allies"
+   "Ambition"
+   "Anger"
+   "Artifact"
+   "Beginnings"
+   "Betrayal"
+   "Bonds"
+   "Border"
+   "Child"
+   "Community"
+   "Consent"
+   "Curse"
+   "Darkness"
+   "Desecration"
+   "Desolation"
+   "Devastation"
+   "Devotion"
+   "Disaster"
+   "Discovery"
+   "Doom"
+   "Dreams"
+   "Emotions"
+   "Enemies"
+   "Fear"
+   "Forest"
+   "Greatness"
+   "Happiness"
+   "Hate"
+   "Hidden, the"
+   "Homes"
+   "Hope"
+   "Illusion"
+   "Innocent"
+   "Intrigue"
+   "Joy"
+   "Kind"
+   "Kingdom"
+   "Knowledge"
+   "Landscape"
+   "Language"
+   "Leader"
+   "Leadership"
+   "Legend"
+   "Liberty"
+   "Lies"
+   "Light"
+   "Limitations"
+   "Loan"
+   "Lock"
+   "Lord"
+   "Lore"
+   "Love"
+   "Machine"
+   "Madness"
+   "Magic"
+   "Malice"
+   "Mania"
+   "Master"
+   "Medicine"
+   "Monsters"
+   "Nature"
+   "Neglect"
+   "Night"
+   "Nightmare"
+   "Obligation"
+   "Oblivion"
+   "Occupant"
+   "Offense"
+   "Opportunity"
+   "Opposition"
+   "Oppression"
+   "Passion"
+   "Peace"
+   "Plague"
+   "Plans"
+   "Political, the"
+   "Possibilities"
+   "Power"
+   "Prophet"
+   "Quarrel"
+   "Realm"
+   "Rejection"
+   "Reward"
+   "Sadness"
+   "Science"
+   "Secrets"
+   "Technology"
+   "Terrain"
+   "Threat"
+   "Traitor"
+   "Treason"
+   "Truth"
+   "Unity"
+   "Values"
+   "Vandalism"
+   "Vicinity"
+   "Vision"
+   "War"]
+  "A d100 table of Theme words for the Action/Theme oracle.")
+
+(provide 'solo-rpg)
+
+;;; solo-rpg.el ends here
