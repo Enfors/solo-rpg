@@ -148,6 +148,50 @@ Returns the updated struct."
   "Insert '(action) / (theme)' in the current buffer."
   (insert (solo-rpg-oracle-action-theme)))
 
+;;; Yes / No oracle:
+
+(defun solo-rpg-oracle-yes-no-string (odds-string)
+  "Return NoAnd, No, NoBut, YesBut, Yes, or YesAnd based on ODDS-STRING."
+  (let* ((thresholds (cdr (assoc odds-string solo-rpg-oracle-yes-no-table)))
+         (roll (+ 1 (random 20)))
+         (result-text nil))
+    (setq result-text
+          (cond
+           ;; Handle random events
+           ((= roll 1)
+            (format "Random event (negative) related to %s."
+                    (solo-rpg-table-get-random solo-rpg-oracle-yes-no-event-subject-table)))
+           ((= roll 20)
+            (format "Random event (positive) related to %s."
+                    (solo-rpg-table-get-random solo-rpg-oracle-yes-no-event-subject-table)))
+           ;; Handle ordinary lookups
+           ((<= roll (nth 0 thresholds)) "No, and...")
+           ((<= roll (nth 1 thresholds)) "No")
+           ((<= roll (nth 2 thresholds)) "No, but...")
+           ((<= roll (nth 3 thresholds)) "Yes, but...")
+           ((<= roll (nth 4 thresholds)) "Yes")
+           (t "Yes, and...")))
+    ;; Return formatted string.
+    ;; We use 'car' on split-string to just show "+3" instead of the full text.
+    (format "[%s] Roll %d: %s"
+            (car (split-string odds-string))
+            roll
+            result-text)))
+
+(defun solo-rpg-oracle-yes-no (odds)
+  "Query the Yes/No oracle. 
+ODDS is the probability string selected from `solo-rpg-yes-no-table`."
+  (interactive
+   (list (completing-read "Probability (Default 50/50): "
+                          solo-rpg-oracle-yes-no-table
+                          nil t nil nil 
+                          " 0 50/50"))) ;; <--- The default value if you hit RET
+  
+  (let ((result (solo-rpg-oracle-yes-no-string odds)))
+    (message "%s" result)
+    ;; Uncomment the line below if you want it inserted into the buffer automatically
+    (insert result "\n")))
+
 ;;; Minor mode:
 
 ;;;###autoload
@@ -174,6 +218,7 @@ Returns the updated struct."
 
 
 ;;; Tables
+
 (defconst solo-rpg-oracle-actions
   ["Abandon"
    "Accept"
@@ -379,6 +424,29 @@ Returns the updated struct."
    "Vision"
    "War"]
   "A d100 table of Theme words for the Action/Theme oracle.")
+
+;;; Yes/No oracle tables
+
+(defconst solo-rpg-oracle-yes-no-table
+  '(("+6 Almost certainly"      . (2  3  4  7 16))
+    ("+5 Highly likely"         . (2  4  5  8 16))
+    ("+4 Very likely"           . (2  5  6  9 17))
+    ("+3 Likely"                . (2  6  7  9 17))
+    ("+2 Probably"              . (2  6  8 10 17))
+    ("+1 Somewhat likely"       . (3  7  9 11 17))
+    (" 0 50/50"                 . (3  8 10 12 17))
+    ("-1 Somewhat unlikely"     . (3  9 11 13 17))
+    ("-2 Probably not"          . (3 10 12 14 18))
+    ("-3 Unlikely"              . (3 11 13 14 18))
+    ("-4 Very unlikely"         . (3 11 14 15 18))
+    ("-5 Highly unlikely"       . (4 12 15 16 18))
+    ("-6 Almost certainly not"  . (4 13 16 17 18)))
+  "Data table for the Yes/No oracle.
+Value is upper thresholds for NoAnd, No, NoBut, YesBut, Yes.")
+
+(defconst solo-rpg-oracle-yes-no-event-subject-table
+  ["PC" "NPC" "Faction" "Plot"]
+  "Table for random event subjects.")
 
 (provide 'solo-rpg)
 
