@@ -52,6 +52,21 @@
 
 ;;; Code:
 
+;;; Utility functions:
+
+(defun solo-rpg-space-insert (&rest args)
+  "Like `insert' but prepends a space of preceding character isn't whitespace."
+  ;; Check if we need a space.
+  ;; We ensure that we aren't at the beginning of the buffer (nil),
+  ;; and that the previous char isn't a space, newline, or tab.
+  (when (and (char-before)
+             (not (memq (char-before) '(?\s ?\n ?\t))))
+    (insert " "))
+  ;; Pass all arguments directly to the standard insert function.
+  (apply #'insert args))
+
+;;; Dice rolls:
+
 (require 'cl-lib)  ;; For structs
 
 (cl-defstruct solo-rpg-dice-roll
@@ -188,8 +203,8 @@ Returns the updated struct."
            (t "Yes, and...")))
     ;; Return formatted string.
     ;; We use 'car' on split-string to just show "+3" instead of the full text.
-    (format "[%s] Roll %d: %s"
-            (car (split-string odds-string))
+    (format "%s: [%d] -> %s"
+            odds-string
             roll
             result-text)))
 
@@ -204,8 +219,7 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
   
   (let ((result (solo-rpg-oracle-yes-no-string odds)))
     (message "%s" result)
-    ;; Uncomment the line below if you want it inserted into the buffer automatically
-    (insert result "\n")))
+    (solo-rpg-space-insert result)))
 
 ;;; Transient dashboard
 
@@ -221,12 +235,51 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
     ("m" "Message dice roll"  solo-rpg-dice-roll-message)
     ("q" "Go back"            transient-quit-one)]])
 
+(transient-define-prefix solo-rpg-menu-oracle-yes-no-probable ()
+  "The solo-rpg menu for the Yes/No Oracle with better than 50/50 probability."
+  ["Probability"
+   ("6" "Almost certainly"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "+6 Almost certainly")))
+   ("5" "Highly likely"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "+5 Highly likely")))
+   ("4" "Very likely"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "+4 Very likely")))
+   ("3" "Likely"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "+3 Likely")))
+   ("2" "Probably"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "+2 Probably")))
+   ("1" "Somewhat likely"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "+1 Somewhat likely")))
+   ("q" "Go back" transient-quit-one)])
+
+(transient-define-prefix solo-rpg-menu-oracle-yes-no-unprobable ()
+  "The solo-rpg menu for the Yes/No Oracle with worse than 50/50 probability."
+  ["Probability"
+   ("1" "Somewhat unlikely"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "-1 Somewhat unlikely")))
+   ("2" "Probably not"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "-2 Probably not")))
+   ("3" "Unlikely"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "-3 Unlikely")))
+   ("4" "Very unlikely"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "-4 Very unlikely")))
+   ("5" "Highly unlikely"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "-5 Highly unlikely")))
+   ("6" "Almost certainly not"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "-6 Almost certainly not")))
+   ("q" "Go back" transient-quit-one)])
+
 (transient-define-prefix solo-rpg-menu-oracle ()
   "The solo-rpg Oracle menu."
   ["Actions"
    ("a" "Action/Theme Oracle"   solo-rpg-oracle-action-theme-insert)
-   ("q" "Go back"               transient-quit-one)])
-
+   ("q" "Go back"               transient-quit-one)]
+  ["Yes/No Oracle"
+   ("+" "Better than 50/50 probability" solo-rpg-menu-oracle-yes-no-probable)
+   ("0" "50/50 probability"
+    (lambda () (interactive) (solo-rpg-oracle-yes-no " 0 50/50")))
+   ("-" "Worse than 50/50 probability"   solo-rpg-menu-oracle-yes-no-unprobable)])
+   
 ;; Define the main dashboard menu
 (transient-define-prefix solo-rpg-menu ()
   "The main solo-rpg menu."
