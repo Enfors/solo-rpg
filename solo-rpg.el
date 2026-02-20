@@ -56,329 +56,18 @@
 
 ;;; Code:
 
+(require 'cl-lib)  ;; For structs
+(require 'transient)
+
 ;;; Configuration variables:
 
 (defcustom solo-rpg-output-method 'insert
   "Default method for outputting solo-rpg results.
-Can be 'insert to put text in current buffer, or 'message to only echo it."
+Can be `insert' to put text in current buffer, or `message' to only echo it."
   :type '(choice (const :tag "Insert in current buffer" insert)
                  (const :tag "Only show in message area" message))
   :group 'solo-rpg)
 
-;;; Utility functions:
-
-(defun solo-rpg--output (text &optional invert-behavior)
-  "Output TEXT according to `solo-rpg-output-method'.
-If INVERT-BEHAVIOR is non-nil, do the opposite of the default setting."
-  ;; Always log it to the message area.
-  (message "%s" text)
-
-  ;; Determine if we should insert based on setting and override
-  (let ((should-insert (eq solo-rpg-output-method 'insert)))
-    (when invert-behavior
-      (setq should-insert (not should-insert)))
-
-    ;; Insert if needed
-    (when should-insert
-      (solo-rpg--space-insert text))))
-
-(defun solo-rpg--space-insert (&rest args)
-  "Like `insert' but prepends a space of preceding character isn't whitespace."
-  ;; Check if we need a space.
-  ;; We ensure that we aren't at the beginning of the buffer (nil),
-  ;; and that the previous char isn't a space, newline, or tab.
-  (when (and (char-before)
-             (not (memq (char-before) '(?\s ?\n ?\t))))
-    (insert " "))
-  ;; Pass all arguments directly to the standard insert function.
-  (apply #'insert args))
-
-;;; Table functions:
-
-(defun solo-rpg-table-get-random (table)
-  "Return random element from TABLE."
-  (aref table (random (length table))))
-
-(defun solo-rpg--table-weighted-get-random (weighted-table max-value)
-  "Return random element from WEIGHTED-TABLE where max value is MAX-VALUE.
-
-Example of a weighted table:
-(defconst solo-rpg-oracle-quantity-table
-  '((\"Minimum\"     .  1)
-    (\"Much less\"   .  3)
-    (\"Less\"        .  7)
-    (\"As expected\" . 13)
-    (\"More\"        . 17)
-    (\"Much more\"   . 19)
-    (\"Maximum\"     . 20))
-  \"Data table for the Quantity oracle.
-Values are upper threshold for each entry.\")"
-  (let ((roll (+ 1 (random max-value))))
-    (cl-loop for (label . threshold) in weighted-table
-             if (<= roll threshold)
-             return (format "[%d] -> %s" roll label))))
-
-;;; Dice rolls:
-
-(require 'cl-lib)  ;; For structs
-
-(cl-defstruct solo-rpg-dice-roll
-  count    ;; Number of dice
-  sides    ;; Die sizes
-  mod      ;; Modifier (+/-)
-  rolls    ;; List of each die roll result
-  total)   ;; Sum of all rolls + mod
-
-(defun solo-rpg-dice-string-parse (dice-string)
-  "ask for DICE-STRING and parse it, returning a solo-rpg-dice-roll struct."
-  (unless (string-match "^\\([0-9]+\\)*d\\([0-9]+\\)*\\([+-][0-9]+\\)?"
-                        dice-string)
-    (user-error "Invalid dice format '%s'. Try '2d6' or '1d20+5'."
-                dice-string))
-  (let ((count (string-to-number (or (match-string 1 dice-string) "1")))
-        (sides (string-to-number (or (match-string 2 dice-string) "6")))
-        (mod   (string-to-number (or (match-string 3 dice-string) "0"))))
-    ;; Return the struct
-    (make-solo-rpg-dice-roll
-     :count count
-     :sides sides
-     :mod mod
-     :rolls nil                      ; No rolls have been made yet
-     :total nil)))                   ; No totals, because no rolls yet
-    
-(defun solo-rpg-dice-roll-calculate (roll-struct)
-    "Roll the dice in the specified ROLL-STRUCT and fill in the results.
-Returns the updated struct."
-
-  ;; Get the data from the struct.
-  (let* ((count (solo-rpg-dice-roll-count roll-struct))
-         (sides (solo-rpg-dice-roll-sides roll-struct))
-         (mod   (solo-rpg-dice-roll-mod   roll-struct))
-
-         ;; Generate random numbers. We use cl-loop to repeat the action
-         ;; 'count' times (count = number of dice)
-         (results (cl-loop repeat count
-                           ;; (random sides returns 0 to sides-1.
-                           ;; So we add 1.
-                           ;; "collect" is a keyword for the cl-loop macro which
-                           ;; builds a list.
-                           ;; cl-loop is like a whole language of its own.
-                           collect (+ 1 (random sides))))
-         ;; Calculate the grand total.
-         ;; Sum the results and add the modifier.
-         (sum (apply #'+ results))      ; #' is used to quote functions
-                                        ; apply is used to step through results
-         (grand-total (+ sum mod)))
-
-    ;; Update the struct slots with 'setf' - "set field"
-    (setf (solo-rpg-dice-roll-rolls roll-struct) results)
-    (setf (solo-rpg-dice-roll-total roll-struct) grand-total)
-
-    ;; Return the updated struct
-    roll-struct))
-
-(defun solo-rpg-dice-roll-string (roll-struct)
-  "Return a string of the ROLL-STRUCT, meant for displaying to the user."
-  (let* ((mod-string (if (not (= 0 (solo-rpg-dice-roll-mod roll-struct)))
-                         (format "%+d" (solo-rpg-dice-roll-mod roll-struct))
-                       ""))
-         (rolls-string (mapconcat (lambda (x) (format "[%d]" x))
-                      (solo-rpg-dice-roll-rolls roll-struct)
-                      "+")))
-    (format "%dd%d%s = %s%s = %d"
-            (solo-rpg-dice-roll-count roll-struct)
-            (solo-rpg-dice-roll-sides roll-struct)
-            mod-string
-            rolls-string
-            mod-string
-            (solo-rpg-dice-roll-total roll-struct))))
-
-(defun solo-rpg-dice-roll-cast (dice-string &optional invert)
-  "Take DICE-STRING, parse it, make the roll, and output the result."
-  (interactive "sEnter dice string (for example 2d6+2): \nP")
-  (solo-rpg--output 
-   (solo-rpg-dice-roll-string (solo-rpg-dice-roll-calculate (solo-rpg-dice-string-parse
-                                                             dice-string))) invert))
-
-;; (defun solo-rpg-dice-roll-message (dice-string)
-;;   "Ask for DICE-STRING, roll the dice, display result in message window."
-;;   (interactive "sEnter dice string (for example '2d6+2'): ")
-;;   (message (solo-rpg-dice-roll-cast dice-string)))
-
-;; (defun solo-rpg-dice-roll-insert (dice-string)
-;;   "Ask for DICE-STRING, roll the dice, output the result in the current buffer."
-;;   (interactive "sEnter dice string (for example '2d6+2'): ")
-;;   (insert (solo-rpg-dice-roll-cast dice-string)))
-
-;;; Action / Theme oracle:
-
-(defun solo-rpg-oracle-action-theme (&optional invert)
-  "Output '(action) / (theme)' where action and theme are random."
-  (interactive "P")
-  (solo-rpg--output (format "%s / %s"
-                            (solo-rpg-table-get-random solo-rpg-oracle-actions)
-                            (solo-rpg-table-get-random solo-rpg-oracle-themes))
-                    invert))
-
-;;; Yes / No oracle:
-
-(defun solo-rpg-oracle-yes-no-string (odds-string)
-  "Return NoAnd, No, NoBut, YesBut, Yes, or YesAnd based on ODDS-STRING."
-  (let* ((thresholds (cdr (assoc odds-string solo-rpg-oracle-yes-no-table)))
-         (roll (+ 1 (random 20)))
-         (result-text nil))
-    (setq result-text
-          (cond
-           ;; Handle random events
-           ((= roll 1)
-            (format "Random event (negative) related to %s."
-                    (solo-rpg-table-get-random solo-rpg-oracle-yes-no-event-subject-table)))
-           ((= roll 20)
-            (format "Random event (positive) related to %s."
-                    (solo-rpg-table-get-random solo-rpg-oracle-yes-no-event-subject-table)))
-           ;; Handle ordinary lookups
-           ((<= roll (nth 0 thresholds)) "No, and...")
-           ((<= roll (nth 1 thresholds)) "No")
-           ((<= roll (nth 2 thresholds)) "No, but...")
-           ((<= roll (nth 3 thresholds)) "Yes, but...")
-           ((<= roll (nth 4 thresholds)) "Yes")
-           (t "Yes, and...")))
-    ;; Return formatted string.
-    ;; We use 'car' on split-string to just show "+3" instead of the full text.
-    (format "%s: [%d] -> %s"
-            odds-string
-            roll
-            result-text)))
-
-(defun solo-rpg-oracle-yes-no (odds &optional invert)
-  "Query the Yes/No oracle. 
-ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table'."
-  (interactive
-   (list (completing-read "Probability (Default 50/50): "
-                          solo-rpg-oracle-yes-no-table
-                          nil t nil nil 
-                          "50/50")
-         current-prefix-arg))
-  
-  (let ((result (solo-rpg-oracle-yes-no-string odds)))
-    (solo-rpg--output result invert)))
-
-;;; Quantity oracle:
-
-(defun solo-rpg-oracle-quantity (&optional invert)
-  "Query the Quantity oracle, displaying the result."
-  (interactive "P")
-  (solo-rpg--output (solo-rpg--table-weighted-get-random solo-rpg-oracle-quantity-table 20) invert))
-
-;;; Transient dashboard
-
-(require 'transient)
-
-(transient-define-prefix solo-rpg-menu-dice ()
-  "The solo-rpg Dice menu."
-  ["Solo-PRG dashboard: Dice Menu"
-   ["Actions"
-    ("r" "Roll dice"   solo-rpg-dice-roll-cast)
-    ("q" "Go back"     transient-quit-one)]])
-
-;;; Oracle dashboards
-
-(transient-define-prefix solo-rpg-menu-oracle-yes-no-probable ()
-  "The solo-rpg menu for the Yes/No Oracle with better than 50/50 probability."
-  ["Probability"
-   ("6" "Almost certainly"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "+6 Almost certainly" invert)))
-   ("5" "Highly likely"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "+5 Highly likely" invert)))
-   ("4" "Very likely"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "+4 Very likely" invert)))
-   ("3" "Likely"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "+3 Likely" invert)))
-   ("2" "Probably"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "+2 Probably" invert)))
-   ("1" "Somewhat likely"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "+1 Somewhat likely" invert)))
-   ("q" "Go back" transient-quit-one)])
-
-(transient-define-prefix solo-rpg-menu-oracle-yes-no-unprobable ()
-  "The solo-rpg menu for the Yes/No Oracle with worse than 50/50 probability."
-  ["Probability"
-   ("1" "Somewhat unlikely"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "-1 Somewhat unlikely" invert)))
-   ("2" "Probably not"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "-2 Probably not" invert)))
-   ("3" "Unlikely"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "-3 Unlikely" invert)))
-   ("4" "Very unlikely"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "-4 Very unlikely" invert)))
-   ("5" "Highly unlikely"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "-5 Highly unlikely" invert)))
-   ("6" "Almost certainly not"
-    (lambda (&optional invert) (interactive "P")
-      (solo-rpg-oracle-yes-no "-6 Almost certainly not" invert)))
-   ("q" "Go back" transient-quit-one)])
-
-;; Define the Oracle dashboard menu
-
-(transient-define-prefix solo-rpg-menu-oracle ()
-  "The solo-rpg Oracle menu."
-  ["Actions"
-   ("a" "Action/Theme Oracle"   solo-rpg-oracle-action-theme)
-   ("u" "Quantity Oracle"       solo-rpg-oracle-quantity)
-   ("q" "Go back"               transient-quit-one)]
-  ["Yes/No Oracle"
-   ("+" "Better than 50/50 probability" solo-rpg-menu-oracle-yes-no-probable)
-   ("0" "50/50 probability"
-    (lambda (&optional invert) (interactive)
-      (solo-rpg-oracle-yes-no "50/50" invert)))
-   ("-" "Worse than 50/50 probability"   solo-rpg-menu-oracle-yes-no-unprobable)])
-   
-;; Define the main dashboard menu
-(transient-define-prefix solo-rpg-menu ()
-  "The main solo-rpg menu."
-  ["Solo-RPG dashboard: Main Menu\n"
-   ["Actions"
-    ("q" "Quit"          transient-quit-one)]
-   ["Dice"
-    ("d" "Dice menu"     solo-rpg-menu-dice)]
-   ["Oracles"
-    ("o" "Oracles menu"  solo-rpg-menu-oracle)]])
-
-;;; Minor mode:
-
-;;;###autoload
-(defvar solo-rpg-mode-map (make-sparse-keymap)
-  "Keymap for `solo-rpg-mode'.
-By default, this is empty to allow users to define their own menu key.")
-
-;;;###autoload
-(define-minor-mode solo-rpg-mode
-  "Minor mode with tools for playing solo roleplaying games.
-
-\\{solo-rpg-mode-map}"
-  :init-value nil
-  :global nil
-  :group 'solo-rpg
-  :lighter " SoloRPG"
-  :keymap solo-rpg-mode-map
-
-  (if solo-rpg-mode
-      ;; If ON:
-      (message "Solo-RPG-mode enabled.")
-    (message "Solo-RPG-mode disabled.")))
-
-
 ;;; Tables
 
 (defconst solo-rpg-oracle-actions
@@ -622,6 +311,343 @@ Value is upper thresholds for NoAnd, No, NoBut, YesBut, Yes.")
     ("Maximum"     . 20))
   "Data table for the Quantity oracle.
 Values are upper threshold for each entry.")
+
+;;; Other variables:
+
+(defvar solo-rpg--last-dice-string "2d6"
+  "The last dice string rolled by the user. Used in the default prompt.")
+
+;;; Utility functions:
+
+(defun solo-rpg--output (text &optional invert-behavior)
+  "Output TEXT according to `solo-rpg-output-method'.
+If INVERT-BEHAVIOR is non-nil, do the opposite of the default setting."
+  ;; Always log it to the message area.
+  (message "%s" text)
+
+  ;; Determine if we should insert based on setting and override
+  (let ((should-insert (eq solo-rpg-output-method 'insert)))
+    (when invert-behavior
+      (setq should-insert (not should-insert)))
+
+    ;; Insert if needed
+    (when should-insert
+      (solo-rpg--space-insert text))))
+
+(defun solo-rpg--space-insert (&rest args)
+  "Like `insert' but prepend a space if preceding character isn't whitespace.
+Then, ARGS is printed."
+  ;; Check if we need a space.
+  ;; We ensure that we aren't at the beginning of the buffer (nil),
+  ;; and that the previous char isn't a space, newline, or tab.
+  (when (and (char-before)
+             (not (memq (char-before) '(?\s ?\n ?\t))))
+    (insert " "))
+  ;; Pass all arguments directly to the standard insert function.
+  (apply #'insert args))
+
+;;; Table functions:
+
+(defun solo-rpg-table-get-random (table)
+  "Return random element from TABLE."
+  (aref table (random (length table))))
+
+(defun solo-rpg--table-weighted-get-random (weighted-table max-value)
+  "Return random element from WEIGHTED-TABLE where max value is MAX-VALUE."
+  (let ((roll (+ 1 (random max-value))))
+    (cl-loop for cell in weighted-table
+             for label = (car cell)
+             for threshold = (cdr cell)
+             if (<= roll threshold)
+             return (format "[%d] -> %s " roll label))))
+
+;;; Dashboard functions:
+
+(defun solo-rpg-output-method-toggle ()
+  "Toggle `solo-rpg-output-method' between `insert' and `message'."
+  (interactive)
+  (if (eq solo-rpg-output-method 'insert)
+      (setq solo-rpg-output-method 'message)
+    (setq solo-rpg-output-method 'insert))
+  (message "Solo-RPG output method is now: %s" solo-rpg-output-method))
+
+(defun solo-rpg--toggle-output-desc ()
+  "Return a formatted string showing the current output method."
+  (format "Toggle output (currently: %s)" solo-rpg-output-method))
+
+;;; Dice rolls:
+
+(cl-defstruct solo-rpg-dice-roll
+  count    ;; Number of dice
+  sides    ;; Die sizes
+  mod      ;; Modifier (+/-)
+  rolls    ;; List of each die roll result
+  total)   ;; Sum of all rolls + mod
+
+(defun solo-rpg-dice-string-parse (dice-string)
+  "Ask for DICE-STRING and parse it, returning a solo-rpg-dice-roll struct."
+  (unless (string-match "^\\([0-9]+\\)*d\\([0-9]+\\)*\\([+-][0-9]+\\)?"
+                        dice-string)
+    (user-error "Invalid dice format '%s'. Try '2d6' or '1d20+5'"
+                dice-string))
+  (let ((count (string-to-number (or (match-string 1 dice-string) "1")))
+        (sides (string-to-number (or (match-string 2 dice-string) "6")))
+        (mod   (string-to-number (or (match-string 3 dice-string) "0"))))
+    ;; Return the struct
+    (make-solo-rpg-dice-roll
+     :count count
+     :sides sides
+     :mod mod
+     :rolls nil                      ; No rolls have been made yet
+     :total nil)))                   ; No totals, because no rolls yet
+    
+(defun solo-rpg-dice-roll-calculate (roll-struct)
+    "Roll the dice in the specified ROLL-STRUCT and fill in the results.
+Returns the updated struct."
+
+  ;; Get the data from the struct.
+  (let* ((count (solo-rpg-dice-roll-count roll-struct))
+         (sides (solo-rpg-dice-roll-sides roll-struct))
+         (mod   (solo-rpg-dice-roll-mod   roll-struct))
+
+         ;; Generate random numbers. We use cl-loop to repeat the action
+         ;; 'count' times (count = number of dice)
+         (results (cl-loop repeat count
+                           ;; (random sides returns 0 to sides-1.
+                           ;; So we add 1.
+                           ;; "collect" is a keyword for the cl-loop macro which
+                           ;; builds a list.
+                           ;; cl-loop is like a whole language of its own.
+                           collect (+ 1 (random sides))))
+         ;; Calculate the grand total.
+         ;; Sum the results and add the modifier.
+         (sum (apply #'+ results))      ; #' is used to quote functions
+                                        ; apply is used to step through results
+         (grand-total (+ sum mod)))
+
+    ;; Update the struct slots with 'setf' - "set field"
+    (setf (solo-rpg-dice-roll-rolls roll-struct) results)
+    (setf (solo-rpg-dice-roll-total roll-struct) grand-total)
+
+    ;; Return the updated struct
+    roll-struct))
+
+(defun solo-rpg-dice-roll-string (roll-struct)
+  "Return a string of the ROLL-STRUCT, meant for displaying to the user."
+  (let* ((mod-string (if (not (= 0 (solo-rpg-dice-roll-mod roll-struct)))
+                         (format "%+d" (solo-rpg-dice-roll-mod roll-struct))
+                       ""))
+         (rolls-string (mapconcat (lambda (x) (format "[%d]" x))
+                      (solo-rpg-dice-roll-rolls roll-struct)
+                      "+")))
+    (format "%dd%d%s = %s%s = %d"
+            (solo-rpg-dice-roll-count roll-struct)
+            (solo-rpg-dice-roll-sides roll-struct)
+            mod-string
+            rolls-string
+            mod-string
+            (solo-rpg-dice-roll-total roll-struct))))
+
+(defun solo-rpg-dice-roll-cast (dice-string &optional invert)
+  "Take DICE-STRING, parse it, make the roll, and output the result.
+If INVERT is non-nil, then output mode is inverted."
+  (interactive
+   ;; Create a temporary scope to build the prompt and ask the user
+   (let* ((prompt (format "Enter dice to roll (default: %s): "
+                          solo-rpg--last-dice-string))
+          (input (read-string prompt nil nil solo-rpg--last-dice-string)))
+     ;; Return the list of arguments to hand to the function
+     (list input current-prefix-arg)))
+
+  ;; Save the string for next time
+  (setq solo-rpg--last-dice-string dice-string)
+  
+  (solo-rpg--output
+   (solo-rpg-dice-roll-string (solo-rpg-dice-roll-calculate (solo-rpg-dice-string-parse
+                                                             dice-string))) invert))
+
+;; (defun solo-rpg-dice-roll-message (dice-string)
+;;   "Ask for DICE-STRING, roll the dice, display result in message window."
+;;   (interactive "sEnter dice string (for example '2d6+2'): ")
+;;   (message (solo-rpg-dice-roll-cast dice-string)))
+
+;; (defun solo-rpg-dice-roll-insert (dice-string)
+;;   "Ask for DICE-STRING, roll the dice, output the result in the current buffer."
+;;   (interactive "sEnter dice string (for example '2d6+2'): ")
+;;   (insert (solo-rpg-dice-roll-cast dice-string)))
+
+;;; Action / Theme oracle:
+
+(defun solo-rpg-oracle-action-theme (&optional invert)
+  "Output (action) / (theme) where action and theme are random.
+If INVERT is non-nil, then output mode is inverted."
+  (interactive "P")
+  (solo-rpg--output (format "%s / %s"
+                            (solo-rpg-table-get-random solo-rpg-oracle-actions)
+                            (solo-rpg-table-get-random solo-rpg-oracle-themes))
+                    invert))
+
+;;; Yes / No oracle:
+
+(defun solo-rpg-oracle-yes-no-string (odds-string)
+  "Return NoAnd, No, NoBut, YesBut, Yes, or YesAnd based on ODDS-STRING."
+  (let* ((thresholds (cdr (assoc odds-string solo-rpg-oracle-yes-no-table)))
+         (roll (+ 1 (random 20)))
+         (result-text nil))
+    (setq result-text
+          (cond
+           ;; Handle random events
+           ((= roll 1)
+            (format "Random event (negative) related to %s."
+                    (solo-rpg-table-get-random solo-rpg-oracle-yes-no-event-subject-table)))
+           ((= roll 20)
+            (format "Random event (positive) related to %s."
+                    (solo-rpg-table-get-random solo-rpg-oracle-yes-no-event-subject-table)))
+           ;; Handle ordinary lookups
+           ((<= roll (nth 0 thresholds)) "No, and...")
+           ((<= roll (nth 1 thresholds)) "No")
+           ((<= roll (nth 2 thresholds)) "No, but...")
+           ((<= roll (nth 3 thresholds)) "Yes, but...")
+           ((<= roll (nth 4 thresholds)) "Yes")
+           (t "Yes, and...")))
+    ;; Return formatted string.
+    ;; We use 'car' on split-string to just show "+3" instead of the full text.
+    (format "%s: [%d] -> %s"
+            odds-string
+            roll
+            result-text)))
+
+(defun solo-rpg-oracle-yes-no (odds &optional invert)
+  "Query the Yes/No oracle.
+ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table'.
+If INVERT is non-nil, then output is inverted."
+  (interactive
+   (list (completing-read "Probability (Default 50/50): "
+                          solo-rpg-oracle-yes-no-table
+                          nil t nil nil
+                          "50/50")
+         current-prefix-arg))
+  
+  (let ((result (solo-rpg-oracle-yes-no-string odds)))
+    (solo-rpg--output result invert)))
+
+;;; Quantity oracle:
+
+(defun solo-rpg-oracle-quantity (&optional invert)
+  "Query the Quantity oracle, displaying the result.
+If INVERT is non-nil, then output is inverted."
+  (interactive "P")
+  (solo-rpg--output (solo-rpg--table-weighted-get-random solo-rpg-oracle-quantity-table 20) invert))
+
+;;; Transient dashboard
+
+(transient-define-prefix solo-rpg-menu-dice ()
+  "The solo-rpg Dice menu."
+  ["Solo-PRG dashboard: Dice Menu"
+   ["Actions"
+    ("r" "Roll dice"   solo-rpg-dice-roll-cast)
+    ("q" "Go back"     transient-quit-one)]])
+
+;;; Oracle dashboards
+
+(transient-define-prefix solo-rpg-menu-oracle-yes-no-probable ()
+  "The solo-rpg menu for the Yes/No Oracle with better than 50/50 probability."
+  ["Probability"
+   ("6" "Almost certainly"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+6 Almost certainly" invert)))
+   ("5" "Highly likely"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+5 Highly likely" invert)))
+   ("4" "Very likely"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+4 Very likely" invert)))
+   ("3" "Likely"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+3 Likely" invert)))
+   ("2" "Probably"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+2 Probably" invert)))
+   ("1" "Somewhat likely"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+1 Somewhat likely" invert)))
+   ("q" "Go back" transient-quit-one)])
+
+(transient-define-prefix solo-rpg-menu-oracle-yes-no-unprobable ()
+  "The solo-rpg menu for the Yes/No Oracle with worse than 50/50 probability."
+  ["Probability"
+   ("1" "Somewhat unlikely"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-1 Somewhat unlikely" invert)))
+   ("2" "Probably not"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-2 Probably not" invert)))
+   ("3" "Unlikely"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-3 Unlikely" invert)))
+   ("4" "Very unlikely"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-4 Very unlikely" invert)))
+   ("5" "Highly unlikely"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-5 Highly unlikely" invert)))
+   ("6" "Almost certainly not"
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-6 Almost certainly not" invert)))
+   ("q" "Go back" transient-quit-one)])
+
+;; Define the Oracle dashboard menu
+
+(transient-define-prefix solo-rpg-menu-oracle ()
+  "The solo-rpg Oracle menu."
+  ["Actions"
+   ("a" "Action/Theme Oracle"   solo-rpg-oracle-action-theme)
+   ("u" "Quantity Oracle"       solo-rpg-oracle-quantity)
+   ("q" "Go back"               transient-quit-one)]
+  ["Yes/No Oracle"
+   ("+" "Better than 50/50 probability" solo-rpg-menu-oracle-yes-no-probable)
+   ("0" "50/50 probability"
+    (lambda (&optional invert) (interactive)
+      (solo-rpg-oracle-yes-no "50/50" invert)))
+   ("-" "Worse than 50/50 probability"   solo-rpg-menu-oracle-yes-no-unprobable)])
+   
+;; Define the main dashboard menu
+(transient-define-prefix solo-rpg-menu ()
+  "The main solo-rpg menu."
+  ["Solo-RPG dashboard: Main Menu\n"
+   ["Modules"
+    ("d" "Dice..."     solo-rpg-menu-dice)
+    ("o" "Oracles..."  solo-rpg-menu-oracle)]
+   ["System"
+    ("t" solo-rpg-output-method-toggle
+     :description solo-rpg--toggle-output-desc
+     :transient t)
+    ("q" "Quit"          transient-quit-one)]])
+
+;;; Minor mode:
+
+;;;###autoload
+(defvar solo-rpg-mode-map (make-sparse-keymap)
+  "Keymap for `solo-rpg-mode'.
+By default, this is empty to allow users to define their own menu key.")
+
+;;;###autoload
+(define-minor-mode solo-rpg-mode
+  "Minor mode with tools for playing solo roleplaying games.
+
+\\{solo-rpg-mode-map}"
+  :init-value nil
+  :global nil
+  :group 'solo-rpg
+  :lighter " SoloRPG"
+  :keymap solo-rpg-mode-map
+
+  (if solo-rpg-mode
+      ;; If ON:
+      (message "Solo-RPG-mode enabled.")
+    (message "Solo-RPG-mode disabled.")))
+
+
 
 (provide 'solo-rpg)
 
