@@ -68,7 +68,7 @@ Can be `insert' to put text in current buffer, or `message' to only echo it."
                  (const :tag "Only show in message area" message))
   :group 'solo-rpg)
 
-;;; Tables
+;;; Tables:
 
 (defconst solo-rpg-oracle-actions
   ["Abandon"
@@ -312,6 +312,57 @@ Value is upper thresholds for NoAnd, No, NoBut, YesBut, Yes.")
   "Data table for the Quantity oracle.
 Values are upper threshold for each entry.")
 
+;;; Generator tables:
+
+(defconst solo-rpg-generator-plot-goal-table
+  ["Acquire"
+   "Destroy"
+   "Locate"
+   "Escape"
+   "Follow"
+   "Hide"
+   "Restore"
+   "Explore"
+   "Infiltrate"
+   "Prevent"]
+  "Goal data table for the Plot generator.")
+
+(defconst solo-rpg-generator-plot-focus-table
+  ["Artifact"
+   "Relative"
+   "PC"
+   "Existing NPC"
+   "Local ruler"
+   "Idea"
+   "Revenge"
+   "Reward"
+   "Love"
+   "Material riches"
+   "Enlightenment"
+   "Information"
+   "Knowledge"
+   "Location"
+   "Mysterious beast"
+   "Fabled creature"
+   "Well-known beast"
+   "Monsters"
+   "Enemies"
+   "Building or structure"]
+  "Focus data table for the Plot generator.")
+
+(defconst solo-rpg-generator-plot-obstacle-table
+  ["Lack of resources"
+   "Lack of information"
+   "Lack of knowledge"
+   "Duty"
+   "Health"
+   "Love"
+   "Animosity"
+   "Time"
+   "Honor"
+   "Mysterious circumstances"]
+  "Obstacle data table for the Plot generator.")
+
 ;;; Other variables:
 
 (defvar solo-rpg--last-dice-string "2d6"
@@ -539,6 +590,21 @@ If INVERT is non-nil, then output is inverted."
   (interactive "P")
   (solo-rpg--output (solo-rpg--table-weighted-get-random solo-rpg-oracle-quantity-table 20) invert))
 
+;;; Generators:
+
+;;; Plot generator:
+
+(defun solo-rpg-generator-plot (&optional invert)
+  "Generate and output a plot.
+If INVERT is non-nil, the output method is inverted."
+  (interactive "P")
+  (solo-rpg--output
+   (format "%s %s, but %s"
+           (solo-rpg-table-get-random solo-rpg-generator-plot-goal-table)
+           (solo-rpg-table-get-random solo-rpg-generator-plot-focus-table)
+           (solo-rpg-table-get-random solo-rpg-generator-plot-obstacle-table))
+   invert))
+
 ;;; Transient dashboard
 
 (transient-define-prefix solo-rpg-menu-dice ()
@@ -610,14 +676,24 @@ If INVERT is non-nil, then output is inverted."
     (lambda (&optional invert) (interactive)
       (solo-rpg-oracle-yes-no "50/50" invert)))
    ("-" "Worse than 50/50 probability"   solo-rpg-menu-oracle-yes-no-unprobable)])
-   
+
+;; Define the Generator dashboard menu
+
+(transient-define-prefix solo-rpg-menu-generator ()
+  "The solo-rpg Generator menu."
+  ["SoloRPG dashboard: Generator Menu\n"
+   ["Actions"
+    ("p" "Plot generator"        solo-rpg-generator-plot)
+    ("q" "Go back"               transient-quit-one)]])
+
 ;; Define the main dashboard menu
 (transient-define-prefix solo-rpg-menu ()
   "The main solo-rpg menu."
   ["Solo-RPG dashboard: Main Menu\n"
    ["Modules"
-    ("d" "Dice..."     solo-rpg-menu-dice)
-    ("o" "Oracles..."  solo-rpg-menu-oracle)]
+    ("d" "Dice..."       solo-rpg-menu-dice)
+    ("o" "Oracles..."    solo-rpg-menu-oracle)
+    ("g" "Generators..." solo-rpg-menu-generator)]
    ["System"
     ("t" solo-rpg-output-method-toggle
      :description solo-rpg--toggle-output-desc
