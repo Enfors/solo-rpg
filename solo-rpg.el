@@ -142,10 +142,12 @@ Returns the updated struct."
 
 (defun solo-rpg-oracle-action-theme-message ()
   "Show '(action) / (theme)' in the message buffer."
+  (interactive)
   (message (solo-rpg-oracle-action-theme)))
 
 (defun solo-rpg-oracle-action-theme-insert ()
   "Insert '(action) / (theme)' in the current buffer."
+  (interactive)
   (insert (solo-rpg-oracle-action-theme)))
 
 ;;; Yes / No oracle:
@@ -180,7 +182,7 @@ Returns the updated struct."
 
 (defun solo-rpg-oracle-yes-no (odds)
   "Query the Yes/No oracle. 
-ODDS is the probability string selected from `solo-rpg-yes-no-table`."
+ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
   (interactive
    (list (completing-read "Probability (Default 50/50): "
                           solo-rpg-oracle-yes-no-table
@@ -191,6 +193,25 @@ ODDS is the probability string selected from `solo-rpg-yes-no-table`."
     (message "%s" result)
     ;; Uncomment the line below if you want it inserted into the buffer automatically
     (insert result "\n")))
+
+;;; Transient dashboard
+
+(require 'transient)
+
+;; Define the Oracle dashboard
+
+(transient-define-prefix solo-rpg-dashboard-oracle ()
+  "The solo-rpg Oracle dashboard."
+  ["Actions"
+   ("a" "Action/Theme Oracle"   solo-rpg-oracle-action-theme-insert)
+   ("q" "Go back"               transient-quit-one)])
+
+;; Define the main dashboard
+(transient-define-prefix solo-rpg-dashboard ()
+  "The main solo-rpg dashboard."
+  ["Actions"
+   ("o" "Oracles"  solo-rpg-dashboard-oracle)
+   ("q" "Quit"     transient-quit-one)])
 
 ;;; Minor mode:
 
@@ -209,6 +230,7 @@ ODDS is the probability string selected from `solo-rpg-yes-no-table`."
     (define-key map (kbd "C-c C-d m") 'solo-rpg-dice-roll-message)
     (define-key map (kbd "C-c C-o i") 'solo-rpg-oracle-action-theme-insert)
     (define-key map (kbd "C-c C-o m") 'solo-rpg-oracle-action-theme-message)
+    (define-key map (kbd "C-c C-r")   'solo-rpg-dashboard)
     map)
 
   (if solo-rpg-mode
