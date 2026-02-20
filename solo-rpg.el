@@ -65,6 +65,31 @@
   ;; Pass all arguments directly to the standard insert function.
   (apply #'insert args))
 
+;;; Table functions:
+
+(defun solo-rpg-table-get-random (table)
+  "Return random element from TABLE."
+  (aref table (random (length table))))
+
+(defun solo-rpg--table-weighted-get-random (weighted-table max-value)
+  "Return random element from WEIGHTED-TABLE where max value is MAX-VALUE.
+
+Example of a weighted table:
+(defconst solo-rpg-oracle-quantity-table
+  '((\"Minimum\"     .  1)
+    (\"Much less\"   .  3)
+    (\"Less\"        .  7)
+    (\"As expected\" . 13)
+    (\"More\"        . 17)
+    (\"Much more\"   . 19)
+    (\"Maximum\"     . 20))
+  \"Data table for the Quantity oracle.
+Values are upper threshold for each entry.\")"
+  (let ((roll (+ 1 (random max-value))))
+    (cl-loop for (label . threshold) in weighted-table
+             if (<= roll threshold)
+             return (format "[%d] -> %s" roll label))))
+
 ;;; Dice rolls:
 
 (require 'cl-lib)  ;; For structs
@@ -158,10 +183,6 @@ Returns the updated struct."
 
 ;;; Action / Theme oracle:
 
-(defun solo-rpg-table-get-random (table)
-  "Return random element from TABLE."
-  (aref table (random (length table))))
-
 (defun solo-rpg-oracle-action-theme ()
   "Return '(action) / (theme)' where action and theme are random."
   (format "%s / %s"
@@ -215,17 +236,22 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
    (list (completing-read "Probability (Default 50/50): "
                           solo-rpg-oracle-yes-no-table
                           nil t nil nil 
-                          " 0 50/50"))) ;; <--- The default value if you hit RET
+                          "50/50"))) ;; <--- The default value if you hit RET
   
   (let ((result (solo-rpg-oracle-yes-no-string odds)))
     (message "%s" result)
     (solo-rpg-space-insert result)))
 
+;;; Quantity oracle:
+
+(defun solo-rpg-oracle-quantity ()
+  "Query the Quantity oracle, displaying the result."
+  (interactive)
+  (insert (solo-rpg--table-weighted-get-random solo-rpg-oracle-quantity-table 20)))
+
 ;;; Transient dashboard
 
 (require 'transient)
-
-;; Define the Oracle dashboard menu
 
 (transient-define-prefix solo-rpg-menu-dice ()
   "The solo-rpg Dice menu."
@@ -234,6 +260,8 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
     ("i" "Insert dice roll"   solo-rpg-dice-roll-insert)
     ("m" "Message dice roll"  solo-rpg-dice-roll-message)
     ("q" "Go back"            transient-quit-one)]])
+
+;;; Oracle dashboards
 
 (transient-define-prefix solo-rpg-menu-oracle-yes-no-probable ()
   "The solo-rpg menu for the Yes/No Oracle with better than 50/50 probability."
@@ -269,15 +297,18 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
     (lambda () (interactive) (solo-rpg-oracle-yes-no "-6 Almost certainly not")))
    ("q" "Go back" transient-quit-one)])
 
+;; Define the Oracle dashboard menu
+
 (transient-define-prefix solo-rpg-menu-oracle ()
   "The solo-rpg Oracle menu."
   ["Actions"
    ("a" "Action/Theme Oracle"   solo-rpg-oracle-action-theme-insert)
+   ("u" "Quantity Oracle"       solo-rpg-oracle-quantity)
    ("q" "Go back"               transient-quit-one)]
   ["Yes/No Oracle"
    ("+" "Better than 50/50 probability" solo-rpg-menu-oracle-yes-no-probable)
    ("0" "50/50 probability"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no " 0 50/50")))
+    (lambda () (interactive) (solo-rpg-oracle-yes-no "50/50")))
    ("-" "Worse than 50/50 probability"   solo-rpg-menu-oracle-yes-no-unprobable)])
    
 ;; Define the main dashboard menu
@@ -532,7 +563,7 @@ By default, this is empty to allow users to define their own menu key.")
     ("+3 Likely"                . (2  6  7  9 17))
     ("+2 Probably"              . (2  6  8 10 17))
     ("+1 Somewhat likely"       . (3  7  9 11 17))
-    (" 0 50/50"                 . (3  8 10 12 17))
+    ("50/50"                    . (3  8 10 12 17))
     ("-1 Somewhat unlikely"     . (3  9 11 13 17))
     ("-2 Probably not"          . (3 10 12 14 18))
     ("-3 Unlikely"              . (3 11 13 14 18))
@@ -545,6 +576,19 @@ Value is upper thresholds for NoAnd, No, NoBut, YesBut, Yes.")
 (defconst solo-rpg-oracle-yes-no-event-subject-table
   ["PC" "NPC" "Faction" "Plot"]
   "Table for random event subjects.")
+
+;;; Quantity oracle table
+
+(defconst solo-rpg-oracle-quantity-table
+  '(("Minimum"     .  1)
+    ("Much less"   .  3)
+    ("Less"        .  7)
+    ("As expected" . 13)
+    ("More"        . 17)
+    ("Much more"   . 19)
+    ("Maximum"     . 20))
+  "Data table for the Quantity oracle.
+Values are upper threshold for each entry.")
 
 (provide 'solo-rpg)
 
