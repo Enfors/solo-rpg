@@ -49,12 +49,40 @@
 ;; typing the shortcut key you chose above ("C-c r" by default).
 ;;
 ;; Customization:
+;;
+;;   `solo-rpg-output-method' can be set to 'insert or 'message.
+;;      - If set to 'message, output will be sent to message buffer only.
+;;      - If set to 'insert, output will also be inserted in current buffer.
 
 ;;; Code:
 
+;;; Configuration variables:
+
+(defcustom solo-rpg-output-method 'insert
+  "Default method for outputting solo-rpg results.
+Can be 'insert to put text in current buffer, or 'message to only echo it."
+  :type '(choice (const :tag "Insert in current buffer" insert)
+                 (const :tag "Only show in message area" message))
+  :group 'solo-rpg)
+
 ;;; Utility functions:
 
-(defun solo-rpg-space-insert (&rest args)
+(defun solo-rpg--output (text &optional invert-behavior)
+  "Output TEXT according to `solo-rpg-output-method'.
+If INVERT-BEHAVIOR is non-nil, do the opposite of the default setting."
+  ;; Always log it to the message area.
+  (message "%s" text)
+
+  ;; Determine if we should insert based on setting and override
+  (let ((should-insert (eq solo-rpg-output-method 'insert)))
+    (when invert-behavior
+      (setq should-insert (not should-insert)))
+
+    ;; Insert if needed
+    (when should-insert
+      (solo-rpg--space-insert text))))
+
+(defun solo-rpg--space-insert (&rest args)
   "Like `insert' but prepends a space of preceding character isn't whitespace."
   ;; Check if we need a space.
   ;; We ensure that we aren't at the beginning of the buffer (nil),
@@ -167,37 +195,30 @@ Returns the updated struct."
             (solo-rpg-dice-roll-total roll-struct))))
 
 (defun solo-rpg-dice-roll-cast (dice-string)
-  "Take DICE-STRING, parse it, make the roll, and return a user-displayable result."
-  (solo-rpg-dice-roll-string (solo-rpg-dice-roll-calculate (solo-rpg-dice-string-parse
-                                                            dice-string))))
+  "Take DICE-STRING, parse it, make the roll, and output the result."
+  (interactive "sEnter dice string (for example 2d6+2): ")
+  (solo-rpg--output 
+   (solo-rpg-dice-roll-string (solo-rpg-dice-roll-calculate (solo-rpg-dice-string-parse
+                                                             dice-string)))))
 
-(defun solo-rpg-dice-roll-message (dice-string)
-  "Ask for DICE-STRING, roll the dice, display result in message window."
-  (interactive "sEnter dice string (for example '2d6+2'): ")
-  (message (solo-rpg-dice-roll-cast dice-string)))
+;; (defun solo-rpg-dice-roll-message (dice-string)
+;;   "Ask for DICE-STRING, roll the dice, display result in message window."
+;;   (interactive "sEnter dice string (for example '2d6+2'): ")
+;;   (message (solo-rpg-dice-roll-cast dice-string)))
 
-(defun solo-rpg-dice-roll-insert (dice-string)
-  "Ask for DICE-STRING, roll the dice, output the result in the current buffer."
-  (interactive "sEnter dice string (for example '2d6+2'): ")
-  (insert (solo-rpg-dice-roll-cast dice-string)))
+;; (defun solo-rpg-dice-roll-insert (dice-string)
+;;   "Ask for DICE-STRING, roll the dice, output the result in the current buffer."
+;;   (interactive "sEnter dice string (for example '2d6+2'): ")
+;;   (insert (solo-rpg-dice-roll-cast dice-string)))
 
 ;;; Action / Theme oracle:
 
 (defun solo-rpg-oracle-action-theme ()
-  "Return '(action) / (theme)' where action and theme are random."
-  (format "%s / %s"
-          (solo-rpg-table-get-random solo-rpg-oracle-actions)
-          (solo-rpg-table-get-random solo-rpg-oracle-themes)))
-
-(defun solo-rpg-oracle-action-theme-message ()
-  "Show '(action) / (theme)' in the message buffer."
+  "Output '(action) / (theme)' where action and theme are random."
   (interactive)
-  (message (solo-rpg-oracle-action-theme)))
-
-(defun solo-rpg-oracle-action-theme-insert ()
-  "Insert '(action) / (theme)' in the current buffer."
-  (interactive)
-  (insert (solo-rpg-oracle-action-theme)))
+  (solo-rpg--output (format "%s / %s"
+                            (solo-rpg-table-get-random solo-rpg-oracle-actions)
+                            (solo-rpg-table-get-random solo-rpg-oracle-themes))))
 
 ;;; Yes / No oracle:
 
@@ -231,7 +252,7 @@ Returns the updated struct."
 
 (defun solo-rpg-oracle-yes-no (odds)
   "Query the Yes/No oracle. 
-ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
+ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table'."
   (interactive
    (list (completing-read "Probability (Default 50/50): "
                           solo-rpg-oracle-yes-no-table
@@ -240,14 +261,14 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
   
   (let ((result (solo-rpg-oracle-yes-no-string odds)))
     (message "%s" result)
-    (solo-rpg-space-insert result)))
+    (solo-rpg--output result)))
 
 ;;; Quantity oracle:
 
 (defun solo-rpg-oracle-quantity ()
   "Query the Quantity oracle, displaying the result."
   (interactive)
-  (insert (solo-rpg--table-weighted-get-random solo-rpg-oracle-quantity-table 20)))
+  (solo-rpg--output (solo-rpg--table-weighted-get-random solo-rpg-oracle-quantity-table 20)))
 
 ;;; Transient dashboard
 
@@ -257,9 +278,8 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
   "The solo-rpg Dice menu."
   ["Solo-PRG dashboard: Dice Menu"
    ["Actions"
-    ("i" "Insert dice roll"   solo-rpg-dice-roll-insert)
-    ("m" "Message dice roll"  solo-rpg-dice-roll-message)
-    ("q" "Go back"            transient-quit-one)]])
+    ("r" "Roll dice"   solo-rpg-dice-roll-cast)
+    ("q" "Go back"     transient-quit-one)]])
 
 ;;; Oracle dashboards
 
@@ -302,7 +322,7 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
 (transient-define-prefix solo-rpg-menu-oracle ()
   "The solo-rpg Oracle menu."
   ["Actions"
-   ("a" "Action/Theme Oracle"   solo-rpg-oracle-action-theme-insert)
+   ("a" "Action/Theme Oracle"   solo-rpg-oracle-action-theme)
    ("u" "Quantity Oracle"       solo-rpg-oracle-quantity)
    ("q" "Go back"               transient-quit-one)]
   ["Yes/No Oracle"
