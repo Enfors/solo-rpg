@@ -6,7 +6,7 @@
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: games, convenience, wp
-;; URL: https://github.com/enfors/lonelog
+;; URL: https://github.com/enfors/solo-rpg
 
 ;; This file is not part of GNU Emacs.
 
