@@ -30,10 +30,23 @@
 
 ;; Features include:
 ;; - Dice rolling
+;; - Oracles:
+;;   - Yes/No Oracle with probabilities
+;;   - Action/Theme Oracle, inspired by the Mything Game Master Emulator
 ;;
 ;; To use this package, add the following to your configuration:
 ;;
 ;;   (require 'solo-rpg)
+;;   (with-eval-after-load 'solo-rpg
+;;     ;; Note - you can replace "C-c r" with another key if you prefer
+;;     (define-key solo-rpg-mode-map (kbd "C-c r") 'solo-rpg-menu)
+;;
+;; To start solo-rpg-mode, type:
+;;
+;;   M-x solo-rpg-mode
+;;
+;; Once solo-rpg-mode is started, you can invoke the dashboard menu by
+;; typing the shortcut key you chose above ("C-c r" by default).
 ;;
 ;; Customization:
 
@@ -198,22 +211,27 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
 
 (require 'transient)
 
-;; Define the Oracle dashboard
+;; Define the Oracle dashboard menu
 
-(transient-define-prefix solo-rpg-dashboard-oracle ()
-  "The solo-rpg Oracle dashboard."
+(transient-define-prefix solo-rpg-menu-oracle ()
+  "The solo-rpg Oracle menu."
   ["Actions"
    ("a" "Action/Theme Oracle"   solo-rpg-oracle-action-theme-insert)
    ("q" "Go back"               transient-quit-one)])
 
-;; Define the main dashboard
-(transient-define-prefix solo-rpg-dashboard ()
-  "The main solo-rpg dashboard."
+;; Define the main dashboard menu
+(transient-define-prefix solo-rpg-menu ()
+  "The main solo-rpg menu."
   ["Actions"
-   ("o" "Oracles"  solo-rpg-dashboard-oracle)
+   ("o" "Oracles"  solo-rpg-menu-oracle)
    ("q" "Quit"     transient-quit-one)])
 
 ;;; Minor mode:
+
+;;;###autoload
+(defvar solo-rpg-mode-map (make-sparse-keymap)
+  "Keymap for `solo-rpg-mode'.
+By default, this is empty to allow users to define their own menu key.")
 
 ;;;###autoload
 (define-minor-mode solo-rpg-mode
@@ -224,14 +242,7 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
   :global nil
   :group 'solo-rpg
   :lighter " SoloRPG"
-  :keymap
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-d i") 'solo-rpg-dice-roll-insert)
-    (define-key map (kbd "C-c C-d m") 'solo-rpg-dice-roll-message)
-    (define-key map (kbd "C-c C-o i") 'solo-rpg-oracle-action-theme-insert)
-    (define-key map (kbd "C-c C-o m") 'solo-rpg-oracle-action-theme-message)
-    (define-key map (kbd "C-c C-r")   'solo-rpg-dashboard)
-    map)
+  :keymap solo-rpg-mode-map
 
   (if solo-rpg-mode
       ;; If ON:
