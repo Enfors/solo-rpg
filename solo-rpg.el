@@ -213,6 +213,14 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
 
 ;; Define the Oracle dashboard menu
 
+(transient-define-prefix solo-rpg-menu-dice ()
+  "The solo-rpg Dice menu."
+  ["Solo-PRG dashboard: Dice Menu"
+   ["Actions"
+    ("i" "Insert dice roll"   solo-rpg-dice-roll-insert)
+    ("m" "Message dice roll"  solo-rpg-dice-roll-message)
+    ("q" "Go back"            transient-quit-one)]])
+
 (transient-define-prefix solo-rpg-menu-oracle ()
   "The solo-rpg Oracle menu."
   ["Actions"
@@ -222,9 +230,13 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table`."
 ;; Define the main dashboard menu
 (transient-define-prefix solo-rpg-menu ()
   "The main solo-rpg menu."
-  ["Actions"
-   ("o" "Oracles"  solo-rpg-menu-oracle)
-   ("q" "Quit"     transient-quit-one)])
+  ["Solo-RPG dashboard: Main Menu\n"
+   ["Actions"
+    ("q" "Quit"          transient-quit-one)]
+   ["Dice"
+    ("d" "Dice menu"     solo-rpg-menu-dice)]
+   ["Oracles"
+    ("o" "Oracles menu"  solo-rpg-menu-oracle)]])
 
 ;;; Minor mode:
 
