@@ -131,7 +131,6 @@ Values are upper threshold for each entry.\")"
 
 (defun solo-rpg-dice-string-parse (dice-string)
   "ask for DICE-STRING and parse it, returning a solo-rpg-dice-roll struct."
-  (interactive "sEnter dice string (for example 2d6+2): ")
   (unless (string-match "^\\([0-9]+\\)*d\\([0-9]+\\)*\\([+-][0-9]+\\)?"
                         dice-string)
     (user-error "Invalid dice format '%s'. Try '2d6' or '1d20+5'."
@@ -194,12 +193,12 @@ Returns the updated struct."
             mod-string
             (solo-rpg-dice-roll-total roll-struct))))
 
-(defun solo-rpg-dice-roll-cast (dice-string)
+(defun solo-rpg-dice-roll-cast (dice-string &optional invert)
   "Take DICE-STRING, parse it, make the roll, and output the result."
-  (interactive "sEnter dice string (for example 2d6+2): ")
+  (interactive "sEnter dice string (for example 2d6+2): \nP")
   (solo-rpg--output 
    (solo-rpg-dice-roll-string (solo-rpg-dice-roll-calculate (solo-rpg-dice-string-parse
-                                                             dice-string)))))
+                                                             dice-string))) invert))
 
 ;; (defun solo-rpg-dice-roll-message (dice-string)
 ;;   "Ask for DICE-STRING, roll the dice, display result in message window."
@@ -213,12 +212,13 @@ Returns the updated struct."
 
 ;;; Action / Theme oracle:
 
-(defun solo-rpg-oracle-action-theme ()
+(defun solo-rpg-oracle-action-theme (&optional invert)
   "Output '(action) / (theme)' where action and theme are random."
-  (interactive)
+  (interactive "P")
   (solo-rpg--output (format "%s / %s"
                             (solo-rpg-table-get-random solo-rpg-oracle-actions)
-                            (solo-rpg-table-get-random solo-rpg-oracle-themes))))
+                            (solo-rpg-table-get-random solo-rpg-oracle-themes))
+                    invert))
 
 ;;; Yes / No oracle:
 
@@ -250,25 +250,25 @@ Returns the updated struct."
             roll
             result-text)))
 
-(defun solo-rpg-oracle-yes-no (odds)
+(defun solo-rpg-oracle-yes-no (odds &optional invert)
   "Query the Yes/No oracle. 
 ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table'."
   (interactive
    (list (completing-read "Probability (Default 50/50): "
                           solo-rpg-oracle-yes-no-table
                           nil t nil nil 
-                          "50/50"))) ;; <--- The default value if you hit RET
+                          "50/50")
+         current-prefix-arg))
   
   (let ((result (solo-rpg-oracle-yes-no-string odds)))
-    (message "%s" result)
-    (solo-rpg--output result)))
+    (solo-rpg--output result invert)))
 
 ;;; Quantity oracle:
 
-(defun solo-rpg-oracle-quantity ()
+(defun solo-rpg-oracle-quantity (&optional invert)
   "Query the Quantity oracle, displaying the result."
-  (interactive)
-  (solo-rpg--output (solo-rpg--table-weighted-get-random solo-rpg-oracle-quantity-table 20)))
+  (interactive "P")
+  (solo-rpg--output (solo-rpg--table-weighted-get-random solo-rpg-oracle-quantity-table 20) invert))
 
 ;;; Transient dashboard
 
@@ -287,34 +287,46 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table'."
   "The solo-rpg menu for the Yes/No Oracle with better than 50/50 probability."
   ["Probability"
    ("6" "Almost certainly"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "+6 Almost certainly")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+6 Almost certainly" invert)))
    ("5" "Highly likely"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "+5 Highly likely")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+5 Highly likely" invert)))
    ("4" "Very likely"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "+4 Very likely")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+4 Very likely" invert)))
    ("3" "Likely"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "+3 Likely")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+3 Likely" invert)))
    ("2" "Probably"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "+2 Probably")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+2 Probably" invert)))
    ("1" "Somewhat likely"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "+1 Somewhat likely")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "+1 Somewhat likely" invert)))
    ("q" "Go back" transient-quit-one)])
 
 (transient-define-prefix solo-rpg-menu-oracle-yes-no-unprobable ()
   "The solo-rpg menu for the Yes/No Oracle with worse than 50/50 probability."
   ["Probability"
    ("1" "Somewhat unlikely"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "-1 Somewhat unlikely")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-1 Somewhat unlikely" invert)))
    ("2" "Probably not"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "-2 Probably not")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-2 Probably not" invert)))
    ("3" "Unlikely"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "-3 Unlikely")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-3 Unlikely" invert)))
    ("4" "Very unlikely"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "-4 Very unlikely")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-4 Very unlikely" invert)))
    ("5" "Highly unlikely"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "-5 Highly unlikely")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-5 Highly unlikely" invert)))
    ("6" "Almost certainly not"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "-6 Almost certainly not")))
+    (lambda (&optional invert) (interactive "P")
+      (solo-rpg-oracle-yes-no "-6 Almost certainly not" invert)))
    ("q" "Go back" transient-quit-one)])
 
 ;; Define the Oracle dashboard menu
@@ -328,7 +340,8 @@ ODDS is the probability string selected from `solo-rpg-oracle-yes-no-table'."
   ["Yes/No Oracle"
    ("+" "Better than 50/50 probability" solo-rpg-menu-oracle-yes-no-probable)
    ("0" "50/50 probability"
-    (lambda () (interactive) (solo-rpg-oracle-yes-no "50/50")))
+    (lambda (&optional invert) (interactive)
+      (solo-rpg-oracle-yes-no "50/50" invert)))
    ("-" "Worse than 50/50 probability"   solo-rpg-menu-oracle-yes-no-unprobable)])
    
 ;; Define the main dashboard menu
