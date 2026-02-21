@@ -54,6 +54,7 @@
 ;;      - If set to 'message, output will be sent to message buffer only.
 ;;      - If set to 'insert, output will also be inserted in current buffer.
 
+
 ;;; Code:
 
 (require 'cl-lib)  ;; For structs
@@ -68,6 +69,7 @@ Can be `insert' to put text in current buffer, or `message' to only echo it."
                  (const :tag "Only show in message area" message))
   :group 'solo-rpg)
 
+
 ;;; Tables:
 
 (defconst solo-rpg-oracle-actions
@@ -363,11 +365,13 @@ Values are upper threshold for each entry.")
    "Mysterious circumstances"]
   "Obstacle data table for the Plot generator.")
 
+
 ;;; Other variables:
 
 (defvar solo-rpg--last-dice-string "2d6"
   "The last dice string rolled by the user. Used in the default prompt.")
 
+
 ;;; Utility functions:
 
 (defun solo-rpg--output (text &optional invert-behavior)
@@ -397,6 +401,7 @@ Then, ARGS is printed."
   ;; Pass all arguments directly to the standard insert function.
   (apply #'insert args))
 
+
 ;;; Table functions:
 
 (defun solo-rpg-table-get-random (table)
@@ -412,6 +417,7 @@ Then, ARGS is printed."
              if (<= roll threshold)
              return (format "[%d] -> %s " roll label))))
 
+
 ;;; Dashboard functions:
 
 (defun solo-rpg-output-method-toggle ()
@@ -527,6 +533,7 @@ If INVERT is non-nil, then output mode is inverted."
 ;;   (interactive "sEnter dice string (for example '2d6+2'): ")
 ;;   (insert (solo-rpg-dice-roll-cast dice-string)))
 
+
 ;;; Action / Theme oracle:
 
 (defun solo-rpg-oracle-action-theme (&optional invert)
@@ -582,6 +589,7 @@ If INVERT is non-nil, then output is inverted."
   (let ((result (solo-rpg-oracle-yes-no-string odds)))
     (solo-rpg--output result invert)))
 
+
 ;;; Quantity oracle:
 
 (defun solo-rpg-oracle-quantity (&optional invert)
@@ -590,6 +598,7 @@ If INVERT is non-nil, then output is inverted."
   (interactive "P")
   (solo-rpg--output (solo-rpg--table-weighted-get-random solo-rpg-oracle-quantity-table 20) invert))
 
+
 ;;; Generators:
 
 ;;; Plot generator:
@@ -605,6 +614,7 @@ If INVERT is non-nil, the output method is inverted."
            (solo-rpg-table-get-random solo-rpg-generator-plot-obstacle-table))
    invert))
 
+
 ;;; Transient dashboard
 
 (transient-define-prefix solo-rpg-menu-dice ()
@@ -700,6 +710,7 @@ If INVERT is non-nil, the output method is inverted."
      :transient t)
     ("q" "Quit"          transient-quit-one)]])
 
+
 ;;; Minor mode:
 
 ;;;###autoload
@@ -722,8 +733,6 @@ By default, this is empty to allow users to define their own menu key.")
       ;; If ON:
       (message "Solo-RPG-mode enabled.")
     (message "Solo-RPG-mode disabled.")))
-
-
 
 (provide 'solo-rpg)
 
