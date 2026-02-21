@@ -408,7 +408,7 @@ Then, ARGS is printed."
   (apply #'insert args))
 
 
-;;; Stating functions:
+;;; Staging functions:
 
 (defun solo-rpg--staging-update (text)
   "Wipe the staging buffer, insert TEXT, and show it at the bottom."
