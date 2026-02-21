@@ -371,6 +371,12 @@ Values are upper threshold for each entry.")
 (defvar solo-rpg--last-dice-string "2d6"
   "The last dice string rolled by the user. Used in the default prompt.")
 
+(defvar solo-rpg--return-buffer nil
+  "Remembers which buffer to insert the final text into.")
+
+(defvar solo-rpg--staging-buffer-name "*solo-rpg-staging*"
+  "The name of our temporary staging area buffer.")
+
 
 ;;; Utility functions:
 
@@ -400,6 +406,66 @@ Then, ARGS is printed."
     (insert " "))
   ;; Pass all arguments directly to the standard insert function.
   (apply #'insert args))
+
+
+;;; Stating functions:
+
+(defun solo-rpg--staging-update (text)
+  "Wipe the staging buffer, insert TEXT, and show it at the bottom."
+  (with-current-buffer (get-buffer-create solo-rpg--staging-buffer-name)
+    (erase-buffer)
+    (insert text)
+    ;; Show it at bottom, taking up ~20% of the height
+    (display-buffer (current-buffer)
+                    '(display-buffer-at-bottom . ((window-height . 0.2))))))
+
+;; Temporary function for testing generation
+(defun solo-rpg-staging-regenerate ()
+  "Generate a new random number and update the staging area."
+  (interactive)
+  (let ((num (+ 1 (random 10))))
+    (solo-rpg--staging-update (format "Generated number: %d" num))))
+
+(defun solo-rpg-staging-keep ()
+  "Grab the text, insert it into the original buffer, and clean up."
+  (interactive)
+  (let ((final-text (with-current-buffer solo-rpg--staging-buffer-name
+                      (buffer-string))))
+    ;; Clean up the staging window and kill the temporary buffer
+    (let ((win (get-buffer-window solo-rpg--staging-buffer-name)))
+      (when win (delete-window win)))
+    (kill-buffer solo-rpg--staging-buffer-name)
+
+    ;; Go back to original buffer and insert it
+    (when (buffer-live-p solo-rpg--return-buffer)
+      (with-current-buffer solo-rpg--return-buffer
+        (solo-rpg--output final-text)))))
+
+(defun solo-rpg-staging-abort ()
+  "Close the staging area without doing anything."
+  (interactive)
+  (let ((win (get-buffer-window solo-rpg--staging-buffer-name)))
+    (when win (delete-window win)))
+  (kill-buffer solo-rpg--staging-buffer-name))
+
+;; Temporary staging menu
+(transient-define-prefix solo-rpg-menu-staging ()
+  ["Staging Area Options"
+   ;; Note the :transient t here! This keeps the menu open after pressing 'r'
+   ("r" "Regenerate"    solo-rpg-staging-regenerate :transient t)
+   ("k" "Keep (insert)" solo-rpg-staging-keep)
+   ("q" "Abort"         solo-rpg-staging-abort)])
+
+;; The entry point
+(defun solo-rpg-staging-hello-world ()
+  "Launch the staging area test."
+  (interactive)
+  ;; Step 1: Remember where we area
+  (setq solo-rpg--return-buffer (current-buffer))
+  ;; Step 2: Genereate the very first iteration
+  (solo-rpg-staging-regenerate)
+  ;; Step 3: Summon the transient menu to wait for the user
+  (solo-rpg-menu-staging))
 
 
 ;;; Table functions:
