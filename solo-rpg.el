@@ -377,6 +377,9 @@ Values are upper threshold for each entry.")
 (defvar solo-rpg--staging-buffer-name "*solo-rpg-staging*"
   "The name of our temporary staging area buffer.")
 
+(defvar solo-rpg--generate-fun nil
+  "The callback function which returns generated text for staging.")
+
 
 ;;; Utility functions:
 
@@ -410,6 +413,21 @@ Then, ARGS is printed."
 
 ;;; Staging functions:
 
+(defun solo-rpg--stage (generate-fun)
+  "The main API to stage generated content.
+GENERATE-FUN is a function pointer to function which returns generated text."
+  ;; Save the current buffer.
+  (setq solo-rpg--return-buffer (current-buffer))
+
+  ;; Save the function pointer
+  (setq solo-rpg--generate-fun generate-fun)
+
+  ;; Generate content
+  (solo-rpg-staging-regenerate)
+  
+  ;; Go to the menu
+  (solo-rpg-menu-staging))
+
 (defun solo-rpg--staging-update (text)
   "Wipe the staging buffer, insert TEXT, and show it at the bottom."
   (with-current-buffer (get-buffer-create solo-rpg--staging-buffer-name)
@@ -421,10 +439,9 @@ Then, ARGS is printed."
 
 ;; Temporary function for testing generation
 (defun solo-rpg-staging-regenerate ()
-  "Generate a new random number and update the staging area."
+  "Call the `solo-rpg--generate-fun' to generate text, send it to staging."
   (interactive)
-  (let ((num (+ 1 (random 10))))
-    (solo-rpg--staging-update (format "Generated number: %d" num))))
+  (solo-rpg--staging-update (funcall solo-rpg--generate-fun)))
 
 (defun solo-rpg-staging-keep ()
   "Grab the text, insert it into the original buffer, and clean up."
@@ -448,7 +465,7 @@ Then, ARGS is printed."
     (when win (delete-window win)))
   (kill-buffer solo-rpg--staging-buffer-name))
 
-;; Temporary staging menu
+;; Staging menu
 (transient-define-prefix solo-rpg-menu-staging ()
   ["Staging Area Options"
    ;; Note the :transient t here! This keeps the menu open after pressing 'r'
@@ -457,15 +474,15 @@ Then, ARGS is printed."
    ("q" "Abort"         solo-rpg-staging-abort)])
 
 ;; The entry point
-(defun solo-rpg-staging-hello-world ()
-  "Launch the staging area test."
-  (interactive)
-  ;; Step 1: Remember where we area
-  (setq solo-rpg--return-buffer (current-buffer))
-  ;; Step 2: Genereate the very first iteration
-  (solo-rpg-staging-regenerate)
-  ;; Step 3: Summon the transient menu to wait for the user
-  (solo-rpg-menu-staging))
+;; (defun solo-rpg-staging-hello-world ()
+;;   "Launch the staging area test."
+;;   (interactive)
+;;   ;; Step 1: Remember where we area
+;;   (setq solo-rpg--return-buffer (current-buffer))
+;;   ;; Step 2: Genereate the very first iteration
+;;   (solo-rpg-staging-regenerate)
+;;   ;; Step 3: Summon the transient menu to wait for the user
+;;   (solo-rpg-menu-staging))
 
 
 ;;; Table functions:
@@ -669,16 +686,17 @@ If INVERT is non-nil, then output is inverted."
 
 ;;; Plot generator:
 
-(defun solo-rpg-generator-plot (&optional invert)
-  "Generate and output a plot.
-If INVERT is non-nil, the output method is inverted."
-  (interactive "P")
-  (solo-rpg--output
-   (format "%s %s, but %s"
+(defun solo-rpg-generator-plot ()
+  "Generate a plot and open it in the staging area."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg--generator-plot-text))
+
+(defun solo-rpg--generator-plot-text ()
+  "Generate and return a plot text."
+  (format "%s %s, but %s"
            (solo-rpg-table-get-random solo-rpg-generator-plot-goal-table)
            (solo-rpg-table-get-random solo-rpg-generator-plot-focus-table)
-           (solo-rpg-table-get-random solo-rpg-generator-plot-obstacle-table))
-   invert))
+           (solo-rpg-table-get-random solo-rpg-generator-plot-obstacle-table)))
 
 
 ;;; Transient dashboard
