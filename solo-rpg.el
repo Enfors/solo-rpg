@@ -314,7 +314,7 @@ Value is upper thresholds for NoAnd, No, NoBut, YesBut, Yes.")
   "Data table for the Quantity oracle.
 Values are upper threshold for each entry.")
 
-;;; Generator tables:
+;;; Generator tables ======================================================
 
 (defconst solo-rpg-generator-plot-goal-table
   ["Acquire"
@@ -364,6 +364,101 @@ Values are upper threshold for each entry.")
    "Honor"
    "Mysterious circumstances"]
   "Obstacle data table for the Plot generator.")
+
+;;; NPC Generator tables:
+
+;;; Appearance:
+
+(defconst solo-rpg-table-npc-height
+  '(("Very short"     .  1)
+    ("Short"          .  3)
+    ("Somewhat short" .  7)
+    ("Average"        . 13)
+    ("Somewhat tall"  . 17)
+    ("Tall"           . 19)
+    ("Very tall"      . 20))
+  "Height data table for the NPC Appearance generator.")
+
+(defconst solo-rpg-table-npc-size
+  '(("Very small"     .  1)
+    ("Small"          .  3)
+    ("Somewhat small" .  7)
+    ("Average"        . 13)
+    ("Somewhat large" . 17)
+    ("Large"          . 19)
+    ("Very large"     . 20))
+  "Size data table for the NPC Appearance generator.")
+
+(defconst solo-rpg-table-npc-eye-color
+  '(("Light blue" .  2)
+    ("Blue"       .  4)
+    ("Grey"       .  5)
+    ("Brown"      .  7)
+    ("Dark brown" .  9)
+    ("Green"      . 10))
+  "Eye color data table for the NPC Appearance generator.")
+
+(defconst solo-rpg-table-npc-skin-color
+  '(("Western" . 5)
+    ("African" . 7)
+    ("Asian"   . 8))
+  "Skin color data table for the NPC Appearance generator.")
+
+(defconst solo-rpg-table-npc-hair-color
+  '(("Blonde" .  2)
+    ("Brown"  .  5)
+    ("Auburn" .  7)
+    ("Red"    .  8)
+    ("Dark"   . 10))
+  "Hair color data table for the NPC Appearance generator.")
+
+(defconst solo-rpg-table-npc-hair-length
+  '(("Short"           . 2)
+    ("Shoulder length" . 3)
+    ("Long"            . 5)
+    ("Very long"       . 6))
+  "Hair length data table for the NPC Appearance generator.")
+
+(defconst solo-rpg-table-npc-long-hair-style
+  '(("Loose"              .  2)
+    ("Pony tail"          .  4)
+    ("Bun"                .  5)
+    ("Braided"            .  7)
+    ("Half-up, half-down" .  9)
+    ("Dreadlocks"         . 10))
+  "Long hair style data table for the NPC Appearance generator.")
+
+(defconst solo-rpg-table-npc-facial-hair
+  '(("None"         .  5)
+    ("Beard"        .  7)
+    ("Mustache"     .  8)
+    ("Sideburns"    . 10)
+    ("Mutton chops" . 11)
+    ("Goatee"       . 12))
+  "Facial hair data table for the NPC Appearance generator.")
+
+(defconst solo-rpg-table-npc-special-features
+  '["Facial scar"
+    "Facial birth mark"
+    "Piercings"
+    "Tattoos"
+    "Prominent nose"
+    "Distinctive eyebrows"
+    "Freckles"
+    "Thin lips"
+    "Full lips"
+    "High cheekbones"
+    "Round face"
+    "Piercing gaze"
+    "Wide nose"
+    "Protruding ears"
+    "Cleft chin"
+    "Deep dimples"
+    "Pockmarked skin"
+    "Square jaw"
+    "Missing tooth"
+    "Broken/misshaped nose"]
+  "Special features data table for the NPC Appearance generator.")
 
 
 ;;; Other variables:
@@ -498,7 +593,8 @@ GENERATE-FUN is a function pointer to function which returns generated text."
              for label = (car cell)
              for threshold = (cdr cell)
              if (<= roll threshold)
-             return (format "[%d] -> %s " roll label))))
+             ;;             return (format "[%d] -> %s " roll label))))
+             return label)))
 
 
 ;;; Dashboard functions:
@@ -686,17 +782,43 @@ If INVERT is non-nil, then output is inverted."
 
 ;;; Plot generator:
 
-(defun solo-rpg-generator-plot ()
-  "Generate a plot and open it in the staging area."
-  (interactive)
-  (solo-rpg--stage #'solo-rpg--generator-plot-text))
-
 (defun solo-rpg--generator-plot-text ()
   "Generate and return a plot text."
   (format "%s %s, but %s"
            (solo-rpg-table-get-random solo-rpg-generator-plot-goal-table)
            (solo-rpg-table-get-random solo-rpg-generator-plot-focus-table)
            (solo-rpg-table-get-random solo-rpg-generator-plot-obstacle-table)))
+
+(defun solo-rpg-generator-plot ()
+  "Generate a plot and open it in the staging area."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg--generator-plot-text))
+
+;;; NPC Appearance generator:
+
+(defun solo-rpg--generator-npc-appearance-text ()
+  "Generate and return NPC Appearance text."
+  (format (concat "Height          : %s\n"
+                  "Size            : %s\n"
+                  "Eye color       : %s\n"
+                  "Skin color      : %s\n"
+                  "Hair            : %s\n"
+                  "Facial hair     : %s\n"
+                  "Special features: %s\n"
+                  )
+          (solo-rpg--table-weighted-get-random solo-rpg-table-npc-height 20)
+          (solo-rpg--table-weighted-get-random solo-rpg-table-npc-size   20)
+          (solo-rpg--table-weighted-get-random solo-rpg-table-npc-eye-color 10)
+          (solo-rpg--table-weighted-get-random solo-rpg-table-npc-skin-color 8)
+          (solo-rpg--table-weighted-get-random solo-rpg-table-npc-hair-color 10)
+          (solo-rpg--table-weighted-get-random
+           solo-rpg-table-npc-facial-hair 12)
+          (solo-rpg-table-get-random solo-rpg-table-npc-special-features)))
+
+(defun solo-rpg-generator-npc-appearance ()
+  "Generate NPC appearance and open it in the staging area."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg--generator-npc-appearance-text))
 
 
 ;;; Transient dashboard
@@ -778,7 +900,9 @@ If INVERT is non-nil, then output is inverted."
   ["SoloRPG dashboard: Generator Menu\n"
    ["Actions"
     ("p" "Plot generator"        solo-rpg-generator-plot)
-    ("q" "Go back"               transient-quit-one)]])
+    ("q" "Go back"               transient-quit-one)]
+   ["NPCs"
+    ("a" "NPC appearance"        solo-rpg-generator-npc-appearance)]])
 
 ;; Define the main dashboard menu
 (transient-define-prefix solo-rpg-menu ()
