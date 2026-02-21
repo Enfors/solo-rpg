@@ -1,0 +1,74 @@
+#+TITLE: solo-rpg.el
+#+AUTHOR: Christer Enfors
+#+DESCRIPTION: A comprehensive toolkit for playing solo roleplaying games in Emacs.
+#+LANGUAGE: en
+
+* solo-rpg.el
+
+A set of support functions and Transient-based dashboards for playing solo roleplaying games directly inside Emacs. It provides dice rolling, multiple oracles, and generators, allowing you to generate campaign events without ever leaving your editor.
+
+** Features
+- *Dice Roller:* Parse and roll standard RPG dice strings (e.g., =2d6+2=, =1d20-1=).
+- *Oracles:*
+  - *Yes/No Oracle:* Probability-weighted answers (e.g., "Highly Likely", "50/50") with critical event triggers.
+  - *Action/Theme Oracle:* Abstract prompt generator inspired by the Mythic Game Master Emulator.
+  - *Quantity Oracle:* Quickly determine how much or how many of something exists.
+- *Generators:* Instantly generate standard RPG elements:
+  - Plots and Quest Hooks
+  - NPC Appearances
+  - Dungeon Rooms (4AD style)
+- *Sleek UI:* Fully driven by Emacs =transient= menus for a modern, discoverable interface.
+- *Flexible Output:* Route generated text directly into your active buffer, or restrict it to the echo area to keep your notes clean.
+
+** Installation
+
+*** MELPA (Coming Soon)
+Once the package is available on MELPA, you can install it easily using =use-package=:
+
+#+begin_src elisp
+(use-package solo-rpg
+  :ensure t
+  :bind (("C-c r" . solo-rpg-menu))
+  :hook (text-mode . solo-rpg-mode))
+#+end_src
+
+*** Manual Installation
+1. Clone this repository or download =solo-rpg.el=.
+2. Place it somewhere in your Emacs =load-path=.
+3. Add the following to your =init.el=:
+
+#+begin_src elisp
+(add-to-list 'load-path "/path/to/solo-rpg")
+(require 'solo-rpg)
+(define-key global-map (kbd "C-c r") 'solo-rpg-menu)
+#+end_src
+
+** Usage
+To start playing, simply activate the minor mode in your campaign notes buffer:
+
+=M-x solo-rpg-mode=
+
+Then, trigger the main dashboard using your configured hotkey (e.g., =C-c r=) or by typing =M-x solo-rpg-menu=. The Transient menu will guide you through all available tools.
+
+** Configuration
+You can customize the behavior of =solo-rpg= using standard Emacs customization:
+
+=M-x customize-group RET solo-rpg RET=
+
+*Key Variables:*
+- =solo-rpg-output-method=: Set to ='insert= (default) to print results directly into your buffer, or ='message= to only show them in the minibuffer. This can also be toggled on the fly from the main Transient menu.
+
+** License
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+---
+
+* Development & Architecture Notes
+
+/This section is for development planning and notes. It can be removed before the 1.0 release./
+
+** Plan: The Staging Area API
+/Write out your architecture plan for the generic Staging Area API here!/
+- State variables needed:
+- Buffer juggling flow:
+- Transient menu structure:
