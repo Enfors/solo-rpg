@@ -68,7 +68,104 @@ This program is free software; you can redistribute it and/or modify it under th
 /This section is for development planning and notes. It can be removed before the 1.0 release./
 
 ** Plan: The Staging Area API
-/Write out your architecture plan for the generic Staging Area API here!/
-- State variables needed:
-- Buffer juggling flow:
-- Transient menu structure:
+
+*** How the current system works
+
+**** Existing variables
+
+#+begin_src elisp
+(defvar solo-rpg--return-buffer nil
+  "Remembers which buffer to insert the final text into.")
+
+(defvar solo-rpg--staging-buffer-name "*solo-rpg-staging*"
+  "The name of our temporary staging area buffer.")
+#+end_src
+
+**** Existing functions and what they do
+
+1. =solo-rpg--staging-update= empties the staging buffer, displays new text it received as an argument, makes sure the window is visible
+2. =solo-rpg-staging-regenerate= is a Hello World function for staging
+3. =solo-rpg-staging-keep= copies text from staging it
+4. =solo-rpg-staging-abort= aborts the staging, closing menu and staging
+5. =solo-rpg-menu-staging= is the staging menu
+6. =solo-rpg-staging-hello-world= initializes the process:
+   - Generates the first result
+   - Goes to =solo-rpg-menu-staging=
+  
+**** Current hello-world flow
+
+- =solo-rpg-staging-hello-world= starts the process:
+  - =solo-rpg-staging-regenerate= creates the first text:
+    - =solo-rpg--staging-update= generates text 
+  - =solo-rpg-menu-staging= is called to start the menu
+- =solo-rpg-menu-staging= offers three options:
+  1) =solo-rpg-staging-regenerate=
+     - =solo-rpg--staging-update=
+  2) =solo-rpg-staging-keep=
+     - =solo-rpg--output=
+  3) =solo-rpg-staging-abort=
+
+**** Entry point
+
+- =solo-rpg-staging-hello-world=
+
+**** Functions used in the process
+
+- =solo-rpg-staging-regenerate=
+- =solo-rpg--staging-update=
+- =solo-rpg-menu-staging=
+
+**** Exit points
+
+- =solo-rpg-staging-keep=
+- =solo-rpg-staging-abort=
+
+*** How the new system will work
+
+**** The API
+
+To add new generate/stage functionality, the dev has to do thre things:
+
+1. Create a =generate= function which generates the desired output
+2. Create an interactive function, called the generate command function, which will be called from a transient menu option. This function must:
+   1. Call =solo-rpg--stage=, passing it the pointer of the =generate= function. 
+3. Add a menu option somewhere which calls the generate command function.
+
+**** What happens when the user calls the API (from the menu)
+
+1. =solo-rpg--stage= is called:
+   1. Saves the return buffer in =solo-rpg--return-buffer=
+   2. Saves the =generate= function pointer in =solo-rpg--generate-fun=
+   3. =solo-rpg-staging-regenerate= is called:
+      1. The =generate= function is called to get =text=
+      2. =text= is passed so =solo-rpg--staging-update=:
+         1. Staging buffer is updated
+   4. =solo-rpg-menu-staging= is called to enter the menu
+
+*** Needed changes
+
+1. Get rid of:
+   - =solo-rpg-staging-hello-world=
+2. Write =solo-rpg--stage= to do the following:
+   1. Save the return buffer
+   2. Save the function pointer in =solo-rpg--generate-fun=
+   3. Call =solo-rpg-staging-regenerate=
+   4. Call =solo-rpg-menu-staging= to display the menu
+3. Chage =solo-rpg-staging-regenerate= to call =solo-rpg--generate-fun= rather than a hard-coded function
+4. Add documentation about how to add new generators
+
+#+begin_src elisp
+(defun solo-rpg--stage (generate-fun)
+  "The main API to stage generated content."
+  ;; 1. Save the return buffer
+  (setq solo-rpg--return-buffer (current-buffer))
+  
+  ;; 2. Save the function pointer
+  (setq solo-rpg--generate-fun generate-fun)
+  
+  ;; 3. Do the very first generation and paint it to the screen
+  (solo-rpg-staging-regenerate)
+  
+  ;; 4. Pop open the menu
+  (solo-rpg-menu-staging))
+#+end_src
