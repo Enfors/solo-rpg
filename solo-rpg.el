@@ -370,94 +370,94 @@ Values are upper threshold for each entry.")
 ;;; Appearance:
 
 (defconst solo-rpg-table-npc-height
-  '(("Very short"     .  1)
-    ("Short"          .  3)
-    ("Somewhat short" .  7)
-    ("Average"        . 13)
-    ("Somewhat tall"  . 17)
-    ("Tall"           . 19)
-    ("Very tall"      . 20))
+  '(("very short"     .  1)
+    ("short"          .  3)
+    ("somewhat short" .  7)
+    ("average"        . 13)
+    ("somewhat tall"  . 17)
+    ("tall"           . 19)
+    ("very tall"      . 20))
   "Height data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-size
-  '(("Very small"     .  1)
-    ("Small"          .  3)
-    ("Somewhat small" .  7)
-    ("Average"        . 13)
-    ("Somewhat large" . 17)
-    ("Large"          . 19)
-    ("Very large"     . 20))
+  '(("very small"     .  1)
+    ("small"          .  3)
+    ("somewhat small" .  7)
+    ("average"        . 13)
+    ("somewhat large" . 17)
+    ("large"          . 19)
+    ("very large"     . 20))
   "Size data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-eye-color
-  '(("Light blue" .  2)
-    ("Blue"       .  4)
-    ("Grey"       .  5)
-    ("Brown"      .  7)
-    ("Dark brown" .  9)
-    ("Green"      . 10))
+  '(("light blue" .  2)
+    ("blue"       .  4)
+    ("grey"       .  5)
+    ("brown"      .  7)
+    ("dark brown" .  9)
+    ("green"      . 10))
   "Eye color data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-skin-color
-  '(("Western" . 5)
-    ("African" . 7)
-    ("Asian"   . 8))
+  '(("western" . 5)
+    ("african" . 7)
+    ("asian"   . 8))
   "Skin color data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-hair-color
-  '(("Blonde" .  2)
-    ("Brown"  .  5)
-    ("Auburn" .  7)
-    ("Red"    .  8)
-    ("Dark"   . 10))
+  '(("blonde" .  2)
+    ("brown"  .  5)
+    ("auburn" .  7)
+    ("red"    .  8)
+    ("dark"   . 10))
   "Hair color data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-hair-length
-  '(("Short"           . 2)
-    ("Shoulder length" . 3)
-    ("Long"            . 5)
-    ("Very long"       . 6))
+  '(("short"           . 2)
+    ("shoulder length" . 3)
+    ("long"            . 5)
+    ("very long"       . 6))
   "Hair length data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-long-hair-style
-  '(("Loose"              .  2)
-    ("Pony tail"          .  4)
-    ("Bun"                .  5)
-    ("Braided"            .  7)
-    ("Half-up, half-down" .  9)
-    ("Dreadlocks"         . 10))
+  '(("loose"              .  2)
+    ("pony tail"          .  4)
+    ("bun"                .  5)
+    ("braided"            .  7)
+    ("half-up, half-down" .  9)
+    ("dreadlocks"         . 10))
   "Long hair style data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-facial-hair
-  '(("None"         .  5)
-    ("Beard"        .  7)
-    ("Mustache"     .  8)
-    ("Sideburns"    . 10)
-    ("Mutton chops" . 11)
-    ("Goatee"       . 12))
+  '(("none"         .  5)
+    ("beard"        .  7)
+    ("mustache"     .  8)
+    ("sideburns"    . 10)
+    ("mutton chops" . 11)
+    ("goatee"       . 12))
   "Facial hair data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-special-features
-  '["Facial scar"
-    "Facial birth mark"
-    "Piercings"
-    "Tattoos"
-    "Prominent nose"
-    "Distinctive eyebrows"
-    "Freckles"
-    "Thin lips"
-    "Full lips"
-    "High cheekbones"
-    "Round face"
-    "Piercing gaze"
-    "Wide nose"
-    "Protruding ears"
-    "Cleft chin"
-    "Deep dimples"
-    "Pockmarked skin"
-    "Square jaw"
-    "Missing tooth"
-    "Broken/misshaped nose"]
+  '["facial scar"
+    "facial birth mark"
+    "piercings"
+    "tattoos"
+    "prominent nose"
+    "distinctive eyebrows"
+    "freckles"
+    "thin lips"
+    "full lips"
+    "high cheekbones"
+    "round face"
+    "piercing gaze"
+    "wide nose"
+    "protruding ears"
+    "cleft chin"
+    "deep dimples"
+    "pockmarked skin"
+    "square jaw"
+    "missing tooth"
+    "broken/misshaped nose"]
   "Special features data table for the NPC Appearance generator.")
 
 
@@ -798,22 +798,42 @@ If INVERT is non-nil, then output is inverted."
 
 (defun solo-rpg--generator-npc-appearance-text ()
   "Generate and return NPC Appearance text."
-  (format (concat "Height          : %s\n"
-                  "Size            : %s\n"
-                  "Eye color       : %s\n"
-                  "Skin color      : %s\n"
-                  "Hair            : %s\n"
-                  "Facial hair     : %s\n"
-                  "Special features: %s\n"
-                  )
-          (solo-rpg--table-weighted-get-random solo-rpg-table-npc-height 20)
-          (solo-rpg--table-weighted-get-random solo-rpg-table-npc-size   20)
-          (solo-rpg--table-weighted-get-random solo-rpg-table-npc-eye-color 10)
-          (solo-rpg--table-weighted-get-random solo-rpg-table-npc-skin-color 8)
-          (solo-rpg--table-weighted-get-random solo-rpg-table-npc-hair-color 10)
-          (solo-rpg--table-weighted-get-random
-           solo-rpg-table-npc-facial-hair 12)
-          (solo-rpg-table-get-random solo-rpg-table-npc-special-features)))
+  (let* ((height           (solo-rpg--table-weighted-get-random
+                            solo-rpg-table-npc-height      20))
+         (size             (solo-rpg--table-weighted-get-random
+                            solo-rpg-table-npc-size        20))
+         (eye-color        (solo-rpg--table-weighted-get-random
+                            solo-rpg-table-npc-eye-color   10))
+         (skin-color       (solo-rpg--table-weighted-get-random
+                            solo-rpg-table-npc-skin-color   8))
+         (hair-color       (solo-rpg--table-weighted-get-random
+                            solo-rpg-table-npc-hair-color  10))
+         (hair-length      (solo-rpg--table-weighted-get-random
+                            solo-rpg-table-npc-hair-length  6))
+         (long-hair-style  (solo-rpg--table-weighted-get-random
+                            solo-rpg-table-npc-long-hair-style 10))
+         (facial-hair      (solo-rpg--table-weighted-get-random
+                            solo-rpg-table-npc-facial-hair 12))
+         (special-features (solo-rpg-table-get-random
+                            solo-rpg-table-npc-special-features))
+         (hair  (format "%s, %s" hair-color hair-length)))
+    (unless (string= hair-length "short")
+      (setq hair (format "%s, %s" hair long-hair-style)))
+    (format (concat "Height          : %s\n"
+                    "Size            : %s\n"
+                    "Eye color       : %s\n"
+                    "Skin color      : %s\n"
+                    "Hair            : %s\n"
+                    "Facial hair     : %s\n"
+                    "Special features: %s\n"
+                    )
+            (capitalize height)
+            (capitalize size)
+            (capitalize eye-color)
+            (capitalize skin-color)
+            (capitalize hair)
+            (capitalize facial-hair)
+            (capitalize special-features))))
 
 (defun solo-rpg-generator-npc-appearance ()
   "Generate NPC appearance and open it in the staging area."
