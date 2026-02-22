@@ -304,15 +304,15 @@ Value is upper thresholds for NoAnd, No, NoBut, YesBut, Yes.")
 ;;; Quantity oracle table
 
 (defconst solo-rpg-oracle-quantity-table
-  '(("Minimum"     .  1)
-    ("Much less"   .  3)
-    ("Less"        .  7)
-    ("As expected" . 13)
-    ("More"        . 17)
-    ("Much more"   . 19)
-    ("Maximum"     . 20))
+  '((1  . "Minimum")
+    (3  . "Much less")
+    (7  . "Less")
+    (13 . "As expected")
+    (17 . "More")
+    (19 . "Much more")
+    (20 . "Maximum"))
   "Data table for the Quantity oracle.
-Values are upper threshold for each entry.")
+The `car` of each cell is the upper threshold for the `cdr` entry.")
 
 ;;; Generator tables ======================================================
 
@@ -370,71 +370,71 @@ Values are upper threshold for each entry.")
 ;;; Appearance:
 
 (defconst solo-rpg-table-npc-height
-  '(("very short"     .  1)
-    ("short"          .  3)
-    ("somewhat short" .  7)
-    ("average"        . 13)
-    ("somewhat tall"  . 17)
-    ("tall"           . 19)
-    ("very tall"      . 20))
+  '((1  . "very short")
+    (3  . "short")
+    (7  . "somewhat short")
+    (13 . "average")
+    (17 . "somewhat tall")
+    (19 . "tall")
+    (20 . "very tall"))
   "Height data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-size
-  '(("very small"     .  1)
-    ("small"          .  3)
-    ("somewhat small" .  7)
-    ("average"        . 13)
-    ("somewhat large" . 17)
-    ("large"          . 19)
-    ("very large"     . 20))
+  '((1  . (:desc "very small"     :mod -3))
+    (3  . (:desc "small"          :mod -2))
+    (7  . (:desc "somewhat small" :mod -1))
+    (13 . (:desc "average"        :mod 0))
+    (17 . (:desc "somewhat large" :mod +1))
+    (19 . (:desc "large"          :mod +2))
+    (20 . (:desc "very large"     :mod +3)))
   "Size data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-eye-color
-  '(("light blue" .  2)
-    ("blue"       .  4)
-    ("grey"       .  5)
-    ("brown"      .  7)
-    ("dark brown" .  9)
-    ("green"      . 10))
+  '((2  . "light blue")
+    (4  . "blue")
+    (5  . "grey")
+    (7  . "brown")
+    (9  . "dark brown")
+    (10 . "green"))
   "Eye color data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-skin-color
-  '(("western" . 5)
-    ("african" . 7)
-    ("asian"   . 8))
+  '((5 . "western")
+    (7 . "african")
+    (8 . "asian"))
   "Skin color data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-hair-color
-  '(("blonde" .  2)
-    ("brown"  .  5)
-    ("auburn" .  7)
-    ("red"    .  8)
-    ("dark"   . 10))
+  '((2  . "blonde")
+    (5  . "brown")
+    (7  . "auburn")
+    (8  . "red")
+    (10 . "dark"))
   "Hair color data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-hair-length
-  '(("short"           . 2)
-    ("shoulder length" . 3)
-    ("long"            . 5)
-    ("very long"       . 6))
+  '((2 . "short")
+    (3 . "shoulder length")
+    (5 . "long")
+    (6 . "very long"))
   "Hair length data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-long-hair-style
-  '(("loose"              .  2)
-    ("pony tail"          .  4)
-    ("bun"                .  5)
-    ("braided"            .  7)
-    ("half-up, half-down" .  9)
-    ("dreadlocks"         . 10))
+  '((2  . "loose")
+    (4  . "pony tail")
+    (5  . "bun")
+    (7  . "braided")
+    (9  . "half-up, half-down")
+    (10 . "dreadlocks"))
   "Long hair style data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-facial-hair
-  '(("none"         .  5)
-    ("beard"        .  7)
-    ("mustache"     .  8)
-    ("sideburns"    . 10)
-    ("mutton chops" . 11)
-    ("goatee"       . 12))
+  '((5  . "none")
+    (7  . "beard")
+    (8  . "mustache")
+    (10 . "sideburns")
+    (11 . "mutton chops")
+    (12 . "goatee"))
   "Facial hair data table for the NPC Appearance generator.")
 
 (defconst solo-rpg-table-npc-special-features
@@ -588,13 +588,12 @@ GENERATE-FUN is a function pointer to function which returns generated text."
 
 (defun solo-rpg--table-weighted-get-random (weighted-table)
   "Return random element from WEIGHTED-TABLE."
-  (let* ((max-value (cdar (last weighted-table)))
+  (let* ((max-value (caar (last weighted-table)))
          (roll (+ 1 (random max-value))))
     (cl-loop for cell in weighted-table
-             for label = (car cell)
-             for threshold = (cdr cell)
+             for threshold = (car cell)
+             for label     = (cdr cell)
              if (<= roll threshold)
-             ;;             return (format "[%d] -> %s " roll label))))
              return label)))
 
 
@@ -799,6 +798,25 @@ If INVERT is non-nil, then output is inverted."
 
 ;;; NPC Appearance generator:
 
+(defun solo-rpg--generator-npc-body (mod)
+  "Return random size affected by MOD."
+  (let ((part (+ (+ 1 (random 4))
+                 (+ 1 (random 4))
+                 mod)))
+    (cond ((< part 0) (setq part 1))
+          ((> part 9) (setq part 9)))
+    (message "part: %d" part)
+    (nth (- part 1)
+         '("extremely small"
+           "very small"
+           "small"
+           "somewhat small"
+           "average"
+           "somewhat large"
+           "large"
+           "very large"
+           "extremely large"))))
+
 (defun solo-rpg--generator-npc-appearance-text ()
   "Generate and return NPC Appearance text."
   (let* ((height           (solo-rpg--table-weighted-get-random
@@ -821,9 +839,16 @@ If INVERT is non-nil, then output is inverted."
                             solo-rpg-table-npc-facial-hair))
          (special-features (solo-rpg-table-get-random
                             solo-rpg-table-npc-special-features))
-         (hair  (format "%s, %s" hair-color hair-length)))
+         (hair  (format "%s, %s" hair-color hair-length))
+         (size-mod         (plist-get size :mod))
+         (chest            (solo-rpg--generator-npc-body size-mod))
+         (waist            (solo-rpg--generator-npc-body size-mod))
+         (bottom           (solo-rpg--generator-npc-body size-mod)))
     (unless (string= hair-length "short")
       (setq hair (format "%s, %s" hair long-hair-style)))
+
+    (setq size (plist-get size :desc))
+    
     (format (concat "Height          : %s\n"
                     "Size            : %s\n"
                     "Eye color       : %s\n"
@@ -831,6 +856,7 @@ If INVERT is non-nil, then output is inverted."
                     "Hair            : %s\n"
                     "Facial hair     : %s\n"
                     "Special features: %s\n"
+                    "Body (NSFW)     : %s\n"
                     )
             height
             size
@@ -838,7 +864,9 @@ If INVERT is non-nil, then output is inverted."
             skin-color
             hair
             facial-hair
-            special-features)))
+            special-features
+            (format "chest: %s, waist: %s, bottom: %s"
+                    chest waist bottom))))
 
 (defun solo-rpg-generator-npc-appearance ()
   "Generate NPC appearance and open it in the staging area."
