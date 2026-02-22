@@ -586,9 +586,10 @@ GENERATE-FUN is a function pointer to function which returns generated text."
   "Return random element from TABLE."
   (aref table (random (length table))))
 
-(defun solo-rpg--table-weighted-get-random (weighted-table max-value)
-  "Return random element from WEIGHTED-TABLE where max value is MAX-VALUE."
-  (let ((roll (+ 1 (random max-value))))
+(defun solo-rpg--table-weighted-get-random (weighted-table)
+  "Return random element from WEIGHTED-TABLE."
+  (let* ((max-value (cdar (last weighted-table)))
+         (roll (+ 1 (random max-value))))
     (cl-loop for cell in weighted-table
              for label = (car cell)
              for threshold = (cdr cell)
@@ -775,7 +776,9 @@ If INVERT is non-nil, then output is inverted."
   "Query the Quantity oracle, displaying the result.
 If INVERT is non-nil, then output is inverted."
   (interactive "P")
-  (solo-rpg--output (solo-rpg--table-weighted-get-random solo-rpg-oracle-quantity-table 20) invert))
+  (solo-rpg--output (solo-rpg--table-weighted-get-random
+                     solo-rpg-oracle-quantity-table)
+                    invert))
 
 
 ;;; Generators:
@@ -799,21 +802,23 @@ If INVERT is non-nil, then output is inverted."
 (defun solo-rpg--generator-npc-appearance-text ()
   "Generate and return NPC Appearance text."
   (let* ((height           (solo-rpg--table-weighted-get-random
-                            solo-rpg-table-npc-height      20))
+                            solo-rpg-table-npc-height))
          (size             (solo-rpg--table-weighted-get-random
-                            solo-rpg-table-npc-size        20))
+                            solo-rpg-table-npc-size))
          (eye-color        (solo-rpg--table-weighted-get-random
-                            solo-rpg-table-npc-eye-color   10))
+                            solo-rpg-table-npc-eye-color))
          (skin-color       (solo-rpg--table-weighted-get-random
-                            solo-rpg-table-npc-skin-color   8))
-         (hair-color       (solo-rpg--table-weighted-get-random
-                            solo-rpg-table-npc-hair-color  10))
+                            solo-rpg-table-npc-skin-color))
+         (hair-color       (if (string= skin-color "western")
+                               (solo-rpg--table-weighted-get-random
+                                solo-rpg-table-npc-hair-color)
+                             "dark"))
          (hair-length      (solo-rpg--table-weighted-get-random
-                            solo-rpg-table-npc-hair-length  6))
+                            solo-rpg-table-npc-hair-length))
          (long-hair-style  (solo-rpg--table-weighted-get-random
-                            solo-rpg-table-npc-long-hair-style 10))
+                            solo-rpg-table-npc-long-hair-style))
          (facial-hair      (solo-rpg--table-weighted-get-random
-                            solo-rpg-table-npc-facial-hair 12))
+                            solo-rpg-table-npc-facial-hair))
          (special-features (solo-rpg-table-get-random
                             solo-rpg-table-npc-special-features))
          (hair  (format "%s, %s" hair-color hair-length)))
@@ -827,13 +832,13 @@ If INVERT is non-nil, then output is inverted."
                     "Facial hair     : %s\n"
                     "Special features: %s\n"
                     )
-            (capitalize height)
-            (capitalize size)
-            (capitalize eye-color)
-            (capitalize skin-color)
-            (capitalize hair)
-            (capitalize facial-hair)
-            (capitalize special-features))))
+            height
+            size
+            eye-color
+            skin-color
+            hair
+            facial-hair
+            special-features)))
 
 (defun solo-rpg-generator-npc-appearance ()
   "Generate NPC appearance and open it in the staging area."
