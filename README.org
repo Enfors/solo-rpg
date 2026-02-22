@@ -3,8 +3,6 @@
 #+DESCRIPTION: A comprehensive toolkit for playing solo roleplaying games in Emacs.
 #+LANGUAGE: en
 
-* solo-rpg.el
-
 A set of support functions and Transient-based dashboards for playing solo roleplaying games directly inside Emacs. It provides dice rolling, multiple oracles, and generators, allowing you to generate campaign events without ever leaving your editor.
 
 ** Features
@@ -67,11 +65,33 @@ This program is free software; you can redistribute it and/or modify it under th
 
 /This section is for development planning and notes. It can be removed before the 1.0 release./
 
-** Plan: The Staging Area API
+** New menu hierarchy
 
-*** How the current system works
+Options demarked by "->" lead to their own menus.
 
-**** Existing variables
+- Dice roller
+- Oracles
+  - Action/Theme oracle
+  - Yes/No oracle
+  - Tarot draw
+- Environments
+  - Dungeons ->
+    - Generate dungeon room
+    - Random dungeon event
+  - Settlements ->
+    - Random settlement event
+  - Wilderness ->
+    - Random wilderness event
+- NPCs ->
+  - Appearance generator
+
+** Obsolete
+
+*** Plan: The Staging Area API
+
+**** How the current system works
+
+***** Existing variables
 
 #+begin_src elisp
 (defvar solo-rpg--return-buffer nil
@@ -81,7 +101,7 @@ This program is free software; you can redistribute it and/or modify it under th
   "The name of our temporary staging area buffer.")
 #+end_src
 
-**** Existing functions and what they do
+***** Existing functions and what they do
 
 1. =solo-rpg--staging-update= empties the staging buffer, displays new text it received as an argument, makes sure the window is visible
 2. =solo-rpg-staging-regenerate= is a Hello World function for staging
@@ -92,7 +112,7 @@ This program is free software; you can redistribute it and/or modify it under th
    - Generates the first result
    - Goes to =solo-rpg-menu-staging=
   
-**** Current hello-world flow
+***** Current hello-world flow
 
 - =solo-rpg-staging-hello-world= starts the process:
   - =solo-rpg-staging-regenerate= creates the first text:
@@ -105,24 +125,24 @@ This program is free software; you can redistribute it and/or modify it under th
      - =solo-rpg--output=
   3) =solo-rpg-staging-abort=
 
-**** Entry point
+***** Entry point
 
 - =solo-rpg-staging-hello-world=
 
-**** Functions used in the process
+***** Functions used in the process
 
 - =solo-rpg-staging-regenerate=
 - =solo-rpg--staging-update=
 - =solo-rpg-menu-staging=
 
-**** Exit points
+***** Exit points
 
 - =solo-rpg-staging-keep=
 - =solo-rpg-staging-abort=
 
-*** How the new system will work
+**** How the new system will work
 
-**** The API
+***** The API
 
 To add new generate/stage functionality, the dev has to do thre things:
 
@@ -131,7 +151,7 @@ To add new generate/stage functionality, the dev has to do thre things:
    1. Call =solo-rpg--stage=, passing it the pointer of the =generate= function. 
 3. Add a menu option somewhere which calls the generate command function.
 
-**** What happens when the user calls the API (from the menu)
+***** What happens when the user calls the API (from the menu)
 
 1. =solo-rpg--stage= is called:
    1. Saves the return buffer in =solo-rpg--return-buffer=
@@ -142,7 +162,7 @@ To add new generate/stage functionality, the dev has to do thre things:
          1. Staging buffer is updated
    4. =solo-rpg-menu-staging= is called to enter the menu
 
-*** Needed changes
+**** Needed changes
 
 1. Get rid of:
    - =solo-rpg-staging-hello-world=
