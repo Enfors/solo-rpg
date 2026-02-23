@@ -475,6 +475,12 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
 (defvar solo-rpg--generate-fun nil
   "The callback function which returns generated text for staging.")
 
+(defvar solo-rpg-npc-nsfw 'off
+  "Whether or not to generate NSFW options for NPCs.")
+
+(defvar solo-rpg-npc-facial-hair 'off
+  "Whether or not to generate facial hair for NPCs.")
+
 
 ;;; Utility functions:
 
@@ -528,11 +534,15 @@ GENERATE-FUN is a function pointer to function which returns generated text."
   (with-current-buffer (get-buffer-create solo-rpg--staging-buffer-name)
     (erase-buffer)
     (insert text)
-    ;; Show it at bottom, taking up ~20% of the height
-    (display-buffer (current-buffer)
-                    '(display-buffer-at-bottom . ((window-height . 0.2))))))
+    (goto-char (point-min)) ;; Always scroll to the top of the new text
 
-;; Temporary function for testing generation
+    ;; Only ask Emacs to arrange the window if it isn't already visible!
+    (unless (get-buffer-window (current-buffer))
+      (display-buffer (current-buffer)
+                      '(display-buffer-at-bottom . ((window-height . 14)))))))
+
+;; Standard function for regeneration
+
 (defun solo-rpg-staging-regenerate ()
   "Call the `solo-rpg--generate-fun' to generate text, send it to staging."
   (interactive)
@@ -611,6 +621,28 @@ GENERATE-FUN is a function pointer to function which returns generated text."
   "Return a formatted string showing the current output method."
   (format "Toggle output (currently: %s)" solo-rpg-output-method))
 
+(defun solo-rpg-toggle-npc-nsfw ()
+  "Toggle `solo-rpg-npc-nsfw' between `on' and `off'."
+  (interactive)
+  (if (eq solo-rpg-npc-nsfw 'on)
+      (setq solo-rpg-npc-nsfw 'off)
+    (setq solo-rpg-npc-nsfw 'on)))
+
+(defun solo-rpg--toggle-npc-nsfw-desc ()
+  "Return a string showing the current state of `solo-rpg-npc-nsfw'."
+  (format "NSFW=%s" solo-rpg-npc-nsfw))
+  
+(defun solo-rpg-toggle-npc-facial-hair ()
+  "Toggle `solo-rpg-npc-facial-hair' between `on' and `off'."
+  (interactive)
+  (if (eq solo-rpg-npc-facial-hair 'on)
+      (setq solo-rpg-npc-facial-hair 'off)
+    (setq solo-rpg-npc-facial-hair 'on)))
+
+(defun solo-rpg--toggle-npc-facial-hair-desc ()
+  "Return a string showing the current state of `solo-rpg-npc-facial-hair'."
+  (format "Facial hair=%s" solo-rpg-npc-facial-hair))
+  
 ;;; Dice rolls:
 
 (cl-defstruct solo-rpg-dice-roll
@@ -805,7 +837,7 @@ If INVERT is non-nil, then output is inverted."
                  mod)))
     (cond ((< part 0) (setq part 1))
           ((> part 9) (setq part 9)))
-    (message "part: %d" part)
+
     (nth (- part 1)
          '("extremely small"
            "very small"
@@ -843,30 +875,38 @@ If INVERT is non-nil, then output is inverted."
          (size-mod         (plist-get size :mod))
          (chest            (solo-rpg--generator-npc-body size-mod))
          (waist            (solo-rpg--generator-npc-body size-mod))
-         (bottom           (solo-rpg--generator-npc-body size-mod)))
+         (bottom           (solo-rpg--generator-npc-body size-mod))
+         (output           ""))
     (unless (string= hair-length "short")
       (setq hair (format "%s, %s" hair long-hair-style)))
 
     (setq size (plist-get size :desc))
     
-    (format (concat "Height          : %s\n"
-                    "Size            : %s\n"
-                    "Eye color       : %s\n"
-                    "Skin color      : %s\n"
-                    "Hair            : %s\n"
-                    "Facial hair     : %s\n"
-                    "Special features: %s\n"
-                    "Body (NSFW)     : %s\n"
-                    )
-            height
-            size
-            eye-color
-            skin-color
-            hair
-            facial-hair
-            special-features
-            (format "chest: %s, waist: %s, bottom: %s"
-                    chest waist bottom))))
+    (setq output (format (concat "Height          : %s\n"
+                                 "Size            : %s\n"
+                                 "Eye color       : %s\n"
+                                 "Skin color      : %s\n"
+                                 "Hair            : %s\n"
+                                 "Special features: %s\n"
+                                 )
+                         height
+                         size
+                         eye-color
+                         skin-color
+                         hair
+                         special-features))
+    (when (eq solo-rpg-npc-facial-hair 'on)
+      (setq output (format (concat output
+                                   "Facial hair     : %s\n")
+                           facial-hair)))
+    (when (eq solo-rpg-npc-nsfw 'on)
+      (setq output (format (concat output
+                                   "Chest           : %s\n"
+                                   "Waist           : %s\n"
+                                   "Bottom          : %s\n")
+                           chest waist bottom)))
+    output))
+                           
 
 (defun solo-rpg-generator-npc-appearance ()
   "Generate NPC appearance and open it in the staging area."
@@ -946,25 +986,42 @@ If INVERT is non-nil, then output is inverted."
       (solo-rpg-oracle-yes-no "50/50" invert)))
    ("-" "Worse than 50/50 probability"   solo-rpg-menu-oracle-yes-no-unprobable)])
 
-;; Define the Generator dashboard menu
+;; Define the Plot dashboard menu
 
-(transient-define-prefix solo-rpg-menu-generator ()
-  "The solo-rpg Generator menu."
-  ["SoloRPG dashboard: Generator Menu\n"
-   ["Actions"
-    ("p" "Plot generator"        solo-rpg-generator-plot)
-    ("q" "Go back"               transient-quit-one)]
-   ["NPCs"
-    ("a" "NPC appearance"        solo-rpg-generator-npc-appearance)]])
+(transient-define-prefix solo-rpg-menu-plot ()
+  "The solo-rpg Plot menu."
+  ["SoloRPG dashboard: Plot Menu\n"
+   ["Plots"
+    ("p" "Generate"        solo-rpg-generator-plot)]
+   ["System"
+    ("q" "Go back"               transient-quit-one)]])
+
+;; Define the NPC dashboard menu
+
+(transient-define-prefix solo-rpg-menu-npc ()
+  "The solo-rpg NPC menu."
+  ["SoloRPG dashboard: NPC Menu\n"
+   ["Generate"
+    ("a" "Appearance"        solo-rpg-generator-npc-appearance)
+    ("f" solo-rpg-toggle-npc-facial-hair
+     :description solo-rpg--toggle-npc-facial-hair-desc
+     :transient t)
+    ("n" solo-rpg-toggle-npc-nsfw
+     :description solo-rpg--toggle-npc-nsfw-desc
+     :transient t)]
+   ["System"
+    ("q" "Go back"               transient-quit-one)]])
 
 ;; Define the main dashboard menu
 (transient-define-prefix solo-rpg-menu ()
   "The main solo-rpg menu."
-  ["Solo-RPG dashboard: Main Menu\n"
-   ["Modules"
+  ["SoloRPG dashboard: Main Menu\n"
+   ["Misc"
     ("d" "Dice..."       solo-rpg-menu-dice)
-    ("o" "Oracles..."    solo-rpg-menu-oracle)
-    ("g" "Generators..." solo-rpg-menu-generator)]
+    ("n" "NPCs..."       solo-rpg-menu-npc)
+    ("p" "Plots..."      solo-rpg-menu-plot)]
+   ["Questions"
+    ("o" "Oracles..."    solo-rpg-menu-oracle)]
    ["System"
     ("t" solo-rpg-output-method-toggle
      :description solo-rpg--toggle-output-desc
