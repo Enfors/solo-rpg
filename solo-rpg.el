@@ -705,10 +705,13 @@ Returns the updated struct."
   (let* ((mod-string (if (not (= 0 (solo-rpg-dice-roll-mod roll-struct)))
                          (format "%+d" (solo-rpg-dice-roll-mod roll-struct))
                        ""))
-         (rolls-string (mapconcat (lambda (x) (format "[%d]" x))
-                      (solo-rpg-dice-roll-rolls roll-struct)
-                      "+")))
-    (format "%dd%d%s = %s%s = %d"
+         (rolls-string (if (< 1 (length (solo-rpg-dice-roll-rolls roll-struct)))
+                           (mapconcat (lambda (x) (format "%d" x))
+                                      (solo-rpg-dice-roll-rolls roll-struct)
+                                      ",")
+                         "")))         ; (if (> 0 1) (message "True") (message "False"))
+    (message "Length of rolls: %d" (length (solo-rpg-dice-roll-rolls roll-struct)))
+    (format "%dd%d%s=%s%s=%d"
             (solo-rpg-dice-roll-count roll-struct)
             (solo-rpg-dice-roll-sides roll-struct)
             mod-string
