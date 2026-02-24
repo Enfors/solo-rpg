@@ -706,17 +706,19 @@ Returns the updated struct."
                          (format "%+d" (solo-rpg-dice-roll-mod roll-struct))
                        ""))
          (rolls-string (if (< 1 (length (solo-rpg-dice-roll-rolls roll-struct)))
-                           (mapconcat (lambda (x) (format "%d" x))
-                                      (solo-rpg-dice-roll-rolls roll-struct)
-                                      ",")
-                         "")))         ; (if (> 0 1) (message "True") (message "False"))
+                           (concat "="
+                                   (mapconcat (lambda (x) (format "%d" x))
+                                              (solo-rpg-dice-roll-rolls roll-struct)
+                                              ",")
+                                   mod-string)
+                         "")))
     (message "Length of rolls: %d" (length (solo-rpg-dice-roll-rolls roll-struct)))
-    (format "%dd%d%s=%s%s=%d"
+
+    (format "%dd%d%s%s=%d"
             (solo-rpg-dice-roll-count roll-struct)
             (solo-rpg-dice-roll-sides roll-struct)
             mod-string
             rolls-string
-            mod-string
             (solo-rpg-dice-roll-total roll-struct))))
 
 (defun solo-rpg-dice-roll-cast (dice-string &optional invert)
