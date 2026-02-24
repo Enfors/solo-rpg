@@ -784,7 +784,7 @@ If INVERT is non-nil, then output mode is inverted."
            (t "Yes, and...")))
     ;; Return formatted string.
     ;; We use 'car' on split-string to just show "+3" instead of the full text.
-    (format "%s: [%d] -> %s"
+    (format "%s: 1d20=%d -> %s"
             odds-string
             roll
             result-text)))
