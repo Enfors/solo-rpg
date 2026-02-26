@@ -85,6 +85,83 @@ Options demarked by "->" lead to their own menus.
 - NPCs ->
   - Appearance generator
 
+** Dungeon room generator plans
+
+*** Requirements and constraints
+
+- Will only produce one room at a time - not an entire dungeon at once
+- Stateless - the generator does not know anything about other rooms, keeping each room generation isolated
+- Should produce generic, randomized dungeon rooms
+- User should be able to draw the generated rooms on a paper map
+  - Generated content should be enough to draw maps similar to Four Against Darkness
+  - As in 4AD, the system will know nothing about other rooms or their locations, meaning that it will not try to avoid "collisions" on the map, that has to be handled by the user
+- Generator should use staging area to allow user to insert into current buffer or discard generated content
+
+*** Room purpose
+
+- Possibilities:
+  - Entrance
+  - Ceremonial
+  - Storage
+  - Kitchen
+  - Burial chamber
+  - Office
+  - Staff room
+  - Area/practice
+  - etc
+
+*** Room shape
+
+- Influenced by room purpose
+- Major division: room vs corridor
+- Size
+
+*** Exits
+
+- Exits are not in cardinal directions, but "forward", "towards center", and "away from center".
+- Forward:
+  - Small: 40%
+  - Medium: 50%
+  - Large: 60%
+- Toward center:
+  - Small: 60%
+  - Medium: 50%
+  - Large: 40%
+- Away from center:
+  - Small: 40%
+  - Medium: 50%
+  - Large: 60%
+- Down (to next level):
+  - Small: 15%
+  - Medium: 10%
+  - Large: 5%
+
+*** Contents
+
+- Monster/NPC present or not
+- Others, depending on room purpose:
+  - Water
+  - Fountain
+  - Platform/height difference
+  - Tapestries
+
+*** Dashboard menu
+
+- Generate
+  - N) Entrance
+  - R) Room
+  - H) Hidden room (higher chance of treasure?)
+  - S) Secret
+  - E) Event (for when the PCs linger/search - to make it risky)
+- Options
+  - D) Dungeon size=Small
+- System
+  - Q) Go back
+
+*** User-configurable settings
+
+- Dungeon size: Will affect the chance of "towards center" vs "away from center" doors. High "towards center" chance = smaller dungeon.
+
 ** Obsolete
 
 *** Plan: The Staging Area API
