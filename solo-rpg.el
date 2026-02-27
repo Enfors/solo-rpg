@@ -366,7 +366,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
   "Obstacle data table for the Plot generator.")
 
 ;;; NPC Generator tables
-;;; Appearance
+;;; - Appearance
 
 (defconst solo-rpg-table-npc-height
   '((1  . "very short")
@@ -922,6 +922,21 @@ If INVERT is non-nil, then output is inverted."
   (solo-rpg--stage #'solo-rpg--generator-npc-appearance-text))
 
 
+;;; LONELOG ===================================================================
+;;; Output functions
+;;; - Scene
+
+(defun solo-rpg-lonelog-scene-start (scene-title)
+  "Ask for SCENE-TITLE, insert a Lonelog scene heading in the current buffer."
+  (interactive "sEnter new scene title: ")
+  (let ((prev-scene-num 0)
+        (scene-search-string "^S\\([0-9]+\\) \\*"))
+    (save-excursion
+      (when (re-search-backward scene-search-string nil t)
+        (setq prev-scene-num (string-to-number (or (match-string 1) "0")))))
+    (insert (format "S%d *%s*" (+ 1 prev-scene-num) scene-title))))
+
+;;; DASHBOARDS ================================================================
 ;;; Transient dashboard
 
 (transient-define-prefix solo-rpg-menu-dice ()
