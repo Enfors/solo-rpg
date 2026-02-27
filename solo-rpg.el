@@ -60,7 +60,7 @@
 (require 'cl-lib)  ;; For structs
 (require 'transient)
 
-;;; Configuration variables:
+;;; Configuration variables
 
 (defcustom solo-rpg-output-method 'insert
   "Default method for outputting solo-rpg results.
@@ -70,7 +70,7 @@ Can be `insert' to put text in current buffer, or `message' to only echo it."
   :group 'solo-rpg)
 
 
-;;; Tables:
+;;; TABLES ====================================================================
 
 (defconst solo-rpg-oracle-actions
   ["Abandon"
@@ -314,7 +314,7 @@ Value is upper thresholds for NoAnd, No, NoBut, YesBut, Yes.")
   "Data table for the Quantity oracle.
 The `car` of each cell is the upper threshold for the `cdr` entry.")
 
-;;; Generator tables ======================================================
+;;; Generator tables
 
 (defconst solo-rpg-generator-plot-goal-table
   ["Acquire"
@@ -365,9 +365,8 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
    "Mysterious circumstances"]
   "Obstacle data table for the Plot generator.")
 
-;;; NPC Generator tables:
-
-;;; Appearance:
+;;; NPC Generator tables
+;;; Appearance
 
 (defconst solo-rpg-table-npc-height
   '((1  . "very short")
@@ -461,7 +460,17 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
   "Special features data table for the NPC Appearance generator.")
 
 
-;;; Other variables:
+;;; STRUCTS ===================================================================
+
+(cl-defstruct solo-rpg-dice-roll
+  count    ;; Number of dice
+  sides    ;; Die sizes
+  mod      ;; Modifier (+/-)
+  rolls    ;; List of each die roll result
+  total)   ;; Sum of all rolls + mod
+
+
+;;; OTHER VARIABLES ===========================================================
 
 (defvar solo-rpg--last-dice-string "2d6"
   "The last dice string rolled by the user. Used in the default prompt.")
@@ -482,7 +491,8 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
   "Whether or not to generate facial hair for NPCs.")
 
 
-;;; Utility functions:
+;;; FUNCTIONS =================================================================
+;;; Utility functions
 
 (defun solo-rpg--output (text &optional invert-behavior)
   "Output TEXT according to `solo-rpg-output-method'.
@@ -512,7 +522,7 @@ Then, ARGS is printed."
   (apply #'insert args))
 
 
-;;; Staging functions:
+;;; Staging functions
 
 (defun solo-rpg--stage (generate-fun)
   "The main API to stage generated content.
@@ -590,7 +600,7 @@ GENERATE-FUN is a function pointer to function which returns generated text."
 ;;   (solo-rpg-menu-staging))
 
 
-;;; Table functions:
+;;; Table functions
 
 (defun solo-rpg-table-get-random (table)
   "Return random element from TABLE."
@@ -607,7 +617,7 @@ GENERATE-FUN is a function pointer to function which returns generated text."
              return label)))
 
 
-;;; Dashboard functions:
+;;; Dashboard functions
 
 (defun solo-rpg-output-method-toggle ()
   "Toggle `solo-rpg-output-method' between `insert' and `message'."
@@ -643,14 +653,7 @@ GENERATE-FUN is a function pointer to function which returns generated text."
   "Return a string showing the current state of `solo-rpg-npc-facial-hair'."
   (format "Facial hair=%s" solo-rpg-npc-facial-hair))
   
-;;; Dice rolls:
-
-(cl-defstruct solo-rpg-dice-roll
-  count    ;; Number of dice
-  sides    ;; Die sizes
-  mod      ;; Modifier (+/-)
-  rolls    ;; List of each die roll result
-  total)   ;; Sum of all rolls + mod
+;;; Dice roll functions
 
 (defun solo-rpg-dice-string-parse (dice-string)
   "Ask for DICE-STRING and parse it, returning a solo-rpg-dice-roll struct."
@@ -750,7 +753,8 @@ If INVERT is non-nil, then output mode is inverted."
 ;;   (insert (solo-rpg-dice-roll-cast dice-string)))
 
 
-;;; Action / Theme oracle:
+;;; ORACLES ===================================================================
+;;; Action / Theme oracle
 
 (defun solo-rpg-oracle-action-theme (&optional invert)
   "Output (action) / (theme) where action and theme are random.
@@ -761,7 +765,7 @@ If INVERT is non-nil, then output mode is inverted."
                             (solo-rpg-table-get-random solo-rpg-oracle-themes))
                     invert))
 
-;;; Yes / No oracle:
+;;; Yes / No oracle
 
 (defun solo-rpg-oracle-yes-no-string (odds-string)
   "Return NoAnd, No, NoBut, YesBut, Yes, or YesAnd based on ODDS-STRING."
@@ -806,7 +810,7 @@ If INVERT is non-nil, then output is inverted."
     (solo-rpg--output result invert)))
 
 
-;;; Quantity oracle:
+;;; Quantity oracle
 
 (defun solo-rpg-oracle-quantity (&optional invert)
   "Query the Quantity oracle, displaying the result.
@@ -817,9 +821,8 @@ If INVERT is non-nil, then output is inverted."
                     invert))
 
 
-;;; Generators:
-
-;;; Plot generator:
+;;; GENERATORS ================================================================
+;;; Plot generator
 
 (defun solo-rpg--generator-plot-text ()
   "Generate and return a plot text."
@@ -833,7 +836,7 @@ If INVERT is non-nil, then output is inverted."
   (interactive)
   (solo-rpg--stage #'solo-rpg--generator-plot-text))
 
-;;; NPC Appearance generator:
+;;; NPC Appearance generator
 
 (defun solo-rpg--generator-npc-body (mod)
   "Return random size affected by MOD."
@@ -1034,7 +1037,7 @@ If INVERT is non-nil, then output is inverted."
     ("q" "Quit"          transient-quit-one)]])
 
 
-;;; Minor mode:
+;;; MINOR MODE ================================================================
 
 ;;;###autoload
 (defvar solo-rpg-mode-map (make-sparse-keymap)
