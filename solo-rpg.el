@@ -460,7 +460,33 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
     "broken/misshaped nose"]
   "Special features data table for the NPC Appearance generator.")
 
-
+;;; Dungeon rooms
+
+(defvar solo-rpg-dungeon-room-exit-probs
+  '((small  . ((forward . 40) (center . 60) (away . 40) (down . 15)))
+    (medium . ((forward . 50) (center . 50) (away . 50) (down . 10)))
+    (large  . ((forward . 60) (center . 40) (away . 60) (down .  5))))
+  "The probabilities for each exit direction in each dungeon size.")
+
+(defvar solo-rpg-dungeon-room-type-table
+  '(( 8 . "corridor")
+    (12 . "storage room")
+    (14 . "ceremonial room")
+    (15 . "study")
+    (16 . "kitchen"))
+  "Room type table for the dungeon room generator.")
+
+(defvar solo-rpg-dungeon-room-contents-special
+  '(("ceremonial" . ("altar"
+                     "ceremonial circle"
+                     "bottomless pit"))
+    ("storage"    . ("crates"
+                     "barrels"
+                     "piles of junk"))
+    ("study"      . ("book cases"
+                     "desk"
+                     "thick carpet"))))
+
 ;;; STRUCTS ===================================================================
 
 (cl-defstruct solo-rpg-dice-roll
@@ -493,12 +519,6 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
 
 (defvar solo-rpg-dungeon-size 'medium
   "Size to take into consideration when generating dungeon rooms.")
-
-(defvar solo-rpg-dungeon-room-exit-probs
-  '((small  . ((forward . 40) (center . 60) (away . 40) (down . 15)))
-    (medium . ((forward . 50) (center . 50) (away . 50) (down . 10)))
-    (large  . ((forward . 60) (center . 40) (away . 60) (down .  5))))
-  "The probabilities for each exit direction in each dungeon size.")
 
 
 ;;; FUNCTIONS =================================================================
