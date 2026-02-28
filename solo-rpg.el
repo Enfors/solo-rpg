@@ -57,7 +57,8 @@
 
 ;;; Code:
 
-(require 'cl-lib)  ;; For structs
+(require 'cl-lib)  ; For structs
+(require 'subr-x)  ; For string-join
 (require 'transient)
 
 ;;; Configuration variables
@@ -490,6 +491,9 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
 (defvar solo-rpg-npc-facial-hair 'off
   "Whether or not to generate facial hair for NPCs.")
 
+(defvar solo-rpg-dungeon-size 'medium
+  "Size to take into consideration when generating dungeon rooms.")
+
 
 ;;; FUNCTIONS =================================================================
 ;;; Utility functions
@@ -616,6 +620,18 @@ GENERATE-FUN is a function pointer to function which returns generated text."
              if (<= roll threshold)
              return label)))
 
+(defun solo-rpg--table-weighted-get-random-single (prefix var)
+  "Construct full var name from PREFIX+VAR, get value from table."
+  (let ((table-symbol (intern (format "solo-rpg-%s-%s-table" prefix var))))
+    (solo-rpg--table-weighted-get-random (symbol-value table-symbol))))
+
+(defun solo-rpg--table-weighted-get-random-list (prefix var-list)
+  "Construct full var name from PREFIX+VAR-LIST elems, get value from table."
+  (mapcar #'(lambda (var)
+              (cons (intern var)
+                    (solo-rpg--table-weighted-get-random-single prefix var)))
+          var-list))
+
 
 ;;; Dashboard functions
 
@@ -652,7 +668,21 @@ GENERATE-FUN is a function pointer to function which returns generated text."
 (defun solo-rpg--toggle-npc-facial-hair-desc ()
   "Return a string showing the current state of `solo-rpg-npc-facial-hair'."
   (format "Facial hair=%s" solo-rpg-npc-facial-hair))
-  
+
+(defun solo-rpg-toggle-dungeon-size ()
+  "Toggle `solo-rpg-dungeon-size' between `small', `medium', and `large'."
+  (interactive)
+  (cond ((eq solo-rpg-dungeon-size 'large)
+         (setq solo-rpg-dungeon-size 'small))
+        ((eq solo-rpg-dungeon-size 'medium)
+         (setq solo-rpg-dungeon-size 'large))
+        ((eq solo-rpg-dungeon-size 'small)
+         (setq solo-rpg-dungeon-size 'medium))))
+
+(defun solo-rpg--toggle-dungeon-size-desc ()
+  "Return a string showing the current state of `solo-rpg-dungeon-size'."
+  (format "Dungeon size=%s" solo-rpg-dungeon-size))
+
 ;;; Dice roll functions
 
 (defun solo-rpg-dice-string-parse (dice-string)
@@ -922,6 +952,58 @@ If INVERT is non-nil, then output is inverted."
   (solo-rpg--stage #'solo-rpg--generator-npc-appearance-text))
 
 
+;;; Dungeon room generator
+;;; - Tables
+
+(defconst solo-rpg-gen-dungeon-room-size-table
+  '((2  . "small")
+    (5  . "average size")
+    (7  . "large")
+    (8  . "very large"))
+  "Room size data for the Dungeon Room generator.")
+
+(defconst solo-rpg-gen-dungeon-room-shape-table
+  '((5  . "rectangular")
+    (7  . "square")
+    (8  . "T-shaped")
+    (9  . "L-shaped")
+    (10 . "octagonal"))
+  "Room shape data for the Dungeon Room generator.")
+
+;;; - Code
+
+(defun solo-rpg-gen-dungeon-room-text ()
+  "Return text describing a dungeon room."
+  (let ((room-data (solo-rpg--table-weighted-get-random-list "gen-dungeon-room"
+                                                             '("size" "shape")))
+        (forward-exit  (<= (+ 1 (random 100)) 50))
+        (center-exit   (<= (+ 1 (random 100)) 40))
+        (away-exit     (<= (+ 1 (random 100)) 30))
+        (exits         nil)
+        (exits-text    "")
+        (geometry-text ""))
+    (when away-exit
+      (push "away from center" exits))
+    (when center-exit
+      (push "towards center" exits))
+    (when forward-exit
+      (push "straight ahead" exits))
+    (setq exits-text (if exits
+                         (string-join exits ", ")
+                       "dead end"))
+    (setq geometry-text (let-alist room-data
+                          (format "%s, %s" .size .shape)))
+    (concat (string-join (list
+                          (format "Dungeon room: %s" geometry-text)
+                          (format "Exits       : %s" exits-text))
+                         "\n")
+            "\n")))
+
+(defun solo-rpg-gen-dungeon-room ()
+  "Command for returning a dungeon room for staging."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg-gen-dungeon-room-text))
+
 ;;; LONELOG ===================================================================
 ;;; Output functions
 ;;; - Scene
@@ -1035,6 +1117,23 @@ If INVERT is non-nil, then output is inverted."
    ["System"
     ("q" "Go back"               transient-quit-one)]])
 
+;;; Dungeon dashboards
+
+;; Define the Dungeon dashboard menu
+
+(transient-define-prefix solo-rpg-menu-dungeon ()
+  "The solo-rpg Dungeon menu."
+  ["SoloRPG dashboard: Dungeon Menu\n"
+   ["Generate"
+    ("r" "Room"          solo-rpg-gen-dungeon-room)
+    ("s" solo-rpg-toggle-dungeon-size
+     :description solo-rpg--toggle-dungeon-size-desc
+     :transient t)]
+   ["System"
+    ("q" "Go back"       transient-quit-one)]])
+
+;;; Main menu dashboard
+
 ;; Define the main dashboard menu
 (transient-define-prefix solo-rpg-menu ()
   "The main solo-rpg menu."
@@ -1045,6 +1144,8 @@ If INVERT is non-nil, then output is inverted."
     ("p" "Plots..."      solo-rpg-menu-plot)]
    ["Questions"
     ("o" "Oracles..."    solo-rpg-menu-oracle)]
+   ["Environments"
+    ("D" "Dungeons..."   solo-rpg-menu-dungeon)]
    ["System"
     ("t" solo-rpg-output-method-toggle
      :description solo-rpg--toggle-output-desc
