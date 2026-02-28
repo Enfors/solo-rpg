@@ -494,6 +494,12 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
 (defvar solo-rpg-dungeon-size 'medium
   "Size to take into consideration when generating dungeon rooms.")
 
+(defvar solo-rpg-dungeon-room-exit-probs
+  '((small  . ((forward . 40) (center . 60) (away . 40) (down . 15)))
+    (medium . ((forward . 50) (center . 50) (away . 50) (down . 10)))
+    (large  . ((forward . 60) (center . 40) (away . 60) (down .  5))))
+  "The probabilities for each exit direction in each dungeon size.")
+
 
 ;;; FUNCTIONS =================================================================
 ;;; Utility functions
@@ -974,14 +980,19 @@ If INVERT is non-nil, then output is inverted."
 
 (defun solo-rpg-gen-dungeon-room-text ()
   "Return text describing a dungeon room."
-  (let ((room-data (solo-rpg--table-weighted-get-random-list "gen-dungeon-room"
-                                                             '("size" "shape")))
-        (forward-exit  (<= (+ 1 (random 100)) 50))
-        (center-exit   (<= (+ 1 (random 100)) 40))
-        (away-exit     (<= (+ 1 (random 100)) 30))
-        (exits         nil)
-        (exits-text    "")
-        (geometry-text ""))
+  (let* ((room-data (solo-rpg--table-weighted-get-random-list "gen-dungeon-room"
+                                                              '("size" "shape")))
+         (exit-probs    (alist-get solo-rpg-dungeon-size
+                                   solo-rpg-dungeon-room-exit-probs))
+         (forward-exit  (<= (+ 1 (random 100)) (alist-get 'forward exit-probs)))
+         (center-exit   (<= (+ 1 (random 100)) (alist-get 'center  exit-probs)))
+         (away-exit     (<= (+ 1 (random 100)) (alist-get 'away    exit-probs)))
+         (down-exit     (<= (+ 1 (random 100)) (alist-get 'down    exit-probs)))
+         (exits         nil)
+         (exits-text    "")
+         (geometry-text ""))
+    (when down-exit
+      (push "down" exits))
     (when away-exit
       (push "away from center" exits))
     (when center-exit
