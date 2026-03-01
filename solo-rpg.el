@@ -996,12 +996,35 @@ If INVERT is non-nil, then output is inverted."
     (10 . "octagonal"))
   "Room shape data for the Dungeon Room generator.")
 
+(defconst solo-rpg-dungeon-room-descs
+  '(("storage room" .
+    ((", filled with crates" . nil)))
+    ("ceremonial chamber" .
+     ((" with a ritual circle in the middle" . nil)
+      (" with a bottomless pit at its center" . nil)))
+    ("study" .
+     ((" with book cases along the walls" . nil)
+      (" with a desk at the center" .
+       ((", surrounded by book cases" . nil)
+        (", and a thick carpet covering the floor" . nil)))
+      (" with the remains of a desk at its center" . nil))))
+  "Data for all room types.")
+
 ;;; - Code
+
+(defun solo-rpg-gen-dungeon-room-desc (options)
+  "Recursive function for generating dungeon room descriptions with OPTIONS."
+  (let ((chosen (nth (random (length options)) options)))
+    (concat (car chosen)
+            (if (null (cdr chosen))
+                ""
+              (solo-rpg-gen-dungeon-room-desc (cdr chosen))))))
 
 (defun solo-rpg-gen-dungeon-room-text ()
   "Return text describing a dungeon room."
   (let* ((room-data (solo-rpg--table-weighted-get-random-list "gen-dungeon-room"
                                                               '("size" "shape")))
+         (room-desc     (solo-rpg-gen-dungeon-room-desc solo-rpg-dungeon-room-descs))
          (exit-probs    (alist-get solo-rpg-dungeon-size
                                    solo-rpg-dungeon-room-exit-probs))
          (forward-exit  (<= (+ 1 (random 100)) (alist-get 'forward exit-probs)))
@@ -1023,10 +1046,10 @@ If INVERT is non-nil, then output is inverted."
                          (string-join exits ", ")
                        "dead end"))
     (setq geometry-text (let-alist room-data
-                          (format "%s, %s" .size .shape)))
+                          (format "%s %s" .size .shape)))
     (concat (string-join (list
-                          (format "Dungeon room: %s" geometry-text)
-                          (format "Exits       : %s" exits-text))
+                          (format "Dungeon room: %s %s." geometry-text room-desc)
+                          (format "Exits       : %s." exits-text))
                          "\n")
             "\n")))
 
