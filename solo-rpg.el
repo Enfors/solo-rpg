@@ -75,13 +75,8 @@ Can be `insert' to put text in current buffer, or `message' to only echo it."
                  (const :tag "Only show in message area" message))
   :group 'solo-rpg)
 
-(defcustom solo-rpg-command-prefix (kbd "C-c ,")
-  "Prefix key sequence for Lonelog mode commands."
-  :type 'key-sequence
-  :group 'solo-rpg)
-
 (defcustom solo-rpg-auto-open-hud t
-  "If t, Solo-Rpg-mode will auto-open the tag tracking buffer when started."
+  "If t, Solo-RPG-mode will auto-open the tag tracking buffer when started."
   :type 'bool
   :group 'solo-rpg)
 
@@ -91,7 +86,7 @@ Can be `insert' to put text in current buffer, or `message' to only echo it."
   :group 'solo-rpg)
 
 (defcustom solo-rpg-hud-width 35
-  "The width in characters of the Lonelog HUD window."
+  "The width in characters of the Solo-RPG HUD window."
   :type 'number
   :group 'solo-rpg)
 
@@ -1143,7 +1138,7 @@ Returns a chronologically ordered list of tag strings."
       latest-tags)))
 
 (defun solo-rpg-toggle-hud ()
-  "Toggle the visibility of the Lonelog HUD side-window."
+  "Toggle the visibility of the Solo-RPG HUD side-window."
   (interactive)
   (let ((hud-win (solo-rpg--get-visible-hud-window)))
     (if hud-win
@@ -1155,12 +1150,12 @@ Returns a chronologically ordered list of tag strings."
   (seq-some (lambda (buf)
               (and (not (eq buf ignore-buf)) ; Ignore the dying buffer
                    (buffer-local-value 'solo-rpg-mode buf)
-                   (not (string-match-p "^\\*Lonelog HUD"
+                   (not (string-match-p "^\\*Solo-RPG HUD"
                                         (buffer-name buf)))))
             (buffer-list)))
 
 (defun solo-rpg--cleanup-hud-if-last (&optional ignore-buf)
-  "Close the HUD window and kill HUD buffers if no lonelog sessions remain.
+  "Close the HUD window and kill HUD buffers if no solo-rpg sessions remain.
 IGNORE-BUF is ignored in the tally."
   (unless (solo-rpg--any-active-sessions-p ignore-buf)
     ;; 1. Close the window if it's currently on screen
@@ -1169,7 +1164,7 @@ IGNORE-BUF is ignored in the tally."
         (delete-window hud-win)))
     ;; 2. Silently assassinate all orphaned HUD buffers
     (dolist (buf (buffer-list))
-      (when (string-match-p "^\\*Lonelog HUD" (buffer-name buf))
+      (when (string-match-p "^\\*Solo-RPG HUD" (buffer-name buf))
         (kill-buffer buf)))))
 
 (defun solo-rpg--cleanup-on-kill ()
@@ -1177,9 +1172,9 @@ IGNORE-BUF is ignored in the tally."
   (solo-rpg--cleanup-hud-if-last (current-buffer)))
 
 (defun solo-rpg--get-visible-hud-window ()
-  "Return the window displaying a Lonelog HUD, if one exists."
+  "Return the window displaying a Solo-RPG HUD, if one exists."
   (seq-find (lambda (win)
-               (string-match-p "^\\*Lonelog HUD"
+               (string-match-p "^\\*Solo-RPG HUD"
                                (buffer-name (window-buffer win))))
              (window-list)))
 
@@ -1187,7 +1182,7 @@ IGNORE-BUF is ignored in the tally."
   "Swap the HUD buffer to match the active game, if a HUD is open."
   (when (and solo-rpg-mode
              solo-rpg--hud-buffer-name
-             (not (string-match-p "^\\*Lonelog HUD" (buffer-name))))
+             (not (string-match-p "^\\*Solo-RPG HUD" (buffer-name))))
     (let ((hud-buf (get-buffer solo-rpg--hud-buffer-name))
           (visible-hud-win (solo-rpg--get-visible-hud-window)))
       ;; If our HUD exists, AND a HUD window is open on screen...
@@ -1219,7 +1214,7 @@ IGNORE-BUF is ignored in the tally."
   (interactive)
   ;; If we don't have a unique HUD name for this buffer yet, make one!
   (unless solo-rpg--hud-buffer-name
-    (setq solo-rpg--hud-buffer-name (format "*Lonelog HUD: %s*" (buffer-name))))
+    (setq solo-rpg--hud-buffer-name (format "*Solo-RPG HUD: %s*" (buffer-name))))
   (let ((tags (solo-rpg-extract-latest-tags))
         (hud-buffer (get-buffer-create solo-rpg--hud-buffer-name)))
     (solo-rpg--draw-hud-contents hud-buffer tags)
@@ -1248,7 +1243,7 @@ IGNORE-BUF is ignored in the tally."
 ;;; - Scene
 
 (defun solo-rpg-scene-start (scene-title)
-  "Ask for SCENE-TITLE, insert a Lonelog scene heading in the current buffer."
+  "Ask for SCENE-TITLE, insert a Solo-RPG scene heading in the current buffer."
   (interactive "sEnter new scene title: ")
   (let ((prev-scene-num 0)
         (scene-search-string "^S\\([0-9]+\\) \\*"))
@@ -1386,6 +1381,8 @@ IGNORE-BUF is ignored in the tally."
    ["Environments"
     ("D" "Dungeons..."   solo-rpg-menu-dungeon)]
    ["System"
+    ("h" "Toggle HUD"    solo-rpg-toggle-hud
+     :transient t)
     ("t" solo-rpg-output-method-toggle
      :description solo-rpg--toggle-output-desc
      :transient t)
@@ -1396,7 +1393,7 @@ IGNORE-BUF is ignored in the tally."
 
 ;; The Macro Definition
 (defmacro solo-rpg-define-face (name dark-hex light-hex docstring &optional bold)
-  "Define a Lonelog face with NAME, using DARK-HEX and LIGHT-HEX colors.
+  "Define a Solo-RPG face with NAME, using DARK-HEX and LIGHT-HEX colors.
 DOCSTRING provides the documentation for the face.
 If BOLD is non-nil, the face will be bold in all themes."
   (let ((weight-spec (if bold '(:weight bold) '())))
@@ -1411,74 +1408,74 @@ If BOLD is non-nil, the face will be bold in all themes."
          ;; Fallback (Terminal / Monochrome)
          (t ,@weight-spec))
        ,docstring
-       :group 'lonelog)))
+       :group 'solo-rpg)))
 
 ;; --- Face Definitions ---
 
 ;; Action (@)
 (solo-rpg-define-face solo-rpg-action-symbol-face
   "#045ccf" "#003f91"
-  "Foreground color for the Lonelog action symbol (the \"@\")."
+  "Foreground color for the Solo-RPG action symbol (the \"@\")."
   t) ;; Bold
 
 (solo-rpg-define-face solo-rpg-action-content-face
   "#a3cbff" "#1e4e8c"
-  "Foreground color for the Lonelog action.
+  "Foreground color for the Solo-RPG action.
 This is the part that comes after the \"@\".")
 
 ;; Oracle (?)
 (solo-rpg-define-face solo-rpg-oracle-question-symbol-face
   "#b020a0" "#6d207a"
-  "Foreground color for the Lonelog oracle question symbol (the \"?\")."
+  "Foreground color for the Solo-RPG oracle question symbol (the \"?\")."
   t) ;; Bold
 
 (solo-rpg-define-face solo-rpg-oracle-question-content-face
   "#f490ec" "#5e3fd3"
-  "Foreground color for the Lonelog oracle question itself.
+  "Foreground color for the Solo-RPG oracle question itself.
 This is the part that comes after the \"?\".")
 
 ;; Mechanics (d:)
 (solo-rpg-define-face solo-rpg-mechanics-roll-symbol-face
   "#308018" "#2e7d12"
-  "Foreground color for the Lonelog mechanics roll symbol (the \"d:\")."
+  "Foreground color for the Solo-RPG mechanics roll symbol (the \"d:\")."
   t) ;; Bold
 
 (solo-rpg-define-face solo-rpg-mechanics-roll-content-face
   "#60ff28" "#206009"
-  "Foreground color for the Lonelog mechanics roll itself.
+  "Foreground color for the Solo-RPG mechanics roll itself.
 This is the part that comes after the \"d:\".")
 
 ;; Result (->)
 (solo-rpg-define-face solo-rpg-oracle-and-dice-result-symbol-face
   "#a09005" "#99a600"
-  "Foreground color for the Lonelog oracle/dice symbol (the \"->\")."
+  "Foreground color for the Solo-RPG oracle/dice symbol (the \"->\")."
   t) ;; Bold
 
 (solo-rpg-define-face solo-rpg-oracle-and-dice-result-content-face
   "#e8fc05" "#708600"
-  "Foreground color for the Lonelog oracle/dice result itself.
+  "Foreground color for the Solo-RPG oracle/dice result itself.
 This is the part that comes after the \"->\".")
 
 ;; Consequence (=>)
 (solo-rpg-define-face solo-rpg-consequence-symbol-face
   "#c04008" "#936400"
-  "Foreground color for the Lonelog consequence symbol (the \"=>\")."
+  "Foreground color for the Solo-RPG consequence symbol (the \"=>\")."
   t) ;; Bold
 
 (solo-rpg-define-face solo-rpg-consequence-content-face
   "#ffa050" "#b37400"
-  "Foreground color for the Lonelog consequence itself.
+  "Foreground color for the Solo-RPG consequence itself.
 This is the part that comes after the \"=>\".")
 
 ;; Tags ([..:..|..])
 (solo-rpg-define-face solo-rpg-tag-symbol-face
                      "#00ff00" "#00cc00"
-                     "Foreground color for the Lonelog tag symbols themselves.
+                     "Foreground color for the Solo-RPG tag symbols themselves.
 They are the `[' and `]' characters.")
 
 (solo-rpg-define-face solo-rpg-tag-separator-face
                      "#00aa00" "#008800"
-                     "Foreground color for the Lonelog tag separators (| and :).")
+                     "Foreground color for the Solo-RPG tag separators (| and :).")
 
 ;; Face rules:
 
@@ -1518,7 +1515,7 @@ They are the `[' and `]' characters.")
       (goto-char (match-end 0))
       ;; Subexp-highlighter: apply the face to the | or :
       (0 'solo-rpg-tag-separator-face t))))
-  "Highlighting rules for Lonelog mode.")
+  "Highlighting rules for Solo-RPG mode.")
 
 ;;; MINOR MODE ================================================================
 
@@ -1529,7 +1526,7 @@ By default, this is empty to allow users to define their own menu key.")
 
 ;;;###autoload
 (define-minor-mode solo-rpg-mode
-  "Minor mode with tools for playing solo roleplaying games.
+  "Minor mode with support for Lonelog and playing solo roleplaying games.
 
 When enabled, this mode provides syntax highlighting for the five core
 Lonelog symbols:
@@ -1541,6 +1538,9 @@ Lonelog symbols:
 
 Tags are also tracked in a side window:
  [N:Jonah|friendly|Uninjured]
+
+For more information about the Lonelog solo RPG notation format, please
+visit https://zeruhur.itch.io/lonelog
 
 \\{solo-rpg-mode-map}"
   :init-value nil
@@ -1555,10 +1555,10 @@ Tags are also tracked in a side window:
         (font-lock-add-keywords nil solo-rpg-font-lock-keywords)
         (font-lock-flush)
 
-        ;; Check if the buffer name starts with "*Lonelog HUD"
-        (unless (string-match-p "^\\*Lonelog HUD" (buffer-name))
+        ;; Check if the buffer name starts with "*Solo-RPG HUD"
+        (unless (string-match-p "^\\*Solo-RPG HUD" (buffer-name))
           ;; Generate the unique HUD name for this buffer
-          (setq solo-rpg--hud-buffer-name (format "*Lonelog HUD: %s*"
+          (setq solo-rpg--hud-buffer-name (format "*Solo-RPG HUD: %s*"
                                                  (buffer-name)))
           ;; Start the timer, and hand it the current game buffer.
           (setq solo-rpg--hud-timer
