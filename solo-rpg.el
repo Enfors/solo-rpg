@@ -61,13 +61,38 @@
 (require 'subr-x)  ; For string-join
 (require 'transient)
 
-;;; Configuration variables
+;;; Customization variables
+
+(defgroup solo-rpg nil
+  "Support for playing solo roleplaying games inside Emacs."
+  :group 'games
+  :prefix "solo-rpg-")
 
 (defcustom solo-rpg-output-method 'insert
   "Default method for outputting solo-rpg results.
 Can be `insert' to put text in current buffer, or `message' to only echo it."
   :type '(choice (const :tag "Insert in current buffer" insert)
                  (const :tag "Only show in message area" message))
+  :group 'solo-rpg)
+
+(defcustom solo-rpg-command-prefix (kbd "C-c ,")
+  "Prefix key sequence for Lonelog mode commands."
+  :type 'key-sequence
+  :group 'solo-rpg)
+
+(defcustom solo-rpg-auto-open-hud t
+  "If t, Solo-Rpg-mode will auto-open the tag tracking buffer when started."
+  :type 'bool
+  :group 'solo-rpg)
+
+(defcustom solo-rpg-hud-update-delay 1.0
+  "How many seconds of idle time before the HUD automatically updates."
+  :type 'number
+  :group 'solo-rpg)
+
+(defcustom solo-rpg-hud-width 35
+  "The width in characters of the Lonelog HUD window."
+  :type 'number
   :group 'solo-rpg)
 
 
@@ -519,6 +544,12 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
 
 (defvar solo-rpg-dungeon-size 'medium
   "Size to take into consideration when generating dungeon rooms.")
+
+(defvar-local solo-rpg--hud-timer nil
+  "Buffer-local variable to store the active HUD timer for this session.")
+
+(defvar-local solo-rpg--hud-buffer-name nil
+  "Buffer-local variable storing the unique name of this session's HUD.")
 
 
 ;;; FUNCTIONS =================================================================
@@ -1071,10 +1102,152 @@ If INVERT is non-nil, then output is inverted."
   (solo-rpg--stage #'solo-rpg-gen-dungeon-room-text))
 
 ;;; LONELOG ===================================================================
+;;; Tag handling
+
+(defun solo-rpg-extract-latest-tags ()
+  "Scan the buffer backwards to extract the latest state of each tag.
+Returns a chronologically ordered list of tag strings."
+  ;; 1. Save the user's cursor position so we don't yank their screen around.
+  (save-excursion
+    ;; 2. Jump to the absolute bottom of the document.
+    (goto-char (point-max))
+
+    ;; 3. Set up our temporary variables for this run.
+    (let ((seen-ids (make-hash-table :test 'equal))
+          (latest-tags nil)
+          ;; Regex: Group 1 matches anything that isn't a ], [, or |
+          (tag-regex "\\[\\([^][|]+\\)[^][]*\\]"))
+
+      ;; 4. Loop backwards until we run out of matches.
+      (while (re-search-backward tag-regex nil t)
+        (let ((start (match-beginning 0))
+              (end (match-end 0)))
+          
+          ;; 5. Check if it's wrapped in double brackets (like an Org link).
+          ;; If it is, we completely ignore it.
+          (unless (or (and (> start (point-min)) (eq (char-before start) ?\[))
+                      (and (< end (point-max)) (eq (char-after end) ?\])))
+            
+            (let ((full-tag (match-string-no-properties 0))
+                  (tag-id   (match-string-no-properties 1)))
+              
+              ;; 6. Have we seen this ID before?
+              (unless (gethash tag-id seen-ids)
+                ;; No? Then this is the newest version.
+                ;; Mark it as seen in the hash table.
+                (puthash tag-id t seen-ids)
+                ;; Add the full tag to the front of our list.
+                (push full-tag latest-tags))))))
+
+      ;; 7. Return the finalized list.
+      latest-tags)))
+
+(defun solo-rpg-toggle-hud ()
+  "Toggle the visibility of the Lonelog HUD side-window."
+  (interactive)
+  (let ((hud-win (solo-rpg--get-visible-hud-window)))
+    (if hud-win
+        (delete-window hud-win)
+      (solo-rpg-update-hud))))
+
+(defun solo-rpg--any-active-sessions-p (&optional ignore-buf)
+  "Return t if there are live game buffers, ignoring IGNORE-BUF."
+  (seq-some (lambda (buf)
+              (and (not (eq buf ignore-buf)) ; Ignore the dying buffer
+                   (buffer-local-value 'solo-rpg-mode buf)
+                   (not (string-match-p "^\\*Lonelog HUD"
+                                        (buffer-name buf)))))
+            (buffer-list)))
+
+(defun solo-rpg--cleanup-hud-if-last (&optional ignore-buf)
+  "Close the HUD window and kill HUD buffers if no lonelog sessions remain.
+IGNORE-BUF is ignored in the tally."
+  (unless (solo-rpg--any-active-sessions-p ignore-buf)
+    ;; 1. Close the window if it's currently on screen
+    (let ((hud-win (solo-rpg--get-visible-hud-window)))
+      (when hud-win
+        (delete-window hud-win)))
+    ;; 2. Silently assassinate all orphaned HUD buffers
+    (dolist (buf (buffer-list))
+      (when (string-match-p "^\\*Lonelog HUD" (buffer-name buf))
+        (kill-buffer buf)))))
+
+(defun solo-rpg--cleanup-on-kill ()
+  "Hook function to clean up the HUD, ignoring the dying buffer."
+  (solo-rpg--cleanup-hud-if-last (current-buffer)))
+
+(defun solo-rpg--get-visible-hud-window ()
+  "Return the window displaying a Lonelog HUD, if one exists."
+  (seq-find (lambda (win)
+               (string-match-p "^\\*Lonelog HUD"
+                               (buffer-name (window-buffer win))))
+             (window-list)))
+
+(defun solo-rpg--swap-hud-on-window-change (&optional _)
+  "Swap the HUD buffer to match the active game, if a HUD is open."
+  (when (and solo-rpg-mode
+             solo-rpg--hud-buffer-name
+             (not (string-match-p "^\\*Lonelog HUD" (buffer-name))))
+    (let ((hud-buf (get-buffer solo-rpg--hud-buffer-name))
+          (visible-hud-win (solo-rpg--get-visible-hud-window)))
+      ;; If our HUD exists, AND a HUD window is open on screen...
+      (when (and hud-buf visible-hud-win
+                 ;; ... and the window isn't ALREADY showing our HUD
+                 (not (eq (window-buffer visible-hud-win) hud-buf)))
+        ;; Lightning-fast swap: just change the text in that exact window
+        (set-window-buffer visible-hud-win hud-buf)))))
+
+(defun solo-rpg--draw-hud-contents (hud-buffer tags)
+  "Wipe HUD-BUFFER and cleanly insert TAGS."
+  (with-current-buffer hud-buffer
+    ;; Save the user's cursor in case they actually clicked inside the HUD
+    (save-excursion
+      (let ((inhibit-read-only t))
+        (unless (eq major-mode 'text-mode)
+          (text-mode))
+        (erase-buffer)
+        (insert "=== Active Tags ===\n\n")
+        (if tags
+            (dolist (tag tags)
+              (insert tag "\n"))
+          (insert "Any [tags] will be shown here.\n"))
+        (unless solo-rpg-mode
+          (solo-rpg-mode 1))))))
+
+(defun solo-rpg-update-hud ()
+  "Extract the latest tags and pop open the dedicated side-window HUD."
+  (interactive)
+  ;; If we don't have a unique HUD name for this buffer yet, make one!
+  (unless solo-rpg--hud-buffer-name
+    (setq solo-rpg--hud-buffer-name (format "*Lonelog HUD: %s*" (buffer-name))))
+  (let ((tags (solo-rpg-extract-latest-tags))
+        (hud-buffer (get-buffer-create solo-rpg--hud-buffer-name)))
+    (solo-rpg--draw-hud-contents hud-buffer tags)
+    (display-buffer hud-buffer
+                    `(display-buffer-in-side-window
+                      . ((side . right)
+                         (window-width . ,solo-rpg-hud-width))))))
+
+(defun solo-rpg--update-hud-background (source-buffer)
+  "Silently update the HUD for SOURCE-BUFFER, but only if it's visible."
+  ;; 1. Make sure the user hasn't closed the game buffer.
+  (when (buffer-live-p source-buffer)
+    ;; 2. Fetch the unique HUD name for this specific game
+    (let ((hud-name (buffer-local-value 'solo-rpg--hud-buffer-name
+                                        source-buffer)))
+      ;; 3. If the HUD is currently open on the screen...
+      (when (and hud-name (get-buffer-window hud-name))
+        ;; 4. ... teleport into the game buffer to do the scanning
+        (with-current-buffer source-buffer
+          (let ((tags (solo-rpg-extract-latest-tags))
+                (hud-buffer (get-buffer-create hud-name)))
+            ;; 5. Draw the results
+            (solo-rpg--draw-hud-contents hud-buffer tags)))))))
+
 ;;; Output functions
 ;;; - Scene
 
-(defun solo-rpg-lonelog-scene-start (scene-title)
+(defun solo-rpg-scene-start (scene-title)
   "Ask for SCENE-TITLE, insert a Lonelog scene heading in the current buffer."
   (interactive "sEnter new scene title: ")
   (let ((prev-scene-num 0)
@@ -1219,6 +1392,134 @@ If INVERT is non-nil, then output is inverted."
     ("q" "Quit"          transient-quit-one)]])
 
 
+;;; FACES =====================================================================
+
+;; The Macro Definition
+(defmacro solo-rpg-define-face (name dark-hex light-hex docstring &optional bold)
+  "Define a Lonelog face with NAME, using DARK-HEX and LIGHT-HEX colors.
+DOCSTRING provides the documentation for the face.
+If BOLD is non-nil, the face will be bold in all themes."
+  (let ((weight-spec (if bold '(:weight bold) '())))
+    `(defface ,name
+       '(
+         ;; Dark Background
+         (((class color) (background dark))
+          :foreground ,dark-hex ,@weight-spec)
+         ;; Light Background
+         (((class color) (background light))
+          :foreground ,light-hex ,@weight-spec)
+         ;; Fallback (Terminal / Monochrome)
+         (t ,@weight-spec))
+       ,docstring
+       :group 'lonelog)))
+
+;; --- Face Definitions ---
+
+;; Action (@)
+(solo-rpg-define-face solo-rpg-action-symbol-face
+  "#045ccf" "#003f91"
+  "Foreground color for the Lonelog action symbol (the \"@\")."
+  t) ;; Bold
+
+(solo-rpg-define-face solo-rpg-action-content-face
+  "#a3cbff" "#1e4e8c"
+  "Foreground color for the Lonelog action.
+This is the part that comes after the \"@\".")
+
+;; Oracle (?)
+(solo-rpg-define-face solo-rpg-oracle-question-symbol-face
+  "#b020a0" "#6d207a"
+  "Foreground color for the Lonelog oracle question symbol (the \"?\")."
+  t) ;; Bold
+
+(solo-rpg-define-face solo-rpg-oracle-question-content-face
+  "#f490ec" "#5e3fd3"
+  "Foreground color for the Lonelog oracle question itself.
+This is the part that comes after the \"?\".")
+
+;; Mechanics (d:)
+(solo-rpg-define-face solo-rpg-mechanics-roll-symbol-face
+  "#308018" "#2e7d12"
+  "Foreground color for the Lonelog mechanics roll symbol (the \"d:\")."
+  t) ;; Bold
+
+(solo-rpg-define-face solo-rpg-mechanics-roll-content-face
+  "#60ff28" "#206009"
+  "Foreground color for the Lonelog mechanics roll itself.
+This is the part that comes after the \"d:\".")
+
+;; Result (->)
+(solo-rpg-define-face solo-rpg-oracle-and-dice-result-symbol-face
+  "#a09005" "#99a600"
+  "Foreground color for the Lonelog oracle/dice symbol (the \"->\")."
+  t) ;; Bold
+
+(solo-rpg-define-face solo-rpg-oracle-and-dice-result-content-face
+  "#e8fc05" "#708600"
+  "Foreground color for the Lonelog oracle/dice result itself.
+This is the part that comes after the \"->\".")
+
+;; Consequence (=>)
+(solo-rpg-define-face solo-rpg-consequence-symbol-face
+  "#c04008" "#936400"
+  "Foreground color for the Lonelog consequence symbol (the \"=>\")."
+  t) ;; Bold
+
+(solo-rpg-define-face solo-rpg-consequence-content-face
+  "#ffa050" "#b37400"
+  "Foreground color for the Lonelog consequence itself.
+This is the part that comes after the \"=>\".")
+
+;; Tags ([..:..|..])
+(solo-rpg-define-face solo-rpg-tag-symbol-face
+                     "#00ff00" "#00cc00"
+                     "Foreground color for the Lonelog tag symbols themselves.
+They are the `[' and `]' characters.")
+
+(solo-rpg-define-face solo-rpg-tag-separator-face
+                     "#00aa00" "#008800"
+                     "Foreground color for the Lonelog tag separators (| and :).")
+
+;; Face rules:
+
+(defvar solo-rpg-font-lock-keywords
+  (list
+   ;; Action:
+   '("^\\(@\\)\\s-*\\(.*\\)"
+     (1 'solo-rpg-action-symbol-face)
+     (2 'solo-rpg-action-content-face))
+   ;; Oracle question:
+   '("^\\(\\?\\)\\s-*\\(.*\\)"
+     (1 'solo-rpg-oracle-question-symbol-face)
+     (2 'solo-rpg-oracle-question-content-face))
+   ;; Mechanics roll:
+   '("^\\(d:\\)\\s-*\\(.*\\)"
+     (1 'solo-rpg-mechanics-roll-symbol-face)
+     (2 'solo-rpg-mechanics-roll-content-face))
+   ;; Oracle and dice result:
+   '("\\(->\\)\\s-*\\(.*\\)"
+     (1 'solo-rpg-oracle-and-dice-result-symbol-face t)    ; t = Override
+     (2 'solo-rpg-oracle-and-dice-result-content-face t)) ; t = Override
+   ;; Consequence:
+   '("\\(=>\\)\\s-*\\(.*\\)"
+     (1 'solo-rpg-consequence-symbol-face t)     ; t = Override
+     (2 'solo-rpg-consequence-content-face t)) ; t = Override
+   ;; Tags (with anchored mini-search for | and :):
+   '("\\(\\[\\)\\([^]]+\\)\\(\\]\\)"
+     (1 'solo-rpg-tag-symbol-face t)
+     (3 'solo-rpg-tag-symbol-face t)
+     ;; --- The Anchored Matcher ---
+     ("[|:]"
+      ;; Pre-match form: jump to the start of the tag contents,
+      ;; and tell Emacs to stop searching at the end of the tag contents.
+      (progn (goto-char (match-beginning 2)) (match-end 2))
+      ;; Post-match form: jump back to the end of the closing bracket
+      ;; so Emacs can continue highlighting the rest of the file normally.
+      (goto-char (match-end 0))
+      ;; Subexp-highlighter: apply the face to the | or :
+      (0 'solo-rpg-tag-separator-face t))))
+  "Highlighting rules for Lonelog mode.")
+
 ;;; MINOR MODE ================================================================
 
 ;;;###autoload
@@ -1230,6 +1531,17 @@ By default, this is empty to allow users to define their own menu key.")
 (define-minor-mode solo-rpg-mode
   "Minor mode with tools for playing solo roleplaying games.
 
+When enabled, this mode provides syntax highlighting for the five core
+Lonelog symbols:
+ @   Action
+ ?   Oracle
+ d:  Mechanics roll
+ ->  Result
+ =>  Consequence
+
+Tags are also tracked in a side window:
+ [N:Jonah|friendly|Uninjured]
+
 \\{solo-rpg-mode-map}"
   :init-value nil
   :global nil
@@ -1239,8 +1551,50 @@ By default, this is empty to allow users to define their own menu key.")
 
   (if solo-rpg-mode
       ;; If ON:
-      (message "Solo-RPG-mode enabled.")
-    (message "Solo-RPG-mode disabled.")))
+      (progn
+        (font-lock-add-keywords nil solo-rpg-font-lock-keywords)
+        (font-lock-flush)
+
+        ;; Check if the buffer name starts with "*Lonelog HUD"
+        (unless (string-match-p "^\\*Lonelog HUD" (buffer-name))
+          ;; Generate the unique HUD name for this buffer
+          (setq solo-rpg--hud-buffer-name (format "*Lonelog HUD: %s*"
+                                                 (buffer-name)))
+          ;; Start the timer, and hand it the current game buffer.
+          (setq solo-rpg--hud-timer
+                (run-with-idle-timer solo-rpg-hud-update-delay t
+                                     #'solo-rpg--update-hud-background
+                                     (current-buffer)))
+
+          ;; Attach the cleanup check to this buffer's death event.
+          ;; The last `t' makes it buffer-local.
+          (add-hook 'kill-buffer-hook #'solo-rpg--cleanup-on-kill nil t)
+          ;; Handle auto-start
+          (when solo-rpg-auto-open-hud
+            (solo-rpg-update-hud)))
+        
+        (message "Solo-RPG-mode enabled."))
+    ;; If OFF:
+    (progn
+      (font-lock-remove-keywords nil solo-rpg-font-lock-keywords)
+      (font-lock-flush)
+      ;; Stop the idle timer.
+      (when solo-rpg--hud-timer
+        (cancel-timer solo-rpg--hud-timer)
+        (setq solo-rpg--hud-timer nil))
+
+      ;; Remove our kill-buffer hook hook so it doesn't fire unnecessarily
+      ;; The last `t' makes it buffer-local.
+      (remove-hook 'kill-buffer-hook #'solo-rpg--cleanup-on-kill t)
+
+      ;; Run the cleanup check
+      (solo-rpg--cleanup-hud-if-last)
+      
+      (message "Solo-RPG-mode disabled."))))
+
+(add-hook 'window-selection-change-functions
+          #'solo-rpg--swap-hud-on-window-change)
+
 
 (provide 'solo-rpg)
 
