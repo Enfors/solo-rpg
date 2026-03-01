@@ -998,10 +998,22 @@ If INVERT is non-nil, then output is inverted."
 
 (defconst solo-rpg-dungeon-room-descs
   '(("storage room" .
-    ((", filled with crates" . nil)))
+     ((", filled with crates" . nil)
+      (", filled with crates and chests" . nil)
+      (", with a few chests along the walls" . nil)))
     ("ceremonial chamber" .
      ((" with a ritual circle in the middle" . nil)
       (" with a bottomless pit at its center" . nil)))
+    ("burial chamber" .
+     ((" with tombs along the walls" .
+       ((", some of which are cracked open" ..
+         ((", seemingly from the inside" . nil)
+          (", their slabs lying broken on the floor" . nil)))))
+      (" with a central tomb" . nil)))
+    ("room with blood stains on the floor" .
+     ((", and cages along the walls" . nil)
+      (", and raised platforms with seating on all sides" . nil)
+      (", and pillars along the walls" . nil)))
     ("study" .
      ((" with book cases along the walls" . nil)
       (" with a desk at the center" .
@@ -1012,19 +1024,19 @@ If INVERT is non-nil, then output is inverted."
 
 ;;; - Code
 
-(defun solo-rpg-gen-dungeon-room-desc (options)
-  "Recursive function for generating dungeon room descriptions with OPTIONS."
+(defun solo-rpg-gen-desc (options)
+  "Recursive function for generating descriptions based on OPTIONS."
   (let ((chosen (nth (random (length options)) options)))
     (concat (car chosen)
             (if (null (cdr chosen))
                 ""
-              (solo-rpg-gen-dungeon-room-desc (cdr chosen))))))
+              (solo-rpg-gen-desc (cdr chosen))))))
 
 (defun solo-rpg-gen-dungeon-room-text ()
   "Return text describing a dungeon room."
   (let* ((room-data (solo-rpg--table-weighted-get-random-list "gen-dungeon-room"
                                                               '("size" "shape")))
-         (room-desc     (solo-rpg-gen-dungeon-room-desc solo-rpg-dungeon-room-descs))
+         (room-desc     (solo-rpg-gen-desc solo-rpg-dungeon-room-descs))
          (exit-probs    (alist-get solo-rpg-dungeon-size
                                    solo-rpg-dungeon-room-exit-probs))
          (forward-exit  (<= (+ 1 (random 100)) (alist-get 'forward exit-probs)))
