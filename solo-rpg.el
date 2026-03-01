@@ -61,6 +61,8 @@
 (require 'subr-x)  ; For string-join
 (require 'transient)
 
+(defvar solo-rpg-mode)
+
 ;;; Customization variables
 
 (defgroup solo-rpg nil
@@ -1032,7 +1034,7 @@ If INVERT is non-nil, then output is inverted."
       (" with a bottomless pit at its center" . nil)))
     ("burial chamber" .
      ((" with tombs along the walls" .
-       ((", some of which are cracked open" ..
+       ((", some of which are cracked open" .
          ((", seemingly from the inside" . nil)
           (", their slabs lying broken on the floor" . nil)))))
       (" with a central tomb" . nil)))
@@ -1539,8 +1541,8 @@ Lonelog symbols:
 Tags are also tracked in a side window:
  [N:Jonah|friendly|Uninjured]
 
-For more information about the Lonelog solo RPG notation format, please
-visit https://zeruhur.itch.io/lonelog
+For more information about the Lonelog solo RPG notation format, see:
+https://zeruhur.itch.io/lonelog
 
 \\{solo-rpg-mode-map}"
   :init-value nil
