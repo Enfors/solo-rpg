@@ -1098,6 +1098,36 @@ If INVERT is non-nil, then output is inverted."
   (interactive)
   (solo-rpg--stage #'solo-rpg-gen-dungeon-room-text))
 
+;;; Dungeon event generator
+
+(defconst solo-rpg-gen-dungeon-event-adj-table
+  '["Dangerous"
+    "Shadowy"
+    "Unexpected"]
+  "Adjectives for the random dungeon event generator.")
+
+(defconst solo-rpg-gen-dungeon-event-noun-table
+  '["encounter"
+    "echoes"
+    "halls"
+    "movements"
+    "sounds in the distance"
+    "ambush"
+    "surprise meeting"
+    "discovery"]
+  "Nouns for the random dungeon event generator.")
+
+(defun solo-rpg--gen-dungeon-event-text ()
+  "Generate and return a random dungeon event text."
+  (format "%s %s"
+          (solo-rpg-table-get-random solo-rpg-gen-dungeon-event-adj-table)
+          (solo-rpg-table-get-random solo-rpg-gen-dungeon-event-noun-table)))
+
+(defun solo-rpg-gen-dungeon-event ()
+  "Generate a random dungeon event and stage it."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg--gen-dungeon-event-text))
+
 ;;; LONELOG ===================================================================
 ;;; Tag handling
 
@@ -1364,7 +1394,8 @@ IGNORE-BUF is ignored in the tally."
     ("r" "Room"          solo-rpg-gen-dungeon-room)
     ("s" solo-rpg-toggle-dungeon-size
      :description solo-rpg--toggle-dungeon-size-desc
-     :transient t)]
+     :transient t)
+    ("e" "Event"         solo-rpg-gen-dungeon-event)]
    ["System"
     ("q" "Go back"       transient-quit-one)]])
 
