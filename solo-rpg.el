@@ -920,6 +920,53 @@ If INVERT is non-nil, then output is inverted."
   (interactive)
   (solo-rpg--stage #'solo-rpg--generator-plot-text))
 
+;;; Narrative event generator
+
+(defconst solo-rpg-gen-nar-event-incident-table
+  ["An assumption is proven wrong"
+   "A previously solved problem returns"
+   "Someone makes an unexpected appearance"
+   "A faction acts"
+   "Someone is put on the spot"
+   "A resource becomes unavailable"
+   "An environmental shift or hazard alters the scene"
+   "A hidden motive is revealed"
+   "A sudden obstacle blocks the path"
+   "A valuable opportunity presents itself"
+   "A piece of local lore becomes relevant"
+   "An unknown entity or force enters the scene"
+   "A loud or obvious distraction occurs nearby"
+   "Someone or something comes under sudden attack"
+   "A cruicial piece of equipment fails"]
+  "Incidents for the narrative event generator.")
+
+(defconst solo-rpg-gen-nar-event-twist-table
+  ["but it comes with a hidden cost or catch"
+   "and a timer starts; something must be done immediately"
+   "and it creates a new, unrelated problem"
+   "and it demands an immediate reaction or difficult choice"
+   "but it may not be what it first appears to be"
+   "which endangers an innocent bystander or ally"
+   "which reveals a critical vulnerability"
+   "which immediately attracts attention"
+   "and someone is isolated as a result"
+   "which provides a fleeting, temporary advantage"
+   "which shifts the balance of power"
+   "and the layout of the situation is shifted"
+   "but someone else gets involved first"]
+  "Twists for the narrative event generator.")
+
+(defun solo-rpg--gen-nar-event-text()
+  "Generate and return a narative event text."
+  (format "%s %s"
+          (solo-rpg-table-get-random solo-rpg-gen-nar-event-incident-table)
+          (solo-rpg-table-get-random solo-rpg-gen-nar-event-twist-table)))
+
+(defun solo-rpg-gen-nar-event ()
+  "Generate a random narrative event and stage it."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg--gen-nar-event-text))
+
 ;;; NPC Appearance generator
 
 (defun solo-rpg--generator-npc-body (mod)
@@ -1285,7 +1332,7 @@ IGNORE-BUF is ignored in the tally."
     (insert (format "S%d *%s*" (+ 1 prev-scene-num) scene-title))))
 
 ;;; DASHBOARDS ================================================================
-;;; Transient dashboard
+;;; Dice dashboard
 
 (transient-define-prefix solo-rpg-menu-dice ()
   "The solo-rpg Dice menu."
@@ -1357,15 +1404,20 @@ IGNORE-BUF is ignored in the tally."
       (solo-rpg-oracle-yes-no "50/50" invert)))
    ("-" "Worse than 50/50 probability"   solo-rpg-menu-oracle-yes-no-unprobable)])
 
+;;; Narrative dashboard
+
 ;; Define the Plot dashboard menu
 
-(transient-define-prefix solo-rpg-menu-plot ()
-  "The solo-rpg Plot menu."
-  ["SoloRPG dashboard: Plot Menu\n"
-   ["Plots"
-    ("p" "Generate"        solo-rpg-generator-plot)]
+(transient-define-prefix solo-rpg-menu-nar ()
+  "The solo-rpg Narrative menu."
+  ["SoloRPG dashboard: Narrative Menu\n"
+   ["Generate"
+    ("n" "Narrative event" solo-rpg-gen-nar-event)
+    ("p" "Plot"            solo-rpg-generator-plot)]
    ["System"
-    ("q" "Go back"               transient-quit-one)]])
+    ("q" "Go back"         transient-quit-one)]])
+
+;;; NPC dashboard
 
 ;; Define the NPC dashboard menu
 
@@ -1408,7 +1460,7 @@ IGNORE-BUF is ignored in the tally."
    ["Misc"
     ("d" "Dice..."       solo-rpg-menu-dice)
     ("n" "NPCs..."       solo-rpg-menu-npc)
-    ("p" "Plots..."      solo-rpg-menu-plot)]
+    ("a" "Narrative..."  solo-rpg-menu-nar)]
    ["Questions"
     ("o" "Oracles..."    solo-rpg-menu-oracle)]
    ["Environments"
