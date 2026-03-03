@@ -1053,6 +1053,40 @@ If INVERT is non-nil, then output is inverted."
   (solo-rpg--stage #'solo-rpg--generator-npc-appearance-text))
 
 
+;;; NPC Name generator
+;;; - Tables
+
+(defconst solo-rpg-gen-npc-name-first-table
+  '["En"
+    "For"
+    "Del"
+    "Ha"
+    "Sen"
+    "Flo"]
+  "First name part data for the NPC name generator.")
+
+(defconst solo-rpg-gen-npc-name-second-table
+  '["na"
+    "neva"
+    "novus"
+    "rama"
+    "sinni"
+    "barka"]
+  "Second name part for the NPC name generator.")
+
+;;; - Code
+
+(defun solo-rpg--gen-npc-name-text ()
+  "Generate and return a random NPC name."
+  (format "%s%s"
+          (solo-rpg-table-get-random solo-rpg-gen-npc-name-first-table)
+          (solo-rpg-table-get-random solo-rpg-gen-npc-name-second-table)))
+
+(defun solo-rpg-gen-npc-name ()
+  "Generate a random NPC name and stage it."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg--gen-npc-name-text))
+
 ;;; Dungeon room generator
 ;;; - Tables
 
@@ -1144,7 +1178,6 @@ If INVERT is non-nil, then output is inverted."
   "Command for returning a dungeon room for staging."
   (interactive)
   (solo-rpg--stage #'solo-rpg-gen-dungeon-room-text))
-
 ;;; Dungeon event generator
 
 (defconst solo-rpg-gen-dungeon-event-adj-table
@@ -1426,10 +1459,11 @@ IGNORE-BUF is ignored in the tally."
   ["SoloRPG dashboard: NPC Menu\n"
    ["Generate"
     ("a" "Appearance"        solo-rpg-generator-npc-appearance)
+    ("n" "Name"              solo-rpg-gen-npc-name)
     ("f" solo-rpg-toggle-npc-facial-hair
      :description solo-rpg--toggle-npc-facial-hair-desc
      :transient t)
-    ("n" solo-rpg-toggle-npc-nsfw
+    ("x" solo-rpg-toggle-npc-nsfw
      :description solo-rpg--toggle-npc-nsfw-desc
      :transient t)]
    ["System"
