@@ -1090,6 +1090,66 @@ If INVERT is non-nil, then output is inverted."
   (interactive)
   (solo-rpg--stage #'solo-rpg--gen-npc-name-female-text))
 
+(defconst solo-rpg-gen-npc-name-male-first-table
+  '["Den"
+    "Thar"
+    "Han"
+    "Mene"
+    "Dar"
+    "Thun"
+    "Mana"
+    "Hen"
+    "Var"
+    "Me"
+    "Ho"
+    "Leno"]
+  "First name part data for the male NPC name generator.")
+
+(defconst solo-rpg-gen-npc-name-male-second-table
+  '["lo"
+    "fa"
+    "di"
+    "na"
+    "ren"
+    "fla"
+    "fo"]
+  "Second name part data for the male NPC name generator.")
+
+(defconst solo-rpg-gen-npc-name-male-last-table
+  '["gan"
+    "der"
+    "deran"
+    "then"
+    "dor"
+    "menor"
+    "lanaz"
+    "gor"
+    "fex"
+    "drin"
+    "ger"]
+  "Second name part for the male NPC name generator.")
+
+(defun solo-rpg--gen-npc-name-male-text ()
+  "Generate and return a random male NPC name."
+  (if (= (random 2) 0)
+      (format "%s%s"
+              (solo-rpg-table-get-random
+               solo-rpg-gen-npc-name-male-first-table)
+              (solo-rpg-table-get-random
+               solo-rpg-gen-npc-name-male-last-table))
+    (format "%s%s%s"
+            (solo-rpg-table-get-random
+             solo-rpg-gen-npc-name-male-first-table)
+            (solo-rpg-table-get-random
+             solo-rpg-gen-npc-name-male-second-table)
+            (solo-rpg-table-get-random
+             solo-rpg-gen-npc-name-male-last-table))))
+
+(defun solo-rpg-gen-npc-name-male ()
+  "Generate a random male NPC name and stage it."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg--gen-npc-name-male-text))
+
 ;;; Dungeon room generator
 
 (defconst solo-rpg-gen-dungeon-room-size-table
@@ -1504,6 +1564,7 @@ IGNORE-BUF is ignored in the tally."
    ["Generate"
     ("a" "Appearance"        solo-rpg-generator-npc-appearance)
     ("f" "Female name"       solo-rpg-gen-npc-name-female)
+    ("m" "Male name"         solo-rpg-gen-npc-name-male)
     ("h" solo-rpg-toggle-npc-facial-hair
      :description solo-rpg--toggle-npc-facial-hair-desc
      :transient t)
