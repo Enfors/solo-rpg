@@ -1054,7 +1054,6 @@ If INVERT is non-nil, then output is inverted."
 
 
 ;;; NPC Name generator
-;;; - Tables
 
 (defconst solo-rpg-gen-npc-name-female-first-table
   '["En"
@@ -1080,8 +1079,6 @@ If INVERT is non-nil, then output is inverted."
     "vanna"]
   "Second name part for the female NPC name generator.")
 
-;;; - Code
-
 (defun solo-rpg--gen-npc-name-female-text ()
   "Generate and return a random female NPC name."
   (format "%s%s"
@@ -1094,7 +1091,6 @@ If INVERT is non-nil, then output is inverted."
   (solo-rpg--stage #'solo-rpg--gen-npc-name-female-text))
 
 ;;; Dungeon room generator
-;;; - Tables
 
 (defconst solo-rpg-gen-dungeon-room-size-table
   '((2  . "small")
@@ -1137,7 +1133,6 @@ If INVERT is non-nil, then output is inverted."
       (" with the remains of a desk at its center" . nil))))
   "Data for all room types.")
 
-;;; - Code
 
 (defun solo-rpg-gen-desc (options)
   "Recursive function for generating descriptions based on OPTIONS."
