@@ -699,7 +699,7 @@ GENERATE-FUN is a function pointer to function which returns generated text."
 
 (defun solo-rpg--toggle-output-desc ()
   "Return a formatted string showing the current output method."
-  (format "Toggle output (currently: %s)" solo-rpg-output-method))
+  (format "Output: %s" solo-rpg-output-method))
 
 (defun solo-rpg-toggle-npc-nsfw ()
   "Toggle `solo-rpg-npc-nsfw' between `on' and `off'."
@@ -956,7 +956,7 @@ If INVERT is non-nil, then output is inverted."
    "but someone else gets involved first"]
   "Twists for the narrative event generator.")
 
-(defun solo-rpg--gen-nar-event-text()
+(defun solo-rpg--gen-nar-event-text ()
   "Generate and return a narative event text."
   (format "%s %s"
           (solo-rpg-table-get-random solo-rpg-gen-nar-event-incident-table)
@@ -1213,6 +1213,31 @@ If INVERT is non-nil, then output is inverted."
   "Generate a random dungeon event and stage it."
   (interactive)
   (solo-rpg--stage #'solo-rpg--gen-dungeon-event-text))
+;;; Settlement event generator
+
+(defconst solo-rpg-gen-city-event-incident-table
+  ["Two factions collide"
+   "A crime occurs in the street"
+   "People are gathering"
+   "There is a tussle in the street"]
+  "Incidents for the city events generator.")
+
+(defconst solo-rpg-gen-city-event-twist-table
+  ["but the outcome is unclear"
+   "and people are gathering"
+   "and it has attracted the attention of the guards"]
+  "Twists for the city events generator.")
+
+(defun solo-rpg--gen-city-event-text ()
+  "Generate and return a city event text."
+  (format "%s %s"
+          (solo-rpg-table-get-random solo-rpg-gen-city-event-incident-table)
+          (solo-rpg-table-get-random solo-rpg-gen-city-event-twist-table)))
+
+(defun solo-rpg-gen-city-event ()
+  "Generate a random city event and stage it."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg--gen-city-event-text))
 
 ;;; LONELOG ===================================================================
 ;;; Tag handling
@@ -1491,6 +1516,16 @@ IGNORE-BUF is ignored in the tally."
    ["System"
     ("q" "Go back"       transient-quit-one)]])
 
+;;; Settlement dashboards
+
+(transient-define-prefix solo-rpg-menu-city ()
+  "Tthe solo-rpg Settlement menu."
+  ["SoloRPG dashboard: Settlement Menu\n"
+   ["Generate"
+    ("e" "Event"         solo-rpg-gen-city-event)]
+   ["System"
+    ("q" "Go back"       transient-quit-one)]])
+
 ;;; Main menu dashboard
 
 ;; Define the main dashboard menu
@@ -1504,7 +1539,8 @@ IGNORE-BUF is ignored in the tally."
    ["Questions"
     ("o" "Oracles..."    solo-rpg-menu-oracle)]
    ["Environments"
-    ("D" "Dungeons..."   solo-rpg-menu-dungeon)]
+    ("D" "Dungeons..."   solo-rpg-menu-dungeon)
+    ("S" "Settlements..." solo-rpg-menu-city)]
    ["System"
     ("h" "Toggle HUD"    solo-rpg-toggle-hud
      :transient t)
