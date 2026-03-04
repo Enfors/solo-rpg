@@ -1218,14 +1218,32 @@ If INVERT is non-nil, then output is inverted."
 (defconst solo-rpg-gen-city-event-incident-table
   ["Two factions collide"
    "A crime occurs in the street"
-   "People are gathering"
-   "There is a tussle in the street"]
+   "A chase breaks out"
+   "There is a tussle in the street"
+   "A suspicious figure darts into a nearby hiding place"
+   "A local authority figure makes a loud proclamation"
+   "A runaway draft animal or cart causes chaos"
+   "Someone approaches to offer a dangerous secret"
+   "A panicked citizen runs past, screaming for help"
+   "Someone is accused of a crime"
+   "A faction is loudly recruiting in the street"
+   "A procession or parade is blocking the street"]
   "Incidents for the city events generator.")
 
 (defconst solo-rpg-gen-city-event-twist-table
   ["but the outcome is unclear"
    "and people are gathering"
-   "and it has attracted the attention of the guards"]
+   "and it has attracted the attention of the guards"
+   "and the guards appear uninterested"
+   "and the crowd turns aggressive"
+   "and in the commotion, an opportunity arises"
+   "and things seem to be getting worse"
+   "and something of great value is threatened"
+   "but things may not be what they appear to be"
+   "but the motives of those involved is questioned by someone"
+   "and the city guards show up in force"
+   "but someone unexpectedly intervenes"
+   "but the situation is abruptly interrupted by a new threat"]
   "Twists for the city events generator.")
 
 (defun solo-rpg--gen-city-event-text ()
