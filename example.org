@@ -1,0 +1,709 @@
+* Campaign log
+
+** Session 1: Character Creation and start of campaign - 2025-08-06
+
+*** Rules - Old School Essentials Advanced Fantasy
+
+*** Solo tools - my own oracles
+
+*** Character creation
+
+- Since I will only play with one PC, I will start at level 3 and with [[id:fe391c60-6f4f-449e-a083-3d60f018e795][Dungeons & Dragons]] 5th Edition-style attribute rolling (4d6, drop lowest, assign to attibutes after you've rolled all six).
+- Attribute rolls:
+  - 8
+  - 14
+  - 13
+  - 14
+  - 14
+  - 15
+- Class: Druid
+- I've also created Azura the Ranger in a similar fashion. Although they won't be together initially, they will soon meet.
+
+*** Initial situation
+
+- I'll use the Action/Theme oracle to inspire the initial situation, then the Plot Generator to create an initial task or quest.
+- Action/Theme: Accuse Artifact
+  - Not sure what this means. Has Dannil realized that some piece of art or similar is a forgery?
+  - Clarification Action/Theme: Stop Leadership
+  - Okay. Rangers of Lestaria are in Dannil's home forest looking for something which is causing some unrest with the locals, and no one seems to know what they're looking for or why. He has been unable to make contact with them.
+- Plot Generator: Escape, Material riches, Duty
+  - Ah, I get it now. It seems the someone - not the Rangers - have been in the forest looking to find a suitable place to build a mine, because they believe there is some sort of valuable mineral there. The locals don't want this because it will negatively affect the forest, so Dannil decides to go to Springhaven - where the mining company is located - to investigate what's going on and how to put a stop to it.
+
+*** Start of the journey to Springhaven - 813-05-21 - 013.009
+
+**** 813-05-21
+
+- 04:00/013.009: Moving southeast to 014.010. 
+- 08:00/014.010: Hexcrawl roll: 16 - find location.
+  - 014.010 civilization level 1.
+    - Using [[id:d030a339-df01-455f-a96e-1c9a1885ba0d][Location Generator]]. Roll: 3 = Magical: portal. Ignoring and moving on.
+- 12:00/015.010: Hexcrawl roll: Find location.
+  - 015.010 civilization level 0.
+    - Roll: 7 = Lair. Ignoring and moving on.
+  - Resting for the night. Roll: 10 = Nothing happens.
+
+**** 813-05-22
+
+- 04:00/015.010. Moving southeast.
+- 08:00/016.011. Hexcrawl roll: 8 = No random encounter. Moving on.
+- 12:00/017.011. Hexcrawl roll: Find location.
+  - 017.011 civilization level 1.
+    - Roll: Mine. Ignoring.
+  - Resting for the night. Roll: 14 = Nothing happens.
+
+**** 813-05-23
+
+- 04:00/017.011. Moving southeast.
+- 11:00/018.012. Hexcrawl roll: 11 = Nothing happens.
+- Resting for the night. Roll: 10 = Nothing happens.
+
+**** 813-05-24
+
+- 04:00/018.012. Moving southeast.
+- 12:00/019.012. Hexcrawl roll: 3 = Random encounter.
+  - Is this Azura? 50/50: Yes and she's happy to see Dannil.
+    - Why is she happy to see him? Action/Theme: Talk betrayal
+    - Is she talking about the mining company? Probably: Yes.
+    - What is her problem with the mining company? Action/Theme: Raid vision
+      - She doesn't like the fact that they're exploiting nature.
+    - Personality roll: 4 Agreeableness = 1. She is seriously grumpy.
+      - Relationship = 0 - 1 = -1
+    - She seems to be very upset about the mining company, and since they have a common goal they decide to form a party and travel to Springhaven together.
+- They talk during the afternoon and evening.
+  - Personality roll: 2 Conscientiousness = 3
+    - Relationship unchanged.
+- Resting for the night. Roll: 7 = Nothing happens.
+
+*** Reaching Springhaven - 813-05-25 - 019.012
+
+**** 813-05-25: Reaching Springhaven
+
+- 04:00/019.012. Moving northeast to Springhaven.
+- 07:00/020.012. Hexcrawl roll: 10 = Nothing happens.
+- They talk while walking.
+  - Personality roll: 4 Agreeableness.
+    - Relationship -1.
+- They enter Springhaven through the west gate.
+- Anything in particular going on here? Action/Theme: Venture Desecration.
+  - Some sort of venture is being desecrated. Is it some of the statues near the gate? Probably not: 20 - negative random event, NPC. Something's happening to Azura. What? Action/Theme: Engage Occupant
+    - A number of thugs are urinating near the statues inside the west gate. Azura takes issue with this, and they attack.
+      - 1d6 normal humans: 6. Yikes.
+      - Round 1, initiative. Party: 3, thugs: 3. Simultaneous combat.
+        - Thug 1 attacks Azura. 15, miss.
+        - Thus 2 attacks Azura. 4, miss.
+        - Thug 3 attacks Dannil. 9, miss.
+        - Thug 4 attacks Dannil. 1, miss.
+        - Thug 5 attacks Dannil. 13, hit. 3 dmg.
+        - Thug 6 attacks Dannil. 12, miss.
+        - All the party's attacks are non-lethal.
+        - Azura attacks Thug 1. 20, hit. Thug 1 surrenders.
+        - Dannil attacks Thug 3. 1, miss.
+      - Round 2, initiative. Party: 4, thugs: 4. Simultaneous combat.
+        - Thug 2 attacks Azura. 13, miss.
+        - Thug 3 attacks Dannil. 1, miss.
+        - Thug 4 attacks Dannil. 12, miss.
+        - Thug 5 attacks Dannil. 13, hit. 1 dmg.
+        - Thug 6 attacks Dannil. 10, miss.
+        - Azura attacks Thug 2. 9, miss.
+        - Dannil attacks Thug 3. 5, miss.
+      - Round 3, initiative. Party: 4, thugs: 4. Simultaneous combat.
+        - 1/8 chance the guards arrive: 7, no.
+        - Thug 2 attacks Azura. 6, miss.
+        - Thug 3 attacks Dannil. 8, miss.
+        - Thug 4 attacks Dannil. 0, miss.
+        - Thug 5 attacks Dannil. 4, miss.
+        - Thug 6 attacks Dannil. 9, miss.
+        - Azura attacks Thug 2. 3, miss.
+        - Dannil attacks Thug 3. 5, miss.
+      - Round 4, initiative. Party: 3, thugs: 3. Simultaenous combat.
+        - 2/8 chance the guards arrive. 6, no.
+        - Thug 2 attacks Azura. 7, miss.
+        - Thug 3 attacks Dannil. 12, miss.
+        - Thug 4 attacks Dannil. 5, miss.
+        - Thug 5 attacks Dannil. 16, hit. 1 dmg.
+        - Thug 6 attacks Dannil. 13, hit. 3 dmg.
+        - Azura attacks Thug 2. 18, hit. 3 dmg. Thug 2 surrenders.
+        - Dannil attacks Thug 3. 16, hit. 5 dmg. Thug 3 surrenders.
+      - Round 5, initiative. Party: 2. Thugs: 2. Simultaneous combat.
+        - 3/8 chance the guards arrive. 3, yes.
+        - The guards break up the combat.
+      - End of combat.
+    - The guards interrogate everyone.
+      - Dannil charisma check: 3, success. +1 on reaction.
+      - Azura charisma check: 20, fail. -1 on reaction.
+      - Guards reaction roll for Dannil at +1: 16, friendly. Dannil is let go.
+      - Guards reaction roll for Azura at -1: 1. She is arrested.
+      - How does Azura react towards Dannil regarding this? Reaction roll at -2 (relationship): Hostile. Great...
+      - Dannil assures her that he will try to get her out.
+        - New quest (4): Get Azura out of jail.
+- Dannil tries to secure witnesses in Azura's favor.
+  - Charisma check: 3, success.
+  - Reaction roll from potential witness 1/3 at +2: 2, unfriendly. No help there.
+  - Reaction roll from potential witness 2/3 at +2: 11, indifferent. No help there.
+  - Reaction roll from potential witness 3/3 at +2: 12, friendly. This witness offers to help.
+    - Witness secured; progress 1 made in quest tracker.
+- Dannil asks around on where to go to talk to the city guards about when Azura's trial will be, and he learns the correct location. He goes there.
+  - He asks the guards posted outside to be let inside to talk to the correct official.
+    - Charisma roll: 10, success.
+    - Reaction roll from the gate guards at +4: 15, Helpful. They escort him to the right official.
+    - Charisma roll: 1, success.
+    - Reaction roll from the official at +4: 3, indifferent. He tells him it will be at 06:00 tomorrow, and that he can attend with his witness if he wants.
+      - Trial date learned; progress 2 made in the quest tracker.
+- Dannil wanders the city to learn its layout, then goes to spend the night at the Golder Bear Inn. It costs 2 gold.
+    
+*** 813-05-26: Day of Azura's trial
+
+- 04:00. Dannil wakes up, and has breakfast.
+- 06:00. Dannil shows up at the court. Is the witness here? Highly likely: 11, yes.
+  - Everything set for the trial; progress 3 made in the quest tracker.
+  - The witness testifies. Does everything go as planned? Very likely: 19, no and the court is angered by the witness.
+  - Dannil tries to set things right with his testimony.
+    - Charisma roll: 10, success.
+    - Reaction roll for the court at 0: 15, friendly.
+      - Testifying done; progress 4 made in the quest tracker.
+      - Quest competion roll: 3, 2. Success!
+    - Azura is acquitted and let go.
+  - How does Azura react to Dannil now?
+    - Charisma roll: 4, success.
+    - Reaction roll from Azura; -2 for relationship, +2 for help, +1 for Cha, +1 for Cha roll = +2: 1, Hostile. Azura blames Dannil for what happened.
+  - Can Dannil convince Azura not to abandon him and their joint quest?
+    - Charisma roll: 1, success.
+    - Reaction roll: -2 for relationship, +2 for charisma: 3, unfriendly.
+      - She reluctantly agrees, but their relationship suffers an additional -1 and is now at -3.
+  - Personality roll for Azura:
+    - 2, conscientiousness: 3. No relathipship change.
+- 07:00. The party goes to the Rangers of Lestaria, so that Azura can deliver her report on her latest outing.
+  - Azura delivers her report to Grenvie, who looks concerned.
+  - Dannil asks if he knows anything about the mining company. 50/50: No.
+  - Does Azura get a new mission? 50/50: 7, yes.
+    - Plot Generator: Infiltrate, Information, Animosity.
+    - Azura is asked to infiltrate the mining company to get more information about them. But will she and Dannil be able to keep the peace? Let's keep playing to find out.
+- 08:00. Dannil apologizes to Azura for what happened, and offers to buy her some equipment to make up for it - a bow and some arrows. How does she react?
+  - Charisma roll: 9, success.
+  - Reaction roll: +4 for offer, -3 for relationship, +2 for charisma = +3: 18, helpful.
+  - Azura is grateful for the gift, and their relationship improves to -2.
+- On Azura's suggestion, they go to the Traders Guild, to inquire about "getting work" with this mysterious mining company.
+  - By asking around, they try to figure out the name of the company.
+    - Dannil's Charisma check: 14, success.
+    - Azura's Charisma check: 11, success.
+    - They learn that the company in question is called The Outwest Mining Company.
+      - Learn the name of the mining company; progress 1 made in the quest tracker.
+
+*** End of session 1. Exp awarded: 2000
+
+** Session 2: Investigating the Outwest Mining Company - 2025-12-25
+
+*** 813-05-26 Part 2: Zolana joins the party
+
+- 09:00. Dannil and Azura try to locate the headquarters of the Outwest Mining Company.
+  - Dannil's Wisdom check: 1d20: 13, success (+2 on Oracle roll).
+  - Azura's Wisdom check: 1d20: 6, success (+2 on Oracle roll).
+    - Yes/No Oracle roll (Very likely): Yes.
+  - They inquire about getting jobs.
+    - Dannil Wisdom check: 1d20: 20, failure. -1 success.
+    - Dannil Charisma check: 1d20: 4, success. +1 success.
+    - Azura Wisdom check: 1d20: 17, failure.
+    - Azura Charisma check: 1d20: 18, failure.
+    - Will they get the jobs?
+      - Yes/No Oracle roll (50/50): 2 - no, and the clerk is acctively hostile towards them.
+  - They've now spent some time walking around, getting to know each other a bit more.
+    - Relationship roll for Azura: 1d6: 2, conscientiousness. No relationship change.
+      - *Experimental rule, since we re-rolled an already established personality trait*: Does this affect Azura's personality to become more like Dannil?
+        - The difference between their Conscientiousness levels is 2. If a 1d4 is less than or equal to 2, Azura's personality shifts one step towards Dannil's.
+          - Alter personality roll: 1d4: 3, no.
+  - Okay, it seems they were not treated well at all. But they do have a mission to accomplish.
+- *10:00*. Having had no success at infiltrating the Outwest Mining Company, the party decides to switch tactics - they decide to head to the local library at the Guild of Scholars to request permission to look up information about this mineral the mining company is looking to extract.
+  - They meet the clerk at the reception, and ask if they can use the library. Can they?
+    - Dannil Charisma check: 1d20: 7, success.
+    - Yes/No Oracle (Probably + 1): 3, yes. They are allowed inside.
+  - What is their initial impression of the library?
+    - Action/Theme Oracle: Heal / Limitations. Heal probably applies to Dannil, and Limitations to Azura.
+      - Dannil likes this place, and thinks he can learn a lot here.
+      - Azura realizes its value, but thinks that the greatest teacher is the great outdoors.
+  - Do they meet Zolana here, the potential new PC?
+    - Yes/No Oracle (probably): 2, yes.
+  - How does she react to the party?
+    - Dannil Charisma check: 1d20: 6, success (+1 on reaction roll).
+    - Azura Charisma check: 1d20: 19, failure.
+    - Reaction roll on +1: 1d20: 17, friendly.
+    - Zolana is a member of the Guild of Scholars, and she offers to help the party find what they're looking for.
+    - Zolana personality roll: 1d6: 3, Extroverted.
+      - Extroverted level: 1d8: 5. Trait: 1d4: 2, Sociable.
+        - Relationship with Dannil (Extroverted 4): +1 = 1.
+        - We don't know Azura's Extroverted value, so we skip her.
+  - Can they find the information they're looking for?
+    - Dannil Intelligence check: 1d20: 11, success.
+    - Azura Intelligence check: 1d20: 7, success.
+    - Zolana Intelligence check: 1d20: 1d20: 15, success.
+    - Yes/No Oracle roll (+3): 12, yes.
+  - What do they learn?
+    - Action/Theme Oracle: Emerge / Forest.
+    - The mineral in question is [[id:c34e983b-7570-41a7-bcbd-52fb3138f996][Westhammer Peak crystals]], which were first discovered at [[id:0641317e-eb3a-49d3-82dc-98d9d8e9ce90][Westhammer Peak]] in [[id:1f999133-93f3-40d1-ab0b-e91fcfd4a6b0][Westhammer Woods]].
+      - 1 progress made in the Investigate the mining company quest tracker.
+    - Does this make Zolana curious? We must first roll her Openness.
+      - Zolana personality roll for Openness: 1d8: 7. She is an extremely curious person.
+        - +1 relationship with Dannil (2).
+        - Is she interested in this?
+          - Openness roll: 1d8: 7, yes.
+        - Will she join the party in their quest to find out more about this mineral?
+          - Yes/No Oracle (very likely): 15, yes.
+          - *Zolana joins the party.*
+          - This warrants another personality roll: 1d6: 4, Agreeableness: 1d8: 4.
+            - -1 relationship with Dannil (1).
+            - -1 relationship with Azura (-1).
+
+*** 813-05-26 Part 3: Preparation for travel to Westhammer Peak
+
+- *11:00*. The party decides to go travel to Westhammer Peak, but it is too late in the day to start the journey now, so they must wait until tomorrow.
+  - In the mean time, they do more research on Westhammer Peak and Westhammer Woods. What do they find out?
+    - Action/Theme Oracle: Detect / Madness
+      - They learn about what happened to [[id:3a3ffe64-8711-40cb-9785-e38d32cc42e8][Glimmervale]].
+- *12:00*. They decide to go shopping for equipment for Zolana.
+  - This means I need to finish her Character Creation.
+    - Starting gold is normally 3d6 x 10. Since she is third level, I'll add 2d6 x 10 for a total of 5d6 x 10 = 210 gold.
+    - Starting spells: She starts with 5 first level spells, and one second level spell.
+      - For each spell she knows, I'll roll twice (rerolling any duplicates) and pick the one I want from those two.
+        - First level spells:
+          1. Detect Magic
+          2. Magic Missile
+          3. Sleep
+          4. Read Languages
+          5. Shield
+        - Second level spell:
+          1. Knock
+- *End of session*. Exp awarded: 1000
+
+** Session 3: Travel to Westhammer Peak - 2025-12-26
+
+*** 813-05-26 Part 4: Buying equipment for Zolana
+
+- *13:00*. The party goes to the general store at the Springhaven town square to buy equipment for Zolana.
+  - The party talks as they do the shopping, getting to know each other a bit more.
+    - Azura personality roll: 1d6: 5, neuroticism - 1d8: 3, trait Focused.
+      - +2 relationship with Dannil.
+      - Neuroticism roll for Zolana: 1d8: 1
+      - -1 relationship with Azura.
+      - -1 relationship with Dannil.
+    - Zolana personality roll: 1d6: 1, Openness (7).
+      - +1 relationship with Dannil.
+      - Openness roll for Azura: 1d8: 1, trait: 1d4: 3, cynical.
+      - -1 relationship with Dannil.
+      - -1 relationship with Azura.
+- *End of session*. Exp awarded: 1000
+  - Dannil reaches level 4.
+
+** Session 4: Travel to Westhammer Peak, continued - 2026-01-19
+
+*** 813-05-26 Part 5: Spending the rest of the day
+
+So, we're travelling to Westhammer Peak. But it's already past noon, so we can't do it today. We have to spend the rest of the day doing something - but I don't know what. So, I'll use my [[id:aec7d0f2-0de1-415f-b6fc-25378b7d10ca][GM Pacing Moves]] table for settlements, to make something happen.
+
+The roll needs a Tension - so let's introduce that concept. We'll set it to 0 to start off.
+
+Rolling on the GM pacing moves table for Settlements: 1d10: 5. NPC approaches. Okay. We don't have any "extra" NPCs except Rakkim. I should probably make a list of NPCs now - which will only have him on it, for now - for future use. But this time, Rakkim will be the one approaching.
+
+But what does he want? Let's ask the [[id:cec50e0b-11f0-44de-a771-da6c0b17f498][Action/Theme Oracle]]: *Follow / Illusion.*
+
+Not sure what that means. Does he have some foolish idea he wants to pursue? Is that what he wants? Let's ask the [[id:95b6d006-9a8d-4e95-8d9f-077aadacf0a3][Yes/No Oracle]], but I think it's somewhat unlikely: 1d20: 16, that's a *Yes*. Okay, so what is this foolish idea of his? *Beware / Traitor*. I see. He believes there's a traitor of some kind, but what he says seems foolish (although that doesn't mean that he's wrong). Alright, so let's make a Personality roll for him, to see what impression he gives to Dannil. We'll roll for the Personality aspect first. 1d6: 2, conscientiousness. Let's roll for that: 1d20: 5 - that's a 1. He is one sloppy fellow. I'm not going to use the Love system for him. So let's just roll for his conscientiousness descriptor: 1d4: 2 - Irresponsible. Yeah, I don't think Dannil gets a very good impression, so he moves on.
+
+Walking away from that situation, Dannil socializes with Azura and Zolana.
+
+- Personality roll for Azura: Only extroverted left, so doing that one: 1d20: 19 - Perfect match. Interesting. Things are looking up between Dannil and Azura; her Extraversion is set to the same as Dannil's - 4. Rolling descriptor: 1d4: 4 - Easy-going. Okay, nice! +2 Love points, ending up at a total of +2.
+  - Dannil and Azura find it easy to talk about Rakkim, and how weird he was.
+- Personality roll for Zolana: 1d6: 3, rolls down to Neuroticism: 1d20: 14, that's a 6. That's -1 to Love points, for a new total of 0. Rolling for descriptor: 1d4: 1, Sensitive. Okay, that's not very good, but okay. It could be worse.
+- Let's fast forward to the next day.
+- 20:00. *End of session*. Exp awarded: 500
+  - End of session thoughts:
+    - There has been a lot of socializing. Next time, we need some action. I want combat. We'll see how it goes.
+
+** Session 5: Actual travel to Westhammer Peak - 2026-02-08
+
+From now on, I will be using [[https://zeruhur.itch.io/lonelog][Lonelog]] notation.
+
+Quick recap: Previously, the party had learned that the Outwest Mining Company is looking to extract [[id:c34e983b-7570-41a7-bcbd-52fb3138f996][Westhammer Peak crystals]] from [[id:a87eb300-f50a-475e-970e-297a556eb2be][Daggerwood]]. Through a visit to the local library, they learned that this mineral was first found in [[id:0641317e-eb3a-49d3-82dc-98d9d8e9ce90][Westhammer Peak]]. Intrigued, they've decided to travel there to investigate this strange mineral.
+
+*** 813-06-27: Travel to Westhammer Peak
+
+**** 04:00
+
+@ The party wakes up and gets ready to head out to Westhammer Peak.
+
+**** 05:00/Springhaven
+
+@ The party heads north.
+d: Hexcrawl roll for 021.011 North of Springhaven: 1d20: 15 -> Find location
+=> They find the old silver mine, but decide to press on knowing that this is not their destination.
+
+**** 08:00/020.011
+
+@ The party heads northwest.
+d: Hexcrawl roll for 019.010 Southeast Westhammer Woods: 1d20: 14 -> Nothing happens.
+
+**** 12:00/019.011 Southeast Westhammer Woods
+
+@ The party heads north, having spotted the Westhammer Peak.
+d: Hexcrawl roll for 019.009 Northeast Westhammer woods: 1d20: 9 -> Nothing happens.
+
+**** 16:00/019.009 Northeast Westhammer Woods
+
+The party arrives at the peak - it is easy to spot, and navigate to. There is a mine at the base of the peak, where goblins hold humans as slaves to mine the crystals.
+
+@ Azura, being the navigator, rolls Wisdom to see if she spots the goblins.
+d: She has a Wisdom of 12. 1d20: 2 -> She easily spots them and warns the party.
+
+The party deliberates on what to do. Dannil wants to liberate them. Let's roll for Agreeableness for the others at +2 to see if they want to help.
+
+d: Azura rolls against 1+2=3. 1d8: 7 -> No.
+d: Zolana rolls against 4+2=6. 1d8: 6 -> Yes, with some hesitation.
+
+But is Zolana too afraid to help? Let's roll for neuroticism.
+
+d: Zolana rolls against 6. 1d8: 3 -> Yes, she's too afraid.
+
+Dannil wants to try to change their mind. If he succeeds on a Charisma roll, they will reroll their rolls.
+
+d: Dannil rolls against Charisma 15. 1d20: 15 -> He manages to get them to roll again.
+d: Azura rolls against Agreeableness 1+2=3. 1d8: 1 -> Azura agrees to help, given the circumstances.
+d: Zolana rolls against Neuroticism 6-2=4 (circumstances). 1d8: 4 -> She manages to gather enough courage to help, given the plight of the slaves.
+d: How many goblins are outside the cave? 1d6: 1 -> Just one guard outside.
+
+There is only one guard outside. The party realizes that they have to trick the goblin to cross the clearing in front of the mine entrance to approach their hiding spot in the woods, so that they have a chance to kill him before he can alert the other goblins. The party makes some noise to draw his attention.
+
+? Does the goblin approach? Probably. 1d20: 5 -> No.
+? Did the goblin detect the noise at all? Probably. 1d20: 14 -> Yes.
+? What does the goblin do? Endanger / Happiness -> He alerts the others.
+d: How many will come to his aid? 1d6: 3 -> 3 other goblins emerges to help him.
+
+At this point, the goblins are alert but the party is hidden. I'm just going to roll initiative, and give the goblins 2-in-6 chances of being surprised.
+
+d: Are the goblins surprised? 1d6: 6 -> No
+
+***** Goblin combat
+
+****** Goblin stats
+
+AC 13, HP 3, Atk 0, Dmg 1d6
+
+****** Round 1
+
+d: Goblin initiative: 1d6: 3
+d: Party initiative: 1d6: 6
+
+d: Azura attacks G1. 1d20+2: 5 -> Miss
+d: Zolana attacks G2. 1d20: 2 -> Miss
+d: Dannil attacks G3. 1d20-1: 1 -> Miss
+
+d: G1 attacks Azura. 1d20: 15 -> Miss
+d: G2 attacks Zolana. 1d20: 7 -> Miss
+d: G3 attacks Dannil. 1d20: 6 -> Miss
+? Who does G4 attack? 1d3: 3 -> Dannil
+d: G4 attacks Dannil. 1d20: 12 -> Miss - just barely!
+
+****** Round 2
+
+d: Goblin initiative: 1d6: 3
+d: Party initiative: 1d6: 4
+
+d: Azura attacks G1. 1d20+2: 6 -> Miss
+d: Zolana attacks G2. 1d20: 14 -> Hit, dmg 1d4: 2, G2 has 1 HP left.
+d: Dannil attacks G3. 1d20-1: 5 -> Miss
+
+d: G1 attacks Azura. 1d20: 1 -> Crit fail. G1 will miss his next turn as he drops his shortsword.
+d: G2 attacks Zolana. 1d20: 5 -> Miss
+d: G3 attacks Dannil. 1d20: 1 -> Crit fail. G3 will also miss his next turn, since he got his shortsword tangled in a bush.
+d: G4 attacks Dannil. 1d20-1: 9 -> Miss
+
+****** Round 3
+
+d: Goblin initiative: 1d6: 6
+d: Party initiative: 1d6: 2
+
+d: G2 attacks Zolana: 1d20: 9 -> Miss
+d: G4 attacks Dannil: 1d20: 14 -> Hit, dmg 1d6: 6. A vicious in Dannil's chest. He has 15 HP left.
+
+d: Azura attacks G1. 1d20+2: 16 -> Hit, dmg 1d8+2: 10. Azura decapitates G2 as he tries to pick up his sword.
+d: Zolana attacks G2. 1d20: 7 -> Miss
+d: Dannil attacks G3. 1d20-1: 4 -> Miss
+
+Remaining goblins: G2 1, G3 3, G4 3.
+
+****** Round 4
+
+d: Goblin initiative: 1d6: 2
+d: Party initiative: 1d6: 3
+
+The goblins are shaken by the loss of G1, and the party takes the initiative.
+
+d: Azura attacks G4: 1d20+2: 7 -> Miss
+d: Zolana attacks G2: 1d20: 4 -> Miss
+d: Dannil attacks G3: 1d20-1: 17 -> Hit, dmg 1d4-1: 0. Only a scratch, no read damage.
+
+d: G2 attacks Zolana: 1d20: 5 -> Miss
+d: G3 attacks Dannil: 1d20: 9 -> Miss
+d: G4 attacks Azura: 1d20: 16 -> Miss
+
+****** Round 5
+
+d: Goblin initiative: 1d6: 2
+d: Party initiative: 1d6: 2
+
+Simultaneous resolution.
+
+d: Azura attacks G4. 1d20+2: 19 -> Hit, dmg 1d8+2: 8. Azura pierces G4's chest, who crumples over dead.
+d: Zolana attacks G2: 1d20: 19 -> Hit, dmg 1d4: 2. Zolana kills G2 with a solid stab to the chest.
+d: Dannil attacks G3: 1d20-1: 10 -> Miss
+
+d: G2 attacks Zolana: 1d20: 12 -> Hit, dmg 1d6: 3. Zolana has 7 HP left.
+d: G3 attacks Dannil: 1d20: 2 -> Miss
+d: G4 attacks Azura: 1d20: 17 -> Hit, dmg 1d6: 1. Just as he dies, he manages to scratch Azura's arm. She has 20 HP left.
+
+Remaining goblins: G2 1, G3 3.
+
+****** Round 6
+
+d: Goblin initiative: 1d6: 3
+d: Party initiative: 1d6: 5
+
+d: Azura attacks G2. 1d20+2: 5 -> Miss
+d: Zolana attacks G2. 1d20: 4 -> Miss
+d: Dannil attacks G3. 1d20-1: 2 -> Miss
+
+d: G2 morale check against 7: 2d6: 5 -> Success
+d: G2 attacks Zolana. 1d20: 2 -> Miss
+d: G3 morale check against 7: 2d6: 10 -> Fail
+=> G3 flees.
+
+****** Round 7
+
+G3 is fleeing towards the cave. It is imperative that the party manages to stop him before he can alert any other goblins inside.
+
+d: Goblin initiative: 1d6: 1
+d: Party initiative: 1d6: 4
+
+@ Azura runs after G3, not wanting to let him alert others in the cave.
+d: Azura attacks G3. 1d20+2: 19 -> Hit. 1d8+2: 10. She decapitates the fleeing goblin.
+d: Zolana attacks G2. 1d20: 1 -> Crit miss - she drops her dagger, and will miss her next turn.
+d: Dannil attacks G2. 1d20-1: 19 -> Hit, dmg 1d4-1: 2. He cracks G2 over the head, severely wounding him.
+
+Goblins remaining: G2 1
+
+****** Round 8
+
+d: Goblin initiative: 1d6: 6
+d: Party initiative: 1d6: 4
+
+The last goblins fiercely fights on.
+
+d: G2 attacks Zolana. 1d20: 9 -> Miss
+
+d: Azura attacks G2. 1d20+2: 16 -> Hit, 1d8+2: 10. Azura decapitates the last goblin.
+
+****** End of combat
+
+***** Combat aftermath
+
+? Are there any slaves here who witnessed the combat? Likely. 1d20: 19 -> Yes and more are coming out of the cave.
+d: How many slaves are here? 2d4: 4 -> 2 where here initially and 2 more come out following the goblins.
+? Are any of the slaves gravely wounded? Probably not. 1d20: 6 -> No.
+@ Dannil asks if there are more slaves in the cave.
+? Are there more? Probably. 1d20: 1 -> Negative random event
+? What does the event pertain to? 1d4: 3 -> Faction
+
+Okay, I need to make a list of which factions this could pertain to.
+
+1. Outwest mining company
+2. Rangers of Lestaria
+3. The goblins
+4. The sprites
+5. The dryads
+6. The leshies
+
+d: Which faction does the negative event pertain to? 1d6: 4 -> The sprites.
+? What is happening with the sprites? Cancel / Enemies -> There are also sprites being held as slaves in the mine.
+
+*** End of session
+
+Exp awarded: 1000.
+- Azura advances to level 4.
+d: Roll for new hp: 1d8: 1 -> Mins out to 4 => Azura's max HP increases from 21 to 25, and her HP from 20 to 24.
+
+Current situation:
+- The party is outside the mine at Westhammer Peak.
+- The party has defeated four goblins - none escaped.
+- There are four human slaves here with the party.
+- The slaves said that there are also sprites being held captive in the mine.
+
+** Session 6: At the Westhammer Peak - 2026-02-14
+
+*** 813-06-27: Investigating the mine
+
+**** 16:00/019.009 Northeast Westhammer Woods
+
+Dannil wants to go into mine, to try to rescue the spites. Do the other party members agree? Let's make Agreeableness rolls at +2 given the circumstances.
+
+d: Azura rolls against 1+2: 1d8: 7 -> She strongly disagrees.
+d: Zolana rolls against 4+6: 1d8: 6 -> She agrees, but just barely.
+? Why does Azura disagree? -> Flee / Lord => She thinks they should return (Flee) to Springhaven to get the authorities (Lord) to help.
+@ Azura, being voted down, agrees to proceed with a sigh.
+@ The party decides to enter the mine cautiously.
+
+? Do the liberated civilians have any advice before they head in? -> Erase / Allegations
+=> The civilians say that the goblins used a forged debt to trick the sprites to come here.
+
+New quest: Find and eliminate the forged debt document.
+
+**** 17:00/019.009 Inside the mine at Westhammer Peak
+
+Now I need to determine how to generate the mine. Hmm. I think I'll wing it.
+
+***** Room 1: Entrance
+
+? Is there anything special about the entrance? Probably not -> 18: Yes
+? Is it guarded by goblins, trying to ambush? 50/50 -> No
+? What's special about the room then? -> Reveal / Malice => It is trapped!
+
+Okay, before I can sort out if anyone spots the trap, I need to figure out some things:
+1. Marching order, and
+2. Who does what, and
+3. The rules for that.
+
+|-----+--------+-------------|
+| Pos | Char   | Activity    |
+|-----+--------+-------------|
+|   1 | Azura  | Lookout     |
+|   2 | Zolana | Torchbearer |
+|   3 | Dannil | Trap watch  |
+|-----+--------+-------------|
+
+(I'm abstracting torch inventory - I don't care about that)
+
+d: Dannil rolls against his Wisdom +2 (15+2) to see if he spots the trap: 1d20: 8 -> Success.
+=> Dannil spots the trap, and the party avoids it.
+d: How many additional exits are there here? 1d2: 1 -> There is one exit.
+
+The entrance is a tunnel leading further into the mountain.
+
+***** Room 2
+
+d: The party enters the next room.
+? Is there anything special about this room? Probably not. 16 -> Yes.
+? What's special about it? -> Endanger / Hate => There are monsters here.
+? Is it goblins? Most likely -> 1 Negative Event, focus PC
+d: Which party member is affected? 1d3: 2 -> Zolana
+? What happened to Zolana? -> Mediate / Artifact
+=> Someone is trying to control (Mediate) Zolana using a magic item (Artifact).
+d: Zolana rolls against her Save vs spells of 15: 1d20: 9 -> Fail
+? Is this a possession? Probably. 16 -> Yes.
+d: Dannil rolls against Cha 15 to notice: 1d20: 13 -> He notices.
+@ Dannil halts the party, telling Azura something happened to Zolana.
+d: Rolling reaction from Zolana: 1d20: 16 -> Friendly
+=> Zolana still acts friendly.
+
+What's going on here? Wait, is this a sprite, charming Zolana to help them?
+
+? Is this a sprite charming Zolana? Somewhat likely. -> 17 Yes.
+? Does the sprite make itself known? Very likely. -> 13 Yes.
+? Is the sprite male(1) or female(2)? 1d2: 2 -> female.
+
+Plix appears.
+
+@ Dannil explains that they are there to help, and there's no need to charm Zolana.
+d: Reaction roll for Plix at +2: 1d20: 11 -> Indifferent
+=> Plix is not convinced, so she choses to maintain the charm on Zolana.
+
+1/4 progress marked on Eliminate the forged debt quest.
+
+@ Dannil asks Plix if she knows where the forged document is.
+d: Reaction at +2 (Dannil's Cha) to see if she answers truthfully: 1d20: 9 -> Unclear
+=> She does not answer at all.
+@ Dannil asks if she will come with them to try to find it.
+d: Reaction at +2: 1d20: 15 -> Friendly => She agrees to come with them.
+
+*** End of session
+
+Exp awarded: 1000.
+
+Current situation:
+- The party is in Room 2 of the Westhammer Peak mine.
+- Zolana has been charmed by the sprite Plix.
+- She (Plix) has agreed to help find the forged debt.
+- When asked if she knew where it was, she did not respond.
+  
+** Session 7: Going deeper into the Westhammer Peak mine - 2026-02-24
+
+This will be the first session since I added [Tag support] to Solo-RPG-mode.
+
+*** 816-06-27: Continued mine investigation
+
+**** Room 2
+
+? Other than the continued tunnel, are there any extra doors here? -2 Probably not: 1d20=5 -> No.
+@ The party continues to the next room.
+
+**** Room 3: Tunnel
+
+? Is there anything special about this room? -3 Unlikely: 1d20=5 -> No
+? Are there any goblins here in ambush? -1 Somewhat unlikely: 1d20=9 -> No
+? Is there a fork in the tunnel? 50/50: 1d20=17 -> Yes
+? Does [N:Plix|Friendly] know which way to go? +3 Likely: 1d20=13 -> Yes
+@ Plix says that we should go right, so the party proceeds in that direction.
+
+**** Room 4: Almost at the forged documents
+
+? Is there anything special about this room? 50/50: 1d20=11 -> Yes, but...
+? What's special about it? -> Leverage / Leadership => Plix has something to say about this room.
+? Is this were the forged debt document is? -2 Probably not: 1d20=12 -> No, but it is in the next room.
+@ Plix warns us to be careful as we proceed to the next room.
+
+**** Room 5: At the forged documents
+
+? Are goblins trying to ambush us? +3 Likely: 1d20=19 -> Yes, and they attack immediately
+d: Number of goblins: 1d6=6
+
+This is going to be a tough fight.
+
+[Sprite|AC:14|HP:2]
+[Goblin|AC:13|Atk:0|Dmg:1d6|HP:3]
+
+[Goblin ambush in office]
+[Dannil|AC:13|Atk:-1|Dmg:1d4-1]
+[Azura|AC:17|Akt:2|Dmg:1d8+2]
+[Zolana|AC:11|Atk:0|Dmg:1d4]
+
+@ The party bands together with Plix behind them, protecting her.
+
+d: Goblin initiative: 1d6=2
+d: Party initiative: 1d6=2
+
+d: Goblin 1 attacks Dannil: 1d20=12 -> Miss.
+d: Goblin 2 attacks Dannil: 1d20=7 -> Miss.
+
+d: Goblin 3 attacks Azura: 1d20=13 -> Miss.
+d: Goblin 4 attacks Azura: 1d20=17 -> Hit => 1d6=4 dmg.
+[Azura-HP|HP:24]
+
+d: Goblin 5 attacks Zolana: 1d20=11 -> Hit => 1d6=6 dmg.
+[Zolana-HP|HP:1]
+d: Goblin 6 attacks Zolana: 1d20=15 -> Hit => Zolana goes down.
+
+But this is simultaenous combat! Zolana can cast before she goes down.
+
+@ Zolana cast Sleep => All goblins fall asleep.
+@ Azura dispatches the sleeping goblins.
+[===Combat over===]
+d: Dannil casts Cure light wounds on Zolana -> 1d6+1=4 => Zolana is healed for 4 HP, and is back at 4.
+[Zolana-HP|HP:4]
+@ The party searches for the forged document, and they soon find it.
+@ The party returns to the surface.
+
+*** End of session
+
+Exp awarded: 1000.
+
+Current situation:
+- The party has just left the mine, having found the forged debt document.
+- [Q:Eliminate debt|Status:3/4]
+d: Roll to complete quest: 1d4=4
+- There is a complication; the quest is not solved yet.
+- [Q:Eliminate debt|Status:2/4]
+? What is the complication? Fear / Opposition -> Plix is afraid of the goblins, and wants to be escorted home before the quest can be completed.

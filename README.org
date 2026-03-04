@@ -6,6 +6,8 @@
 A set of support functions and Transient-based dashboards for playing solo roleplaying games directly inside Emacs. It provides dice rolling, multiple oracles, and generators, allowing you to generate campaign events without ever leaving your editor.
 
 ** Features
+
+- *Lonelog support:* There is color highlighting and tags support for the [[https://zeruhur.itch.io/lonelog][Lonelog Notation format for Solo RPGs]].
 - *Dice Roller:* Parse and roll standard RPG dice strings (e.g., =2d6+2=, =1d20-1=).
 - *Oracles:*
   - *Yes/No Oracle:* Probability-weighted answers (e.g., "Highly Likely", "50/50") with critical event triggers.
@@ -17,6 +19,7 @@ A set of support functions and Transient-based dashboards for playing solo rolep
   - Dungeon Rooms (4AD style)
 - *Sleek UI:* Fully driven by Emacs =transient= menus for a modern, discoverable interface.
 - *Flexible Output:* Route generated text directly into your active buffer, or restrict it to the echo area to keep your notes clean.
+[[https://github.com/user-attachments/assets/1574e301-54f7-439a-b3f9-1220c9b5a7e0]]
 
 ** Installation
 
