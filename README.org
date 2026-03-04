@@ -19,7 +19,7 @@ A set of support functions and Transient-based dashboards for playing solo rolep
   - Dungeon Rooms (4AD style)
 - *Sleek UI:* Fully driven by Emacs =transient= menus for a modern, discoverable interface.
 - *Flexible Output:* Route generated text directly into your active buffer, or restrict it to the echo area to keep your notes clean.
-#+HTML: <img src="https://github.com/user-attachments/assets/02053692-8b0d-448b-bab8-da6765712079">
+#+HTML: <img src="https://github.com/user-attachments/assets/fe4c3d8e-7a9f-4b6a-a9d6-3c251bc01940">
 
 ** Installation
 
