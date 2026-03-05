@@ -601,7 +601,7 @@ GENERATE-FUN is a function pointer to function which returns generated text."
   (solo-rpg-staging-regenerate)
   
   ;; Go to the menu
-  (solo-rpg-menu-staging))
+  (call-interactively #'solo-rpg-menu-staging))
 
 (defun solo-rpg--staging-update (text)
   "Wipe the staging buffer, insert TEXT, and show it at the bottom."
@@ -1032,8 +1032,7 @@ If INVERT is non-nil, then output is inverted."
                                  "Eye color       : %s\n"
                                  "Skin color      : %s\n"
                                  "Hair            : %s\n"
-                                 "Special features: %s\n"
-                                 )
+                                 "Special features: %s\n")
                          height
                          size
                          eye-color
