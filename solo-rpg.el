@@ -4,8 +4,8 @@
 ;; Maintainer: Christer Enfors <christer.enfors@gmail.com>
 ;; Created: 2026
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "27.1"))
-;; Keywords: games, convenience, wp
+;; Package-Requires: ((emacs "27.1") (transient "0.3.7"))
+;; Keywords: games
 ;; URL: https://github.com/enfors/solo-rpg
 
 ;; This file is not part of GNU Emacs.
@@ -50,9 +50,15 @@
 ;;
 ;; Customization:
 ;;
+;; All cusomtization can be done by typing:
+;;
+;;   M-x customize-group RET solo-rpg RET
+;;
 ;;   `solo-rpg-output-method' can be set to 'insert or 'message.
 ;;      - If set to 'message, output will be sent to message buffer only.
 ;;      - If set to 'insert, output will also be inserted in current buffer.
+;;   `solo-rpg-auto-open-hud' can be set to t or nil, and determines whether
+;;      or not the HUD which tracks Lonelog tags will be opened automatically.
 
 
 ;;; Code:
