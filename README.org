@@ -3,7 +3,7 @@
 #+DESCRIPTION: A toolkit for playing solo roleplaying games in Emacs.
 #+LANGUAGE: en
 
-A set of support functions and Transient-based dashboards for playing solo roleplaying games directly inside Emacs. It provides dice rolling, multiple oracles, and generators, allowing you to generate campaign events suitable for 
+A set of support functions and Transient-based dashboards for playing solo roleplaying games directly inside Emacs. It provides dice rolling, multiple oracles, and generators, allowing you to generate campaign events suitable for solo play.
 
 ** Features
 
