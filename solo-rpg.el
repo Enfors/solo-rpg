@@ -1050,7 +1050,6 @@ If INVERT is non-nil, then output is inverted."
                                    "Bottom          : %s\n")
                            chest waist bottom)))
     output))
-                           
 
 (defun solo-rpg-generator-npc-appearance ()
   "Generate NPC appearance and open it in the staging area."
@@ -1699,6 +1698,7 @@ IGNORE-BUF is ignored in the tally."
 ;;; Main menu dashboard
 
 ;; Define the main dashboard menu
+;;;###autoload
 (transient-define-prefix solo-rpg-menu ()
   "The main solo-rpg menu."
   ["SoloRPG dashboard: Main Menu\n"
