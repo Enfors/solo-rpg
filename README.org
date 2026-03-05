@@ -1,39 +1,44 @@
 #+TITLE: solo-rpg.el
 #+AUTHOR: Christer Enfors
-#+DESCRIPTION: A comprehensive toolkit for playing solo roleplaying games in Emacs.
+#+DESCRIPTION: A toolkit for playing solo roleplaying games in Emacs.
 #+LANGUAGE: en
 
-A set of support functions and Transient-based dashboards for playing solo roleplaying games directly inside Emacs. It provides dice rolling, multiple oracles, and generators, allowing you to generate campaign events without ever leaving your editor.
+A set of support functions and Transient-based dashboards for playing solo roleplaying games directly inside Emacs. It provides dice rolling, multiple oracles, and generators, allowing you to generate campaign events suitable for 
 
 ** Features
 
-- *Lonelog support:* There is color highlighting and tags support for the [[https://zeruhur.itch.io/lonelog][Lonelog Notation format for Solo RPGs]].
+- *Lonelog support:* There is color highlighting and tags support for the [[https://zeruhur.itch.io/lonelog][Lonelog Notation format for Solo RPGs]], including a HUD in a side window for keeping track of tags.
 - *Dice Roller:* Parse and roll standard RPG dice strings (e.g., =2d6+2=, =1d20-1=).
 - *Oracles:*
   - *Yes/No Oracle:* Probability-weighted answers (e.g., "Highly Likely", "50/50") with critical event triggers.
   - *Action/Theme Oracle:* Abstract prompt generator inspired by the Mythic Game Master Emulator.
-  - *Quantity Oracle:* Quickly determine how much or how many of something exists.
-- *Generators:* Instantly generate standard RPG elements:
+  - *Quantity Oracle:* Quickly determine how much or how many of something there are.
+- *Generators:* Generate standard RPG elements:
   - Plots and Quest Hooks
-  - NPC Appearances
-  - Dungeon Rooms (4AD style)
-- *Sleek UI:* Fully driven by Emacs =transient= menus for a modern, discoverable interface.
-- *Flexible Output:* Route generated text directly into your active buffer, or restrict it to the echo area to keep your notes clean.
+  - NPC names and appearances
+  - Dungeon rooms (4AD style)
+  - Random events (for when you get stuck and don't know what to do next)
+  - Weather
+- *Menu-driven UI:* =Solo-rpg= uses =transient= menus to make it easy to find what you need.
+
 #+HTML: <img src="https://github.com/user-attachments/assets/fe4c3d8e-7a9f-4b6a-a9d6-3c251bc01940">
 
 ** Installation
 
-*** MELPA (Coming Soon)
-Once the package is available on MELPA, you can install it easily using =use-package=:
+=Solo-rpg= can be installed from MELPA or manually.
+
+*** Installing from MELPA
+
+You can install =solo-rpg= by using =use-package= by adding the following to your =init.el=:
 
 #+begin_src elisp
 (use-package solo-rpg
   :ensure t
-  :bind (("C-c r" . solo-rpg-menu))
-  :hook (text-mode . solo-rpg-mode))
+  :bind (("C-c r" . solo-rpg-menu)))
 #+end_src
 
 *** Manual Installation
+
 1. Clone this repository or download =solo-rpg.el=.
 2. Place it somewhere in your Emacs =load-path=.
 3. Add the following to your =init.el=:
@@ -45,227 +50,24 @@ Once the package is available on MELPA, you can install it easily using =use-pac
 #+end_src
 
 ** Usage
+
 To start playing, simply activate the minor mode in your campaign notes buffer:
 
-=M-x solo-rpg-mode=
+=M-x solo-rpg-mode RET=
 
 Then, trigger the main dashboard using your configured hotkey (e.g., =C-c r=) or by typing =M-x solo-rpg-menu=. The Transient menu will guide you through all available tools.
 
 ** Configuration
+
 You can customize the behavior of =solo-rpg= using standard Emacs customization:
 
 =M-x customize-group RET solo-rpg RET=
 
 *Key Variables:*
 - =solo-rpg-output-method=: Set to ='insert= (default) to print results directly into your buffer, or ='message= to only show them in the minibuffer. This can also be toggled on the fly from the main Transient menu.
+- =solo-rpg-auto-open-hud=: Set to =t= or =nil= to decide if =Solo-rpg= should open the HUD when starting or not.
+- =solo-rpg-hud-width= determines the width of the HUD.
 
 ** License
+
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
----
-
-* Development & Architecture Notes
-
-/This section is for development planning and notes. It can be removed before the 1.0 release./
-
-** New menu hierarchy
-
-Options demarked by "->" lead to their own menus.
-
-- Dice roller
-- Oracles
-  - Action/Theme oracle
-  - Yes/No oracle
-  - Tarot draw
-- Environments
-  - Dungeons ->
-    - Generate dungeon room
-    - Random dungeon event
-  - Settlements ->
-    - Random settlement event
-  - Wilderness ->
-    - Random wilderness event
-- NPCs ->
-  - Appearance generator
-
-** Dungeon room generator plans
-
-*** Requirements and constraints
-
-- Will only produce one room at a time - not an entire dungeon at once
-- Stateless - the generator does not know anything about other rooms, keeping each room generation isolated
-- Should produce generic, randomized dungeon rooms
-- User should be able to draw the generated rooms on a paper map
-  - Generated content should be enough to draw maps similar to Four Against Darkness
-  - As in 4AD, the system will know nothing about other rooms or their locations, meaning that it will not try to avoid "collisions" on the map, that has to be handled by the user
-- Generator should use staging area to allow user to insert into current buffer or discard generated content
-
-*** Room purpose
-
-- Possibilities:
-  - Entrance
-  - Ceremonial
-  - Storage
-  - Kitchen
-  - Burial chamber
-  - Office
-  - Staff room
-  - Area/practice
-  - etc
-
-*** Room shape
-
-- Influenced by room purpose
-- Major division: room vs corridor
-- Size
-
-*** Exits
-
-- Exits are not in cardinal directions, but "forward", "towards center", and "away from center".
-- Forward:
-  - Small: 40%
-  - Medium: 50%
-  - Large: 60%
-- Toward center:
-  - Small: 60%
-  - Medium: 50%
-  - Large: 40%
-- Away from center:
-  - Small: 40%
-  - Medium: 50%
-  - Large: 60%
-- Down (to next level):
-  - Small: 15%
-  - Medium: 10%
-  - Large: 5%
-
-*** Contents
-
-- Monster/NPC present or not
-- Others, depending on room purpose:
-  - Water
-  - Fountain
-  - Platform/height difference
-  - Tapestries
-
-*** Dashboard menu
-
-- Generate
-  - N) Entrance
-  - R) Room
-  - H) Hidden room (higher chance of treasure?)
-  - S) Secret
-  - E) Event (for when the PCs linger/search - to make it risky)
-- Options
-  - D) Dungeon size=Small
-- System
-  - Q) Go back
-
-*** User-configurable settings
-
-- Dungeon size: Will affect the chance of "towards center" vs "away from center" doors. High "towards center" chance = smaller dungeon.
-
-** Obsolete
-
-*** Plan: The Staging Area API
-
-**** How the current system works
-
-***** Existing variables
-
-#+begin_src elisp
-(defvar solo-rpg--return-buffer nil
-  "Remembers which buffer to insert the final text into.")
-
-(defvar solo-rpg--staging-buffer-name "*solo-rpg-staging*"
-  "The name of our temporary staging area buffer.")
-#+end_src
-
-***** Existing functions and what they do
-
-1. =solo-rpg--staging-update= empties the staging buffer, displays new text it received as an argument, makes sure the window is visible
-2. =solo-rpg-staging-regenerate= is a Hello World function for staging
-3. =solo-rpg-staging-keep= copies text from staging it
-4. =solo-rpg-staging-abort= aborts the staging, closing menu and staging
-5. =solo-rpg-menu-staging= is the staging menu
-6. =solo-rpg-staging-hello-world= initializes the process:
-   - Generates the first result
-   - Goes to =solo-rpg-menu-staging=
-  
-***** Current hello-world flow
-
-- =solo-rpg-staging-hello-world= starts the process:
-  - =solo-rpg-staging-regenerate= creates the first text:
-    - =solo-rpg--staging-update= generates text 
-  - =solo-rpg-menu-staging= is called to start the menu
-- =solo-rpg-menu-staging= offers three options:
-  1) =solo-rpg-staging-regenerate=
-     - =solo-rpg--staging-update=
-  2) =solo-rpg-staging-keep=
-     - =solo-rpg--output=
-  3) =solo-rpg-staging-abort=
-
-***** Entry point
-
-- =solo-rpg-staging-hello-world=
-
-***** Functions used in the process
-
-- =solo-rpg-staging-regenerate=
-- =solo-rpg--staging-update=
-- =solo-rpg-menu-staging=
-
-***** Exit points
-
-- =solo-rpg-staging-keep=
-- =solo-rpg-staging-abort=
-
-**** How the new system will work
-
-***** The API
-
-To add new generate/stage functionality, the dev has to do thre things:
-
-1. Create a =generate= function which generates the desired output
-2. Create an interactive function, called the generate command function, which will be called from a transient menu option. This function must:
-   1. Call =solo-rpg--stage=, passing it the pointer of the =generate= function. 
-3. Add a menu option somewhere which calls the generate command function.
-
-***** What happens when the user calls the API (from the menu)
-
-1. =solo-rpg--stage= is called:
-   1. Saves the return buffer in =solo-rpg--return-buffer=
-   2. Saves the =generate= function pointer in =solo-rpg--generate-fun=
-   3. =solo-rpg-staging-regenerate= is called:
-      1. The =generate= function is called to get =text=
-      2. =text= is passed so =solo-rpg--staging-update=:
-         1. Staging buffer is updated
-   4. =solo-rpg-menu-staging= is called to enter the menu
-
-**** Needed changes
-
-1. Get rid of:
-   - =solo-rpg-staging-hello-world=
-2. Write =solo-rpg--stage= to do the following:
-   1. Save the return buffer
-   2. Save the function pointer in =solo-rpg--generate-fun=
-   3. Call =solo-rpg-staging-regenerate=
-   4. Call =solo-rpg-menu-staging= to display the menu
-3. Chage =solo-rpg-staging-regenerate= to call =solo-rpg--generate-fun= rather than a hard-coded function
-4. Add documentation about how to add new generators
-
-#+begin_src elisp
-(defun solo-rpg--stage (generate-fun)
-  "The main API to stage generated content."
-  ;; 1. Save the return buffer
-  (setq solo-rpg--return-buffer (current-buffer))
-  
-  ;; 2. Save the function pointer
-  (setq solo-rpg--generate-fun generate-fun)
-  
-  ;; 3. Do the very first generation and paint it to the screen
-  (solo-rpg-staging-regenerate)
-  
-  ;; 4. Pop open the menu
-  (solo-rpg-menu-staging))
-#+end_src
