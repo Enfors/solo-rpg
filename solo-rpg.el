@@ -1289,7 +1289,7 @@ If INVERT is non-nil, then output is inverted."
    "Someone is accused of a crime"
    "A faction is loudly recruiting in the street"
    "A procession or parade is blocking the street"]
-  "Incidents for the city events generator.")
+  "Incidents for the city event generator.")
 
 (defconst solo-rpg-gen-city-event-twist-table
   ["but the outcome is unclear"
@@ -1305,7 +1305,7 @@ If INVERT is non-nil, then output is inverted."
    "and the city guards show up in force"
    "but someone unexpectedly intervenes"
    "but the situation is abruptly interrupted by a new threat"]
-  "Twists for the city events generator.")
+  "Twists for the city event generator.")
 
 (defun solo-rpg--gen-city-event-text ()
   "Generate and return a city event text."
@@ -1318,6 +1318,85 @@ If INVERT is non-nil, then output is inverted."
   (interactive)
   (solo-rpg--stage #'solo-rpg--gen-city-event-text))
 
+;;; Wilderness event generator
+
+(defconst solo-rpg-gen-wild-event-incident-table
+  ["Something tells you that you are being stalked"
+   "You come across a building or structure"
+   "You hear cries for help in the distance"
+   "The sounds of battle can be heard nearby"
+   "Your way is blocked"
+   "There is an unexpected change in the weather"
+   "You meet someone"
+   "A sudden, seeminly unnatrual slience befalls the area"
+   "A local beast or creature crosses your path"
+   "You spot an unusual landmark or natural formation"
+   "You come across someone who asks for your help"]
+  "Incidents for the wilderness event generator.")
+
+(defconst solo-rpg-gen-wild-event-twist-table
+  ["but all may not be what it seems"
+   "and an opportunity presents itself"
+   "and things may be about to get dangerous"
+   "and a new danger is revealed"
+   "and a hidden path, shortcut, or advantage is revealed"
+   "and it leads to a rare foraging or hunting opportunity"
+   "and a secret is revealed"
+   "from which an advantage could be gained"
+   "but something appears to be off"]
+  "Twists for the wilderness event generator.")
+
+(defun solo-rpg--gen-wild-event-text ()
+  "Generate and return a wilderness event text."
+  (format "%s %s"
+          (solo-rpg-table-get-random solo-rpg-gen-wild-event-incident-table)
+          (solo-rpg-table-get-random solo-rpg-gen-wild-event-twist-table)))
+
+(defun solo-rpg-gen-wild-event ()
+  "Generate a random wilderness event and stage it."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg--gen-wild-event-text))
+
+;;; Weather generator
+
+(defconst solo-rpg-gen-weather-table
+  '((1  . (:desc "Thunder or snowstorm" :mod -2))
+    (3  . (:desc "Heavy rain or snow"   :mod -1))
+    (4  . (:desc "Rain or snow"         :mod  0))
+    (6  . (:desc "Overcast"             :mod  0))
+    (9  . (:desc "Scattered clouds"     :mod  0))
+    (11 . (:desc "Nearly clear skies"   :mod  1))
+    (12 . (:desc "Clear skies"          :mod  2)))
+  "Weather types for the weather generator.")
+
+(defun solo-rpg--gen-weather-text ()
+  "Generate and return weather text."
+  (let* ((weather      (solo-rpg--table-weighted-get-random
+                        solo-rpg-gen-weather-table))
+         (weather-desc (plist-get weather :desc))
+         (weather-mod  (plist-get weather :mod))
+         (temp         (+ (random 4)
+                          (random 4)
+                          weather-mod)))
+    (cond ((< temp 0) (setq temp 0))
+          ((> temp 6) (setq temp 6)))
+    (message "Mod: %d, Temp: %d" weather-mod temp)
+    (format "%s, %s"
+            weather-desc
+            (nth temp
+                 '("far colder than usual"
+                   "colder than usual"
+                   "a bit colder than usual"
+                   "temperature as expected for the season"
+                   "a bit warmer than usual"
+                   "warmer than usual"
+                   "far warmer than usual")))))
+
+(defun solo-rpg-gen-weather ()
+  "Generate random weather and stage it."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg--gen-weather-text))
+  
 ;;; LONELOG ===================================================================
 ;;; Tag handling
 
@@ -1580,9 +1659,9 @@ IGNORE-BUF is ignored in the tally."
    ["System"
     ("q" "Go back"               transient-quit-one)]])
 
-;;; Dungeon dashboards
+;;; Environment dashboards
 
-;; Define the Dungeon dashboard menu
+;; Dungeon dashboard
 
 (transient-define-prefix solo-rpg-menu-dungeon ()
   "The solo-rpg Dungeon menu."
@@ -1596,15 +1675,27 @@ IGNORE-BUF is ignored in the tally."
    ["System"
     ("q" "Go back"       transient-quit-one)]])
 
-;;; Settlement dashboards
+;; Settlement dashboards
 
 (transient-define-prefix solo-rpg-menu-city ()
-  "Tthe solo-rpg Settlement menu."
+  "The solo-rpg Settlement menu."
   ["SoloRPG dashboard: Settlement Menu\n"
    ["Generate"
-    ("e" "Event"         solo-rpg-gen-city-event)]
+    ("c" "City event"    solo-rpg-gen-city-event)
+    ("w" "Weather"       solo-rpg-gen-weather)]
    ["System"
     ("q" "Go back"       transient-quit-one)]])
+
+;; Travel dashboard
+
+(transient-define-prefix solo-rpg-menu-travel ()
+  "The solo-rpg Travel menu."
+  ["SoloRPG dashboard: Travel Menu\n"
+   ["Generate"
+    ("e" "Wilderness event"  solo-rpg-gen-wild-event)
+    ("w" "Weather"           solo-rpg-gen-weather)]
+   ["System"
+    ("q" "Go back"           transient-quit-one)]])
 
 ;;; Main menu dashboard
 
@@ -1620,7 +1711,8 @@ IGNORE-BUF is ignored in the tally."
     ("o" "Oracles..."    solo-rpg-menu-oracle)]
    ["Environments"
     ("D" "Dungeons..."   solo-rpg-menu-dungeon)
-    ("S" "Settlements..." solo-rpg-menu-city)]
+    ("S" "Settlements..." solo-rpg-menu-city)
+    ("T" "Travel..."     solo-rpg-menu-travel)]
    ["System"
     ("h" "Toggle HUD"    solo-rpg-toggle-hud
      :transient t)
