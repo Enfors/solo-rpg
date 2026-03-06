@@ -69,7 +69,7 @@
 
 (defvar solo-rpg-mode)
 
-;;; Customization variables
+;;; Customization variables:
 
 (defgroup solo-rpg nil
   "Support for playing solo roleplaying games inside Emacs."
@@ -85,7 +85,7 @@ Can be `insert' to put text in current buffer, or `message' to only echo it."
 
 (defcustom solo-rpg-auto-open-hud t
   "If t, Solo-RPG-mode will auto-open the tag tracking buffer when started."
-  :type 'bool
+  :type 'boolean
   :group 'solo-rpg)
 
 (defcustom solo-rpg-hud-update-delay 1.0
@@ -99,7 +99,7 @@ Can be `insert' to put text in current buffer, or `message' to only echo it."
   :group 'solo-rpg)
 
 
-;;; TABLES ====================================================================
+;;; TABLES:
 
 (defconst solo-rpg-oracle-actions
   ["Abandon"
@@ -307,7 +307,7 @@ Can be `insert' to put text in current buffer, or `message' to only echo it."
    "War"]
   "A d100 table of Theme words for the Action/Theme oracle.")
 
-;;; Yes/No oracle tables
+;;; Yes/No oracle tables:
 
 (defconst solo-rpg-oracle-yes-no-table
   '(("+6 Almost certainly"      . (2  3  4  7 16))
@@ -330,7 +330,7 @@ Value is upper thresholds for NoAnd, No, NoBut, YesBut, Yes.")
   ["PC" "NPC" "Faction" "Plot"]
   "Table for random event subjects.")
 
-;;; Quantity oracle table
+;;; Quantity oracle table:
 
 (defconst solo-rpg-oracle-quantity-table
   '((1  . "Minimum")
@@ -343,7 +343,7 @@ Value is upper thresholds for NoAnd, No, NoBut, YesBut, Yes.")
   "Data table for the Quantity oracle.
 The `car` of each cell is the upper threshold for the `cdr` entry.")
 
-;;; Generator tables
+;;; Generator tables:
 
 (defconst solo-rpg-generator-plot-goal-table
   ["Acquire"
@@ -394,8 +394,8 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
    "Mysterious circumstances"]
   "Obstacle data table for the Plot generator.")
 
-;;; NPC Generator tables
-;;; - Appearance
+;;; NPC Generator tables:
+;;; - Appearance:
 
 (defconst solo-rpg-table-npc-height
   '((1  . "very short")
@@ -488,7 +488,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
     "broken/misshaped nose"]
   "Special features data table for the NPC Appearance generator.")
 
-;;; Dungeon rooms
+;;; Dungeon rooms:
 
 (defvar solo-rpg-dungeon-room-exit-probs
   '((small  . ((forward . 40) (center . 60) (away . 40) (down . 15)))
@@ -515,7 +515,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
                      "desk"
                      "thick carpet"))))
 
-;;; STRUCTS ===================================================================
+;;; STRUCTS:
 
 (cl-defstruct solo-rpg-dice-roll
   count    ;; Number of dice
@@ -525,7 +525,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
   total)   ;; Sum of all rolls + mod
 
 
-;;; OTHER VARIABLES ===========================================================
+;;; OTHER VARIABLES:
 
 (defvar solo-rpg--last-dice-string "2d6"
   "The last dice string rolled by the user. Used in the default prompt.")
@@ -555,8 +555,8 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
   "Buffer-local variable storing the unique name of this session's HUD.")
 
 
-;;; FUNCTIONS =================================================================
-;;; Utility functions
+;;; FUNCTIONS:
+;;; Utility functions:
 
 (defun solo-rpg--output (text &optional invert-behavior)
   "Output TEXT according to `solo-rpg-output-method'.
@@ -687,9 +687,9 @@ GENERATE-FUN is a function pointer to function which returns generated text."
 
 (defun solo-rpg--table-weighted-get-random-list (prefix var-list)
   "Construct full var name from PREFIX+VAR-LIST elems, get value from table."
-  (mapcar #'(lambda (var)
-              (cons (intern var)
-                    (solo-rpg--table-weighted-get-random-single prefix var)))
+  (mapcar (lambda (var)
+            (cons (intern var)
+                  (solo-rpg--table-weighted-get-random-single prefix var)))
           var-list))
 
 
@@ -805,8 +805,6 @@ Returns the updated struct."
                                               ",")
                                    mod-string)
                          "")))
-    (message "Length of rolls: %d" (length (solo-rpg-dice-roll-rolls roll-struct)))
-
     (format "%dd%d%s%s=%d"
             (solo-rpg-dice-roll-count roll-struct)
             (solo-rpg-dice-roll-sides roll-struct)
@@ -843,8 +841,8 @@ If INVERT is non-nil, then output mode is inverted."
 ;;   (insert (solo-rpg-dice-roll-cast dice-string)))
 
 
-;;; ORACLES ===================================================================
-;;; Action / Theme oracle
+;;; ORACLES:
+;;; Action / Theme oracle:
 
 (defun solo-rpg-oracle-action-theme (&optional invert)
   "Output (action) / (theme) where action and theme are random.
@@ -911,8 +909,8 @@ If INVERT is non-nil, then output is inverted."
                     invert))
 
 
-;;; GENERATORS ================================================================
-;;; Plot generator
+;;; GENERATORS:
+;;; Plot generator:
 
 (defun solo-rpg--generator-plot-text ()
   "Generate and return a plot text."
@@ -926,7 +924,7 @@ If INVERT is non-nil, then output is inverted."
   (interactive)
   (solo-rpg--stage #'solo-rpg--generator-plot-text))
 
-;;; Narrative event generator
+;;; Narrative event generator:
 
 (defconst solo-rpg-gen-nar-event-incident-table
   ["An assumption is proven wrong"
@@ -973,7 +971,7 @@ If INVERT is non-nil, then output is inverted."
   (interactive)
   (solo-rpg--stage #'solo-rpg--gen-nar-event-text))
 
-;;; NPC Appearance generator
+;;; NPC Appearance generator:
 
 (defun solo-rpg--generator-npc-body (mod)
   "Return random size affected by MOD."
@@ -1027,12 +1025,12 @@ If INVERT is non-nil, then output is inverted."
 
     (setq size (plist-get size :desc))
     
-    (setq output (format (concat "Height          : %s\n"
-                                 "Size            : %s\n"
-                                 "Eye color       : %s\n"
-                                 "Skin color      : %s\n"
-                                 "Hair            : %s\n"
-                                 "Special features: %s\n")
+    (setq output (format "Height          : %s\n\
+Size            : %s\n\
+Eye color       : %s\n\
+Skin color      : %s\n\
+Hair            : %s\n\
+Special features: %s\n"
                          height
                          size
                          eye-color
@@ -1040,15 +1038,15 @@ If INVERT is non-nil, then output is inverted."
                          hair
                          special-features))
     (when (eq solo-rpg-npc-facial-hair 'on)
-      (setq output (format (concat output
-                                   "Facial hair     : %s\n")
-                           facial-hair)))
+      (setq output (concat output
+                           (format "Facial hair     : %s\n"
+                           facial-hair))))
     (when (eq solo-rpg-npc-nsfw 'on)
-      (setq output (format (concat output
-                                   "Chest           : %s\n"
-                                   "Waist           : %s\n"
-                                   "Bottom          : %s\n")
-                           chest waist bottom)))
+      (setq output (concat output
+                           (format "Chest           : %s\n\
+Waist           : %s\n\
+Bottom          : %s\n"
+                           chest waist bottom))))
     output))
 
 (defun solo-rpg-generator-npc-appearance ()
@@ -1057,7 +1055,7 @@ If INVERT is non-nil, then output is inverted."
   (solo-rpg--stage #'solo-rpg--generator-npc-appearance-text))
 
 
-;;; NPC Name generator
+;;; NPC Name generator:
 
 (defconst solo-rpg-gen-npc-name-female-first-table
   '["En"
@@ -1378,7 +1376,6 @@ If INVERT is non-nil, then output is inverted."
                           weather-mod)))
     (cond ((< temp 0) (setq temp 0))
           ((> temp 6) (setq temp 6)))
-    (message "Mod: %d, Temp: %d" weather-mod temp)
     (format "%s, %s"
             weather-desc
             (nth temp
@@ -1395,8 +1392,8 @@ If INVERT is non-nil, then output is inverted."
   (interactive)
   (solo-rpg--stage #'solo-rpg--gen-weather-text))
   
-;;; LONELOG ===================================================================
-;;; Tag handling
+;;; LONELOG:
+;;; Tag handling:
 
 (defun solo-rpg-extract-latest-tags ()
   "Scan the buffer backwards to extract the latest state of each tag.
@@ -1497,7 +1494,7 @@ IGNORE-BUF is ignored in the tally."
     ;; Save the user's cursor in case they actually clicked inside the HUD
     (save-excursion
       (let ((inhibit-read-only t))
-        (unless (eq major-mode 'text-mode)
+        (unless (derived-mode-p 'text-mode)
           (text-mode))
         (erase-buffer)
         (insert "=== Active Tags ===\n\n")
@@ -1538,8 +1535,8 @@ IGNORE-BUF is ignored in the tally."
             ;; 5. Draw the results
             (solo-rpg--draw-hud-contents hud-buffer tags)))))))
 
-;;; Output functions
-;;; - Scene
+;;; Output functions:
+;;; - Scene:
 
 (defun solo-rpg-scene-start (scene-title)
   "Ask for SCENE-TITLE, insert a Solo-RPG scene heading in the current buffer."
@@ -1551,8 +1548,8 @@ IGNORE-BUF is ignored in the tally."
         (setq prev-scene-num (string-to-number (or (match-string 1) "0")))))
     (insert (format "S%d *%s*" (+ 1 prev-scene-num) scene-title))))
 
-;;; DASHBOARDS ================================================================
-;;; Dice dashboard
+;;; DASHBOARDS:
+;;; Dice dashboard:
 
 (transient-define-prefix solo-rpg-menu-dice ()
   "The solo-rpg Dice menu."
@@ -1561,7 +1558,7 @@ IGNORE-BUF is ignored in the tally."
     ("r" "Roll dice"   solo-rpg-dice-roll-cast)
     ("q" "Go back"     transient-quit-one)]])
 
-;;; Oracle dashboards
+;;; Oracle dashboards:
 
 ;; These lambda functions should be their own defuns to make Flymake happy.
 ;; And they should also be generated by a macro. One day, when my skills with
@@ -1627,7 +1624,7 @@ IGNORE-BUF is ignored in the tally."
       (solo-rpg-oracle-yes-no "50/50" invert)))
    ("-" "Worse than 50/50 probability"   solo-rpg-menu-oracle-yes-no-unprobable)])
 
-;;; Narrative dashboard
+;;; Narrative dashboard:
 
 ;; Define the Plot dashboard menu
 
@@ -1640,7 +1637,7 @@ IGNORE-BUF is ignored in the tally."
    ["System"
     ("q" "Go back"         transient-quit-one)]])
 
-;;; NPC dashboard
+;;; NPC dashboard:
 
 ;; Define the NPC dashboard menu
 
@@ -1660,7 +1657,7 @@ IGNORE-BUF is ignored in the tally."
    ["System"
     ("q" "Go back"               transient-quit-one)]])
 
-;;; Environment dashboards
+;;; Environment dashboards:
 
 ;; Dungeon dashboard
 
@@ -1698,7 +1695,7 @@ IGNORE-BUF is ignored in the tally."
    ["System"
     ("q" "Go back"           transient-quit-one)]])
 
-;;; Main menu dashboard
+;;; Main menu dashboard:
 
 ;; Define the main dashboard menu
 ;;;###autoload
@@ -1724,7 +1721,7 @@ IGNORE-BUF is ignored in the tally."
     ("q" "Quit"          transient-quit-one)]])
 
 
-;;; FACES =====================================================================
+;;; FACES:
 
 ;; The Macro Definition
 (defmacro solo-rpg-define-face (name dark-hex light-hex docstring &optional bold)
@@ -1852,7 +1849,7 @@ They are the `[' and `]' characters.")
       (0 'solo-rpg-tag-separator-face t))))
   "Highlighting rules for Solo-RPG mode.")
 
-;;; MINOR MODE ================================================================
+;;; MINOR MODE:
 
 ;;;###autoload
 (defvar solo-rpg-mode-map (make-sparse-keymap)
@@ -1906,7 +1903,10 @@ https://zeruhur.itch.io/lonelog
           (add-hook 'kill-buffer-hook #'solo-rpg--cleanup-on-kill nil t)
           ;; Handle auto-start
           (when solo-rpg-auto-open-hud
-            (solo-rpg-update-hud)))
+            (solo-rpg-update-hud))
+
+          (add-hook 'window-selection-change-functions
+                  #'solo-rpg--swap-hud-on-window-change))
         
         (message "Solo-RPG-mode enabled."))
     ;; If OFF:
@@ -1926,10 +1926,6 @@ https://zeruhur.itch.io/lonelog
       (solo-rpg--cleanup-hud-if-last)
       
       (message "Solo-RPG-mode disabled."))))
-
-(add-hook 'window-selection-change-functions
-          #'solo-rpg--swap-hud-on-window-change)
-
 
 (provide 'solo-rpg)
 
