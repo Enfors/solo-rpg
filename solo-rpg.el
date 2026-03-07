@@ -3,7 +3,7 @@
 ;; Author: Christer Enfors <christer.enfors@gmail.com>
 ;; Maintainer: Christer Enfors <christer.enfors@gmail.com>
 ;; Created: 2026
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Package-Requires: ((emacs "27.1") (transient "0.3.7"))
 ;; Keywords: games
 ;; URL: https://github.com/enfors/solo-rpg
@@ -32,7 +32,12 @@
 ;; - Dice rolling
 ;; - Oracles:
 ;;   - Yes/No Oracle with probabilities
-;;   - Action/Theme Oracle, inspired by the Mything Game Master Emulator
+;;   - Action/Theme Oracle, inspired by the Mythic Game Master Emulator
+;; - Generators:
+;;   - NPC name and appearance
+;;   - Dungeon rooms and random events
+;;   - Wilderness random events
+;;   - City random events
 ;;
 ;; To use this package, add the following to your configuration:
 ;;
@@ -345,7 +350,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
 
 ;;; Generator tables:
 
-(defconst solo-rpg-generator-plot-goal-table
+(defconst solo-rpg-gen-plot-goal-table
   ["Acquire"
    "Destroy"
    "Locate"
@@ -358,7 +363,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
    "Prevent"]
   "Goal data table for the Plot generator.")
 
-(defconst solo-rpg-generator-plot-focus-table
+(defconst solo-rpg-gen-plot-focus-table
   ["Artifact"
    "Relative"
    "PC"
@@ -381,7 +386,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
    "Building or structure"]
   "Focus data table for the Plot generator.")
 
-(defconst solo-rpg-generator-plot-obstacle-table
+(defconst solo-rpg-gen-plot-obstacle-table
   ["Lack of resources"
    "Lack of information"
    "Lack of knowledge"
@@ -912,17 +917,17 @@ If INVERT is non-nil, then output is inverted."
 ;;; GENERATORS:
 ;;; Plot generator:
 
-(defun solo-rpg--generator-plot-text ()
+(defun solo-rpg--gen-plot-text ()
   "Generate and return a plot text."
   (format "%s %s, but %s"
-           (solo-rpg-table-get-random solo-rpg-generator-plot-goal-table)
-           (solo-rpg-table-get-random solo-rpg-generator-plot-focus-table)
-           (solo-rpg-table-get-random solo-rpg-generator-plot-obstacle-table)))
+           (solo-rpg-table-get-random solo-rpg-gen-plot-goal-table)
+           (solo-rpg-table-get-random solo-rpg-gen-plot-focus-table)
+           (solo-rpg-table-get-random solo-rpg-gen-plot-obstacle-table)))
 
-(defun solo-rpg-generator-plot ()
+(defun solo-rpg-gen-plot ()
   "Generate a plot and open it in the staging area."
   (interactive)
-  (solo-rpg--stage #'solo-rpg--generator-plot-text))
+  (solo-rpg--stage #'solo-rpg--gen-plot-text))
 
 ;;; Narrative event generator:
 
@@ -973,7 +978,7 @@ If INVERT is non-nil, then output is inverted."
 
 ;;; NPC Appearance generator:
 
-(defun solo-rpg--generator-npc-body (mod)
+(defun solo-rpg--gen-npc-body (mod)
   "Return random size affected by MOD."
   (let ((part (+ (+ 1 (random 4))
                  (+ 1 (random 4))
@@ -992,7 +997,7 @@ If INVERT is non-nil, then output is inverted."
            "very large"
            "extremely large"))))
 
-(defun solo-rpg--generator-npc-appearance-text ()
+(defun solo-rpg--gen-npc-appearance-text ()
   "Generate and return NPC Appearance text."
   (let* ((height           (solo-rpg--table-weighted-get-random
                             solo-rpg-table-npc-height))
@@ -1016,9 +1021,9 @@ If INVERT is non-nil, then output is inverted."
                             solo-rpg-table-npc-special-features))
          (hair  (format "%s, %s" hair-color hair-length))
          (size-mod         (plist-get size :mod))
-         (chest            (solo-rpg--generator-npc-body size-mod))
-         (waist            (solo-rpg--generator-npc-body size-mod))
-         (bottom           (solo-rpg--generator-npc-body size-mod))
+         (chest            (solo-rpg--gen-npc-body size-mod))
+         (waist            (solo-rpg--gen-npc-body size-mod))
+         (bottom           (solo-rpg--gen-npc-body size-mod))
          (output           ""))
     (unless (string= hair-length "short")
       (setq hair (format "%s, %s" hair long-hair-style)))
@@ -1049,10 +1054,10 @@ Bottom          : %s\n"
                            chest waist bottom))))
     output))
 
-(defun solo-rpg-generator-npc-appearance ()
+(defun solo-rpg-gen-npc-appearance ()
   "Generate NPC appearance and open it in the staging area."
   (interactive)
-  (solo-rpg--stage #'solo-rpg--generator-npc-appearance-text))
+  (solo-rpg--stage #'solo-rpg--gen-npc-appearance-text))
 
 
 ;;; NPC Name generator:
@@ -1176,7 +1181,8 @@ Bottom          : %s\n"
       (", with a few chests along the walls" . nil)))
     ("ceremonial chamber" .
      ((" with a ritual circle in the middle" . nil)
-      (" with a bottomless pit at its center" . nil)))
+      (" with a bottomless pit at its center" . nil)
+      (" with a foreboding altar at its center" . nil)))
     ("burial chamber" .
      ((" with tombs along the walls" .
        ((", some of which are cracked open" .
@@ -1243,28 +1249,29 @@ Bottom          : %s\n"
   (solo-rpg--stage #'solo-rpg-gen-dungeon-room-text))
 ;;; Dungeon event generator
 
-(defconst solo-rpg-gen-dungeon-event-adj-table
-  '["Dangerous"
-    "Shadowy"
-    "Unexpected"]
-  "Adjectives for the random dungeon event generator.")
+(defconst solo-rpg-gen-dungeon-event-incident-table
+  ["Sounds of movement echo through the halls"
+   "You think you saw movement in the corner of your eye"
+   "Someone - or something - appear to be approaching"
+   "A sudden cave in alters the layout of the surroundings"
+   "There is a flutter of movement"
+   "There is a sudden draft"]
+  "Incidents for the random dungeon event generator.")
 
-(defconst solo-rpg-gen-dungeon-event-noun-table
-  '["encounter"
-    "echoes"
-    "halls"
-    "movements"
-    "sounds in the distance"
-    "ambush"
-    "surprise meeting"
-    "discovery"]
-  "Nouns for the random dungeon event generator.")
+(defconst solo-rpg-gen-dungeon-event-twist-table
+  ["and a fleeting tactical advantage is revealed"
+   "and there is a sudden, strange smell in the air"
+   "but then the dungeon turns eerily quiet"
+   "and things might be taking a turn for the worse"
+   "but all may not be what they seem"
+   "and an unexpected opportunity presents itself"]
+  "Twists for the random dungeon event generator.")
 
 (defun solo-rpg--gen-dungeon-event-text ()
   "Generate and return a random dungeon event text."
   (format "%s %s"
-          (solo-rpg-table-get-random solo-rpg-gen-dungeon-event-adj-table)
-          (solo-rpg-table-get-random solo-rpg-gen-dungeon-event-noun-table)))
+          (solo-rpg-table-get-random solo-rpg-gen-dungeon-event-incident-table)
+          (solo-rpg-table-get-random solo-rpg-gen-dungeon-event-twist-table)))
 
 (defun solo-rpg-gen-dungeon-event ()
   "Generate a random dungeon event and stage it."
@@ -1633,7 +1640,7 @@ IGNORE-BUF is ignored in the tally."
   ["SoloRPG dashboard: Narrative Menu\n"
    ["Generate"
     ("n" "Narrative event" solo-rpg-gen-nar-event)
-    ("p" "Plot"            solo-rpg-generator-plot)]
+    ("p" "Plot"            solo-rpg-gen-plot)]
    ["System"
     ("q" "Go back"         transient-quit-one)]])
 
@@ -1645,7 +1652,7 @@ IGNORE-BUF is ignored in the tally."
   "The solo-rpg NPC menu."
   ["SoloRPG dashboard: NPC Menu\n"
    ["Generate"
-    ("a" "Appearance"        solo-rpg-generator-npc-appearance)
+    ("a" "Appearance"        solo-rpg-gen-npc-appearance)
     ("f" "Female name"       solo-rpg-gen-npc-name-female)
     ("m" "Male name"         solo-rpg-gen-npc-name-male)
     ("h" solo-rpg-toggle-npc-facial-hair
