@@ -1672,13 +1672,14 @@ IGNORE-BUF is ignored in the tally."
   "The solo-rpg Dungeon menu."
   ["SoloRPG dashboard: Dungeon Menu\n"
    ["Generate"
-    ("r" "Room"          solo-rpg-gen-dungeon-room)
+    ("r" "Room"            solo-rpg-gen-dungeon-room)
     ("s" solo-rpg-toggle-dungeon-size
      :description solo-rpg--toggle-dungeon-size-desc
      :transient t)
-    ("e" "Event"         solo-rpg-gen-dungeon-event)]
+    ("e" "Event"           solo-rpg-gen-dungeon-event)
+    ("n" "Narrative event" solo-rpg-gen-nar-event)]
    ["System"
-    ("q" "Go back"       transient-quit-one)]])
+    ("q" "Go back"         transient-quit-one)]])
 
 ;; Settlement dashboards
 
@@ -1686,10 +1687,11 @@ IGNORE-BUF is ignored in the tally."
   "The solo-rpg Settlement menu."
   ["SoloRPG dashboard: Settlement Menu\n"
    ["Generate"
-    ("c" "City event"    solo-rpg-gen-city-event)
-    ("w" "Weather"       solo-rpg-gen-weather)]
+    ("c" "City event"      solo-rpg-gen-city-event)
+    ("n" "Narrative event" solo-rpg-gen-nar-event)
+    ("w" "Weather"         solo-rpg-gen-weather)]
    ["System"
-    ("q" "Go back"       transient-quit-one)]])
+    ("q" "Go back"         transient-quit-one)]])
 
 ;; Travel dashboard
 
@@ -1698,6 +1700,7 @@ IGNORE-BUF is ignored in the tally."
   ["SoloRPG dashboard: Travel Menu\n"
    ["Generate"
     ("e" "Wilderness event"  solo-rpg-gen-wild-event)
+    ("n" "Narrative event"   solo-rpg-gen-nar-event)
     ("w" "Weather"           solo-rpg-gen-weather)]
    ["System"
     ("q" "Go back"           transient-quit-one)]])
