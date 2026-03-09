@@ -103,6 +103,10 @@ Can be `insert' to put text in current buffer, or `message' to only echo it."
   :type 'number
   :group 'solo-rpg)
 
+(defcustom solo-rpg-tarot-meaning t
+  "If t, meanings of cards will be included when drawing tarot cards."
+  :type 'boolean
+  :group 'solo-rpg)
 
 ;;; TABLES:
 
@@ -587,9 +591,11 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
 
 (defun solo-rpg-deck-tarot-card-text (card)
   "Return a string representing CARD."
-  (format "Tarot card: %s\nMeaning   : %s\n"
+  (format "Tarot card: %s\n%s"
           (plist-get card :name)
-          (plist-get card :meanings)))
+          (if solo-rpg-tarot-meaning
+              (format "Meaning   : %s\n" (plist-get card :meanings))
+            "")))
 
 (defun solo-rpg-deck-tarot-copy ()
   "Return a deep copy of `solo-rpg-deck-tarot'."
@@ -625,6 +631,19 @@ If INVERT is non-nil, then invert the output method."
     (solo-rpg--output (solo-rpg-deck-tarot-card-text card)))
   ;; Since buttons may need updating, we must manually restart the menu.
   (solo-rpg-menu-tarot))
+
+(defun solo-rpg--deck-tarot-meaning-desc ()
+  "Return a string for the meanings on/off button."
+  (if solo-rpg-tarot-meaning
+      "Show meanings=on"
+    "Show meanings=off"))
+
+(defun solo-rpg-deck-tarot-meaning-toggle ()
+  "Toggle `solo-rpg-tarot-meaning' on/off."
+  (interactive)
+  (setq solo-rpg-tarot-meaning (not solo-rpg-tarot-meaning)))
+
+;; Tarot card data
 
 (defconst solo-rpg-deck-tarot
   (make-solo-rpg-deck
@@ -2536,7 +2555,10 @@ IGNORE-BUF is ignored in the tally."
     ("d" "Single tarot card"    solo-rpg-deck-tarot-draw-single
      :inapt-if                  solo-rpg-deck-tarot-active-empty-p)
     ("s" solo-rpg-deck-tarot-shuffle
-     :description solo-rpg--deck-tarot-shuffle-desc)]
+     :description solo-rpg--deck-tarot-shuffle-desc)
+    ("m" solo-rpg-deck-tarot-meaning-toggle
+     :description solo-rpg--deck-tarot-meaning-desc
+     :transient t)]
    ["System"
     ("q" "Go back"              transient-quit-one)]])
 
