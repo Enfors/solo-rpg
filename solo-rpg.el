@@ -3,7 +3,7 @@
 ;; Author: Christer Enfors <christer.enfors@gmail.com>
 ;; Maintainer: Christer Enfors <christer.enfors@gmail.com>
 ;; Created: 2026
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Package-Requires: ((emacs "27.1") (transient "0.3.7"))
 ;; Keywords: games
 ;; URL: https://github.com/enfors/solo-rpg
@@ -32,7 +32,12 @@
 ;; - Dice rolling
 ;; - Oracles:
 ;;   - Yes/No Oracle with probabilities
-;;   - Action/Theme Oracle, inspired by the Mything Game Master Emulator
+;;   - Action/Theme Oracle, inspired by the Mythic Game Master Emulator
+;; - Generators:
+;;   - NPC name and appearance
+;;   - Dungeon rooms and random events
+;;   - Wilderness random events
+;;   - City random events
 ;;
 ;; To use this package, add the following to your configuration:
 ;;
@@ -98,6 +103,10 @@ Can be `insert' to put text in current buffer, or `message' to only echo it."
   :type 'number
   :group 'solo-rpg)
 
+(defcustom solo-rpg-tarot-meaning t
+  "If t, meanings of cards will be included when drawing tarot cards."
+  :type 'boolean
+  :group 'solo-rpg)
 
 ;;; TABLES:
 
@@ -345,7 +354,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
 
 ;;; Generator tables:
 
-(defconst solo-rpg-generator-plot-goal-table
+(defconst solo-rpg-gen-plot-goal-table
   ["Acquire"
    "Destroy"
    "Locate"
@@ -358,7 +367,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
    "Prevent"]
   "Goal data table for the Plot generator.")
 
-(defconst solo-rpg-generator-plot-focus-table
+(defconst solo-rpg-gen-plot-focus-table
   ["Artifact"
    "Relative"
    "PC"
@@ -381,7 +390,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
    "Building or structure"]
   "Focus data table for the Plot generator.")
 
-(defconst solo-rpg-generator-plot-obstacle-table
+(defconst solo-rpg-gen-plot-obstacle-table
   ["Lack of resources"
    "Lack of information"
    "Lack of knowledge"
@@ -524,6 +533,912 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
   rolls    ;; List of each die roll result
   total)   ;; Sum of all rolls + mod
 
+(cl-defstruct solo-rpg-deck
+  "A formalized structure holding a deck of cards and its format logic."
+  (type 'tarot)                     ; Typically `tarot' or `playcards'
+  (name "Unnamed deck")             ; Name to display to humans
+  (card-draw   #'ignore)            ; Function for drawing a card
+  (card-format #'ignore)            ; Function for making card string
+  (cards nil))                      ; The array of cards
+
+;;; Tarot data and functions:
+
+(defun solo-rpg-deck-tarot-card-draw (tarot-deck)
+  "Return (and remove) one card with metadata plist from TAROT-DECK."
+  (if (solo-rpg-deck-cards tarot-deck)
+      (let ((card (nth (random (length (solo-rpg-deck-cards tarot-deck)))
+                       (solo-rpg-deck-cards tarot-deck)))
+            (reversed (= (random 2) 0)))
+        (setf (solo-rpg-deck-cards tarot-deck)
+              (delq card (solo-rpg-deck-cards tarot-deck)))
+        ;; This next part is something I just learned, and I need to
+        ;; document it for my future self.
+        ;;
+        ;; `card' is not a copy from the original deck. It is just a
+        ;; pointer. And I want to store in it whether or not it was
+        ;; drawn as reversed, in a `reversed' field. The obvious (to
+        ;; me) way of doing that is to copy the card, and add the
+        ;; metadata to my copy. But there is a better way - append.
+        ;; Since card is a plist (:key value) - that is, a list of key
+        ;; value pairs - I can just create a new list which includes
+        ;; the metadata I want to add (`reversed') as well as the old
+        ;; card plist.
+        ;;
+        ;; Simple proof of concept:
+        ;;
+        ;; (setq card (list :name "foo" :data 1))
+        ;;
+        ;; `card' is now a valid plist. We can get data form it:
+        ;;
+        ;; (plist-get card :name)
+        ;;
+        ;; And now the append that this whole long-ass comment is about:
+        ;;
+        ;; (append (list :reversed 1) card)
+        ;;
+        ;; Also, I'm going to use the same trick to set a :meaning
+        ;; field, as well as update the name:
+
+        (append (if reversed
+                    (list :meanings (plist-get card :meanings-rev)
+                          :name     (concat (plist-get card :name)
+                                            ", reversed")
+                          :reversed t)
+                  (list :meanings (plist-get card :meanings-up)
+                        :reversed nil))
+                card))
+    nil))
+
+(defun solo-rpg-deck-tarot-card-text (card)
+  "Return a string representing CARD."
+  (format "Tarot card: %s\n%s"
+          (plist-get card :name)
+          (if solo-rpg-tarot-meaning
+              (format "Meaning   : %s\n" (plist-get card :meanings))
+            "")))
+
+(defun solo-rpg-deck-tarot-copy ()
+  "Return a deep copy of `solo-rpg-deck-tarot'."
+  (let ((new-deck (copy-solo-rpg-deck solo-rpg-deck-tarot)))
+    (setf (solo-rpg-deck-cards new-deck)
+          (copy-sequence (solo-rpg-deck-cards solo-rpg-deck-tarot)))
+    new-deck))
+
+(defun solo-rpg-deck-tarot-active-empty-p ()
+  "Return t if there are no cards left in `solo-rpg-deck-tarot-active'.
+Otherwise, nil is returned."
+  (null (solo-rpg-deck-cards solo-rpg-deck-tarot-active)))
+
+;; Tarot dashboard button functions
+
+(defun solo-rpg--deck-tarot-shuffle-desc ()
+  "Return a string for the shuffle tarot deck button."
+  (format "Shuffle (%d cards left)"
+          (length (solo-rpg-deck-cards solo-rpg-deck-tarot-active))))
+
+(defun solo-rpg-deck-tarot-shuffle ()
+  "Shuffle `solo-rpg-deck-tarot-active', to get all the cards back."
+  (interactive)
+  (setq solo-rpg-deck-tarot-active (solo-rpg-deck-tarot-copy))
+  ;; Since buttons may need updating, we must manually restart the menu.
+  (solo-rpg-menu-tarot))
+
+(defun solo-rpg-deck-tarot-draw-single (&optional invert)
+  "Draw a single Tarot card from DECK.
+If INVERT is non-nil, then invert the output method."
+  (interactive "P")
+  (let ((card (solo-rpg-deck-tarot-card-draw solo-rpg-deck-tarot-active)))
+    (solo-rpg--output (solo-rpg-deck-tarot-card-text card)))
+  ;; Since buttons may need updating, we must manually restart the menu.
+  (solo-rpg-menu-tarot))
+
+(defun solo-rpg--deck-tarot-meaning-desc ()
+  "Return a string for the meanings on/off button."
+  (if solo-rpg-tarot-meaning
+      "Show meanings=on"
+    "Show meanings=off"))
+
+(defun solo-rpg-deck-tarot-meaning-toggle ()
+  "Toggle `solo-rpg-tarot-meaning' on/off."
+  (interactive)
+  (setq solo-rpg-tarot-meaning (not solo-rpg-tarot-meaning)))
+
+;; Tarot card data
+
+(defconst solo-rpg-deck-tarot
+  (make-solo-rpg-deck
+   :type 'tarot
+   :name "Rider-Waite-Smith tarot deck"
+   :card-draw   #'solo-rpg-deck-tarot-card-draw
+   :card-format #'solo-rpg-deck-tarot-card-text
+   :cards
+   '(
+     ;; ----------------------------------------
+     ;; Major Arcana
+     ;; ----------------------------------------
+     (:id 0
+          :name "The Fool"
+          :type major
+          :meanings-up "Folly, mania, extravagance, intoxication, delirium, \
+frenzy, bewrayment."
+          :meanings-rev "Negligence, absence, distribution, carelessness, \
+apathy, nullity, vanity."
+          :image-file "tarot_ar00.jpg")
+     (:id 1
+          :name "The Magician"
+          :type major
+          :meanings-up "Skill, diplomacy, address, subtlety; sickness, \
+pain, loss, disaster, snares of enemies; self-confidence, will; the \
+Querent, if male."
+          :meanings-rev "Physician, Magus, mental disease, disgrace, \
+disquiet."
+          :image-file "tarot_ar01.jpg")
+     (:id 2
+          :name "The High Priestess"
+          :type major
+          :meanings-up "Secrets, mystery, the future as yet unrevealed; \
+the woman who interests the Querent, if male; the Querent herself, if \
+female; silence, tenacity; mystery, wisdom, science."
+          :meanings-rev "Passion, moral or physical ardour, conceit, \
+surface knowledge."
+          :image-file "tarot_ar02.jpg")
+     (:id 3
+          :name "The Empress"
+          :type major
+          :meanings-up "Fruitfulness, action, initiative, length of days; \
+the unknown, clandestine; also difficulty, doubt, ignorance."
+          :meanings-rev "Light, truth, the unravelling of involved matters, \
+public rejoicings; according to another reading, vacillation."
+          :image-file "tarot_ar03.jpg")
+     (:id 4
+          :name "The Emperor"
+          :type major
+          :meanings-up "Stability, power, protection, realization; a great \
+person; aid, reason, conviction; also authority and will."
+          :meanings-rev "Benevolence, compassion, credit; also confusion \
+to enemies, obstruction, immaturity."
+          :image-file "tarot_ar04.jpg")
+     (:id 5
+          :name "The Hierophant"
+          :type major
+          :meanings-up "Marriage, alliance, captivity, servitude; by \
+another account, mercy and goodness; inspiration; the man to whom the \
+Querent has recourse."
+          :meanings-rev "Society, good understanding, concord, \
+overkindness, weakness."
+          :image-file "tarot_ar05.jpg")
+     (:id 6
+          :name "The Lovers"
+          :type major
+          :meanings-up "Attraction, love, beauty, trials overcome."
+          :meanings-rev "Failure, foolish designs. Another account speaks \
+of marriage frustrated and contrarieties of all kinds."
+          :image-file "tarot_ar06.jpg")
+     (:id 7
+          :name "The Chariot"
+          :type major
+          :meanings-up "Succour, providence also war, triumph, \
+presumption, vengeance, trouble."
+          :meanings-rev "Riot, quarrel, dispute, litigation, defeat."
+          :image-file "tarot_ar07.jpg")
+     (:id 8
+          :name "Fortitude"
+          :type major
+          :meanings-up "Power, energy, action, courage, magnanimity; \
+also complete success and honours."
+          :meanings-rev "Despotism, abuse if power, weakness, discord, \
+sometimes even disgrace."
+          :image-file "tarot_ar08.jpg")
+     (:id 9
+          :name "The Hermit"
+          :type major
+          :meanings-up "Prudence, circumspection; also and especially \
+treason, dissimulation, roguery, corruption."
+          :meanings-rev "Concealment, disguise, policy, fear, unreasoned \
+caution."
+          :image-file "tarot_ar09.jpg")
+     (:id 10
+          :name "Wheel Of Fortune"
+          :type major
+          :meanings-up "Destiny, fortune, success, elevation, luck, \
+felicity."
+          :meanings-rev "Increase, abundance, superfluity."
+          :image-file "tarot_ar10.jpg")
+     (:id 11
+          :name "Justice"
+          :type major
+          :meanings-up "Equity, rightness, probity, executive; triumph \
+of the deserving side in law."
+          :meanings-rev "Law in all its departments, legal complications, \
+bigotry, bias, excessive severity."
+          :image-file "tarot_ar11.jpg")
+     (:id 12
+          :name "The Hanged Man"
+          :type major
+          :meanings-up "Wisdom, circumspection, discernment, trials, \
+sacrifice, intuition, divination, prophecy."
+          :meanings-rev "Selfishness, the crowd, body politic."
+          :image-file "tarot_ar12.jpg")
+     (:id 13
+          :name "Death"
+          :type major
+          :meanings-up "End, mortality, destruction, corruption also, \
+for a man, the loss of a benefactor for a woman, many contrarieties; \
+for a maid, failure of marriage projects."
+          :meanings-rev "Inertia, sleep, lethargy, petrifaction, \
+somnambulism; hope destroyed."
+          :image-file "tarot_ar13.jpg")
+     (:id 14
+          :name "Temperance"
+          :type major
+          :meanings-up "Economy, moderation, frugality, management, \
+accommodation."
+          :meanings-rev "Things connected with churches, religions, sects, \
+the priesthood, sometimes even the priest who will marry the Querent; \
+also disunion, unfortunate combinations, competing interests."
+          :image-file "tarot_ar14.jpg")
+     (:id 15
+          :name "The Devil"
+          :type major
+          :meanings-up "Ravage, violence, vehemence, extraordinary \
+efforts, force, fatality; that which is predestined but is not for \
+this reason evil."
+          :meanings-rev "Evil fatality, weakness, pettiness, blindness."
+          :image-file "tarot_ar15.jpg")
+     (:id 16
+          :name "The Tower"
+          :type major
+          :meanings-up "Misery, distress, indigence, adversity, \
+calamity, disgrace, deception, ruin. It is a card in particular of \
+unforeseen catastrophe."
+          :meanings-rev "According to one account, the same in a lesser \
+degree also oppression, imprisonment, tyranny."
+          :image-file "tarot_ar16.jpg")
+     (:id 17
+          :name "The Star"
+          :type major
+          :meanings-up "Loss, theft, privation, abandonment; another \
+reading says-hope and bright prospects,"
+          :meanings-rev "Arrogance, haughtiness, impotence."
+          :image-file "tarot_ar17.jpg")
+     (:id 18
+          :name "The Moon"
+          :type major
+          :meanings-up "Hidden enemies, danger, calumny, darkness, \
+terror, deception, occult forces, error."
+          :meanings-rev "Instability, inconstancy, silence, lesser \
+degrees of deception and error."
+          :image-file "tarot_ar18.jpg")
+     (:id 19
+          :name "The Sun"
+          :type major
+          :meanings-up "Material happiness, fortunate marriage, \
+contentment."
+          :meanings-rev "The same in a lesser sense."
+          :image-file "tarot_ar19.jpg")
+     (:id 20
+          :name "The Last Judgment"
+          :type major
+          :meanings-up "Change of position, renewal, outcome. Another \
+account specifies total loss though lawsuit."
+          :meanings-rev "Weakness, pusillanimity, simplicity; also \
+deliberation, decision, sentence."
+          :image-file "tarot_ar20.jpg")
+     (:id 21
+          :name "The World"
+          :type major
+          :meanings-up "Assured success, recompense, voyage, route, \
+emigration, flight, change of place."
+          :meanings-rev "Inertia, fixity, stagnation, permanence."
+          :image-file "tarot_ar21.jpg")
+
+     ;; ----------------------------------------
+     ;; Suit of Wands
+     ;; ----------------------------------------
+     (:id 1
+          :name "Ace of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "Creation, invention, enterprise, the powers \
+which result in these; principle, beginning, source; birth, family, \
+origin, and in a sense the virility which is behind them; the starting \
+point of enterprises; according to another account, money, fortune, \
+inheritance."
+          :meanings-rev "Fall, decadence, ruin, perdition, to perish \
+also a certain clouded joy."
+          :image-file "tarot_waac.jpg")
+     (:id 2
+          :name "Two of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "Between the alternative readings there is no \
+marriage possible; on the one hand, riches, fortune, magnificence; on \
+the other, physical suffering, disease, chagrin, sadness, \
+mortification. The design gives one suggestion; here is a lord \
+overlooking his dominion and alternately contemplating a globe; it \
+looks like the malady, the mortification, the sadness of Alexander \
+amidst the grandeur of this world's wealth."
+          :meanings-rev "Surprise, wonder, enchantment, emotion, trouble, \
+fear."
+          :image-file "tarot_wa02.jpg")
+     (:id 3
+          :name "Three of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "He symbolizes established strength, enterprise, \
+effort, trade, commerce, discovery; those are his ships, bearing his \
+merchandise, which are sailing over the sea. The card also signifies \
+able co-operation in business, as if the successful merchant prince \
+were looking from his side towards yours with a view to help you."
+          :meanings-rev "The end of troubles, suspension or cessation \
+of adversity, toil and disappointment."
+          :image-file "tarot_wa03.jpg")
+     (:id 4
+          :name "Four of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "They are for once almost on the surface--country \
+life, haven of refuge, a species of domestic harvest-home, repose, \
+concord, harmony, prosperity, peace, and the perfected work of these."
+          :meanings-rev "The meaning remains unaltered; it is prosperity, \
+increase, felicity, beauty, embellishment."
+          :image-file "tarot_wa04.jpg")
+     (:id 5
+          :name "Five of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "Imitation, as, for example, sham fight, but \
+also the strenuous competition and struggle of the search after riches \
+and fortune. In this sense it connects with the battle of life. Hence \
+some attributions say that it is a card of gold, gain, opulence."
+          :meanings-rev "Litigation, disputes, trickery, contradiction."
+          :image-file "tarot_wa05.jpg")
+     (:id 6
+          :name "Six of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "The card has been so designed that it can cover \
+several significations; on the surface, it is a victor triumphing, but \
+it is also great news, such as might be carried in state by the King's \
+courier; it is expectation crowned with its own desire, the crown of \
+hope, and so forth."
+          :meanings-rev "Apprehension, fear, as of a victorious enemy \
+at the gate; treachery, disloyalty, as of gates being opened to the \
+enemy; also indefinite delay."
+          :image-file "tarot_wa06.jpg")
+     (:id 7
+          :name "Seven of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "It is a card of valour, for, on the surface, \
+six are attacking one, who has, however, the vantage position. On the \
+intellectual plane, it signifies discussion, wordy strife; in \
+business--negotiations, war of trade, barter, competition. It is \
+further a card of success, for the combatant is on the top and his \
+enemies may be unable to reach him."
+          :meanings-rev "Perplexity, embarrassments, anxiety. It is \
+also a caution against indecision."
+          :image-file "tarot_wa07.jpg")
+     (:id 8
+          :name "Eight of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "Activity in undertakings, the path of such \
+activity, swiftness, as that of an express messenger; great haste, \
+great hope, speed towards an end which promises assured felicity; \
+generally, that which is on the move; also the arrows of love."
+          :meanings-rev "Arrows of jealousy, internal dispute, stingings \
+of conscience, quarrels; and domestic disputes for persons who are \
+married."
+          :image-file "tarot_wa08.jpg")
+     (:id 9
+          :name "Nine of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "The card signifies strength in opposition. If \
+attacked, the person will meet an onslaught boldly; and his build \
+shews, that he may prove a formidable antagonist. With this main \
+significance there are all its possible adjuncts--delay, suspension, \
+adjournment."
+          :meanings-rev "Obstacles, adversity, calamity."
+          :image-file "tarot_wa09.jpg")
+     (:id 10
+          :name "Ten of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "A card of many significances, and some of the \
+readings cannot be harmonized. I set aside that which connects it with \
+honour and good faith. The chief meaning is oppression simply, but it \
+is also fortune, gain, any kind of success, and then it is the \
+oppression of these things. It is also a card of false-seeming, \
+disguise, perfidy. The place which the figure is approaching may suffer \
+from the rods that he carries. Success is stultified if the Nine of \
+Swords follows, and if it is a question of a lawsuit, there will be \
+certain loss."
+          :meanings-rev "Contrarieties, difficulties, intrigues, and \
+their analogies."
+          :image-file "tarot_wa10.jpg")
+     (:id 11
+          :name "Page of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "Dark young man, faithful, a lover, an envoy, a \
+postman. Beside a man, he will bear favourable testimony concerning him. \
+A dangerous rival, if followed by the Page of Cups. Has the chief \
+qualities of his suit. He may signify family intelligence."
+          :meanings-rev "Anecdotes, announcements, evil news. Also \
+indecision and the instability which accompanies it."
+          :image-file "tarot_wapa.jpg")
+     (:id 12
+          :name "Knight of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "Departure, absence, flight, emigration. A dark \
+young man, friendly. Change of residence."
+          :meanings-rev "Rupture, division, interruption, discord."
+          :image-file "tarot_wakn.jpg")
+     (:id 13
+          :name "Queen of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "A dark woman, countrywoman, friendly, chaste, \
+loving, honourable. If the card beside her signifies a man, she is \
+well disposed towards him; if a woman, she is interested in the \
+Querent. Also, love of money, or a certain success in business."
+          :meanings-rev "Good, economical, obliging, serviceable. \
+Signifies also--but in certain positions and in the neighbourhood of \
+other cards tending in such directions--opposition, jealousy, even \
+deceit and infidelity."
+          :image-file "tarot_waqu.jpg")
+     (:id 14
+          :name "King of Wands"
+          :type minor
+          :suit wands
+          :meanings-up "Dark man, friendly, countryman, generally \
+married, honest and conscientious. The card always signifies honesty, \
+and may mean news concerning an unexpected heritage to fall in before \
+very long."
+          :meanings-rev "Good, but severe; austere, yet tolerant."
+          :image-file "tarot_waki.jpg")
+
+     ;; ----------------------------------------
+     ;; Suit of Cups
+     ;; ----------------------------------------
+     (:id 1
+          :name "Ace of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "House of the true heart, joy, content, abode, \
+nourishment, abundance, fertility; Holy Table, felicity hereof."
+          :meanings-rev "House of the false heart, mutation, \
+instability, revolution."
+          :image-file "tarot_cuac.jpg")
+     (:id 2
+          :name "Two of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "Love, passion, friendship, affinity, union, \
+concord, sympathy, the interrelation of the sexes, and--as a suggestion \
+apart from all offices of divination--that desire which is not in \
+Nature, but by which Nature is sanctified."
+          :meanings-rev "Lust, cupidity, jealousy, wish, desire, but \
+the card may also give, says W., \"that desire which is not in nature, \
+but by which nature is sanctified.\""
+          :image-file "tarot_cu02.jpg")
+     (:id 3
+          :name "Three of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "The conclusion of any matter in plenty, \
+perfection and merriment; happy issue, victory, fulfilment, solace, \
+healing,"
+          :meanings-rev "Expedition, dispatch, achievement, end. It \
+signifies also the side of excess in physical enjoyment, and the \
+pleasures of the senses."
+          :image-file "tarot_cu03.jpg")
+     (:id 4
+          :name "Four of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "Weariness, disgust, aversion, imaginary \
+vexations, as if the wine of this world had caused satiety only; \
+another wine, as if a fairy gift, is now offered the wastrel, but he \
+sees no consolation therein. This is also a card of blended pleasure."
+          :meanings-rev "Novelty, presage, new instruction, new \
+relations."
+          :image-file "tarot_cu04.jpg")
+     (:id 5
+          :name "Five of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "A dark, cloaked figure, looking sideways at \
+three prone cups two others stand upright behind him; a bridge is in \
+the background, leading to a small keep or holding. Divanatory \
+Meanings: It is a card of loss, but something remains over; three have \
+been taken, but two are left; it is a card of inheritance, patrimony, \
+transmission, but not corresponding to expectations; with some \
+interpreters it is a card of marriage, but not without bitterness or \
+frustration."
+          :meanings-rev "News, alliances, affinity, consanguinity, \
+ancestry, return, false projects."
+          :image-file "tarot_cu05.jpg")
+     (:id 6
+          :name "Six of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "A card of the past and of memories, looking \
+back, as--for example--on childhood; happiness, enjoyment, but coming \
+rather from the past; things that have vanished. Another reading \
+reverses this, giving new relations, new knowledge, new environment, \
+and then the children are disporting in an unfamiliar precinct."
+          :meanings-rev "The future, renewal, that which will come to \
+pass presently."
+          :image-file "tarot_cu06.jpg")
+     (:id 7
+          :name "Seven of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "Fairy favours, images of reflection, sentiment, \
+imagination, things seen in the glass of contemplation; some attainment \
+in these degrees, but nothing permanent or substantial is suggested."
+          :meanings-rev "Desire, will, determination, project."
+          :image-file "tarot_cu07.jpg")
+     (:id 8
+          :name "Eight of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "The card speaks for itself on the surface, but \
+other readings are entirely antithetical--giving joy, mildness, \
+timidity, honour, modesty. In practice, it is usually found that the \
+card shews the decline of a matter, or that a matter which has been \
+thought to be important is really of slight consequence--either for \
+good or evil."
+          :meanings-rev "Great joy, happiness, feasting."
+          :image-file "tarot_cu08.jpg")
+     (:id 9
+          :name "Nine of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "Concord, contentment, physical bien-être; also \
+victory, success, advantage; satisfaction for the Querent or person \
+for whom the consultation is made."
+          :meanings-rev "Truth, loyalty, liberty; but the readings vary \
+and include mistakes, imperfections, etc."
+          :image-file "tarot_cu09.jpg")
+     (:id 10
+          :name "Ten of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "Contentment, repose of the entire heart; the \
+perfection of that state; also perfection of human love and friendship; \
+if with several picture-cards, a person who is taking charge of the \
+Querent's interests; also the town, village or country inhabited by \
+the Querent."
+          :meanings-rev "Repose of the false heart, indignation, \
+violence."
+          :image-file "tarot_cu10.jpg")
+     (:id 11
+          :name "Page of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "Fair young man, one impelled to render service \
+and with whom the Querent will be connected; a studious youth; news, \
+message; application, reflection, meditation; also these things \
+directed to business."
+          :meanings-rev "Taste, inclination, attachment, seduction, \
+deception, artifice."
+          :image-file "tarot_cupa.jpg")
+     (:id 12
+          :name "Knight of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "Arrival, approach--sometimes that of a \
+messenger; advances, proposition, demeanour, invitation, incitement."
+          :meanings-rev "Trickery, artifice, subtlety, swindling, \
+duplicity, fraud."
+          :image-file "tarot_cukn.jpg")
+     (:id 13
+          :name "Queen of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "Good, fair woman; honest, devoted woman, who \
+will do service to the Querent; loving intelligence, and hence the \
+gift of vision; success, happiness, pleasure; also wisdom, virtue; a \
+perfect spouse and a good mother."
+          :meanings-rev "The accounts vary; good woman; otherwise, \
+distinguished woman but one not to be trusted; perverse woman; vice, \
+dishonour, depravity."
+          :image-file "tarot_cuqu.jpg")
+     (:id 14
+          :name "King of Cups"
+          :type minor
+          :suit cups
+          :meanings-up "Fair man, man of business, law, or divinity; \
+responsible, disposed to oblige the Querent; also equity, art and \
+science, including those who profess science, law and art; creative \
+intelligence."
+          :meanings-rev "Dishonest, double-dealing man; roguery, \
+exaction, injustice, vice, scandal, pillage, considerable loss."
+          :image-file "tarot_cuki.jpg")
+
+     ;; ----------------------------------------
+     ;; Suit of Pentacles
+     ;; ----------------------------------------
+     (:id 1
+          :name "Ace of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "Perfect contentment, felicity, ecstasy; also \
+speedy intelligence; gold."
+          :meanings-rev "The evil side of wealth, bad intelligence; \
+also great riches. In any case it shews prosperity, comfortable \
+material conditions, but whether these are of advantage to the \
+possessor will depend on whether the card is reversed or not."
+          :image-file "tarot_peac.jpg")
+     (:id 2
+          :name "Two of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "On the one hand it is represented as a card of \
+gaiety, recreation and its connexions, which is the subject of the \
+design; but it is read also as news and messages in writing, as \
+obstacles, agitation, trouble, embroilment."
+          :meanings-rev "Enforced gaiety, simulated enjoyment, literal \
+sense, handwriting, composition, letters of exchange."
+          :image-file "tarot_pe02.jpg")
+     (:id 3
+          :name "Three of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "Métier, trade, skilled labour; usually, \
+however, regarded as a card of nobility, aristocracy, renown, glory."
+          :meanings-rev "Mediocrity, in work and otherwise, puerility, \
+pettiness, weakness."
+          :image-file "tarot_pe03.jpg")
+     (:id 4
+          :name "Four of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "The surety of possessions, cleaving to that \
+which one has, gift, legacy, inheritance."
+          :meanings-rev "Suspense, delay, opposition."
+          :image-file "tarot_pe04.jpg")
+     (:id 5
+          :name "Five of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "The card foretells material trouble above all, \
+whether in the form illustrated--that is, destitution--or otherwise. \
+For some cartomancists, it is a card of love and lovers-wife, husband, \
+friend, mistress; also concordance, affinities. These alternatives \
+cannot be harmonized."
+          :meanings-rev "Disorder, chaos, ruin, discord, profligacy."
+          :image-file "tarot_pe05.jpg")
+     (:id 6
+          :name "Six of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "Presents, gifts, gratification another account \
+says attention, vigilance now is the accepted time, present \
+prosperity, etc."
+          :meanings-rev "Desire, cupidity, envy, jealousy, illusion."
+          :image-file "tarot_pe06.jpg")
+     (:id 7
+          :name "Seven of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "These are exceedingly contradictory; in the \
+main, it is a card of money, business, barter; but one reading gives \
+altercation, quarrels--and another innocence, ingenuity, purgation."
+          :meanings-rev "Cause for anxiety regarding money which it may \
+be proposed to lend."
+          :image-file "tarot_pe07.jpg")
+     (:id 8
+          :name "Eight of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "Work, employment, commission, craftsmanship, \
+skill in craft and business, perhaps in the preparatory stage."
+          :meanings-rev "Voided ambition, vanity, cupidity, exaction, \
+usury. It may also signify the possession of skill, in the sense of \
+the ingenious mind turned to cunning and intrigue."
+          :image-file "tarot_pe08.jpg")
+     (:id 9
+          :name "Nine of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "Prudence, safety, success, accomplishment, \
+certitude, discernment."
+          :meanings-rev "Roguery, deception, voided project, bad faith."
+          :image-file "tarot_pe09.jpg")
+     (:id 10
+          :name "Ten of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "Gain, riches; family matters, archives, \
+extraction, the abode of a family."
+          :meanings-rev "Chance, fatality, loss, robbery, games of \
+hazard; sometimes gift, dowry, pension."
+          :image-file "tarot_pe10.jpg")
+     (:id 11
+          :name "Page of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "Application, study, scholarship, reflection \
+another reading says news, messages and the bringer thereof; also \
+rule, management."
+          :meanings-rev "Prodigality, dissipation, liberality, luxury; \
+unfavourable news."
+          :image-file "tarot_pepa.jpg")
+     (:id 12
+          :name "Knight of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "Utility, serviceableness, interest, \
+responsibility, rectitude-all on the normal and external plane."
+          :meanings-rev "inertia, idleness, repose of that kind, \
+stagnation; also placidity, discouragement, carelessness."
+          :image-file "tarot_pekn.jpg")
+     (:id 13
+          :name "Queen of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "Opulence, generosity, magnificence, security, \
+liberty."
+          :meanings-rev "Evil, suspicion, suspense, fear, mistrust."
+          :image-file "tarot_pequ.jpg")
+     (:id 14
+          :name "King of Pentacles"
+          :type minor
+          :suit pentacles
+          :meanings-up "Valour, realizing intelligence, business and \
+normal intellectual aptitude, sometimes mathematical gifts and \
+attainments of this kind; success in these paths."
+          :meanings-rev "Vice, weakness, ugliness, perversity, \
+corruption, peril."
+          :image-file "tarot_peki.jpg")
+
+     ;; ----------------------------------------
+     ;; Suit of Swords
+     ;; ----------------------------------------
+     (:id 1
+          :name "Ace of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Triumph, the excessive degree in everything, \
+conquest, triumph of force. It is a card of great force, in love as \
+well as in hatred. The crown may carry a much higher significance than \
+comes usually within the sphere of fortune-telling."
+          :meanings-rev "The same, but the results are disastrous; \
+another account says--conception, childbirth, augmentation, \
+multiplicity."
+          :image-file "tarot_swac.jpg")
+     (:id 2
+          :name "Two of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Conformity and the equipoise which it suggests, \
+courage, friendship, concord in a state of arms; another reading gives \
+tenderness, affection, intimacy. The suggestion of harmony and other \
+favourable readings must be considered in a qualified manner, as \
+Swords generally are not symbolical of beneficent forces in human \
+affairs."
+          :meanings-rev "Imposture, falsehood, duplicity, disloyalty."
+          :image-file "tarot_sw02.jpg")
+     (:id 3
+          :name "Three of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Removal, absence, delay, division, rupture, \
+dispersion, and all that the design signifies naturally, being too \
+simple and obvious to call for specific enumeration."
+          :meanings-rev "Mental alienation, error, loss, distraction, \
+disorder, confusion."
+          :image-file "tarot_sw03.jpg")
+     (:id 4
+          :name "Four of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Vigilance, retreat, solitude, hermit's repose, \
+exile, tomb and coffin. It is these last that have suggested the \
+design."
+          :meanings-rev "Wise administration, circumspection, economy, \
+avarice, precaution, testament."
+          :image-file "tarot_sw04.jpg")
+     (:id 5
+          :name "Five of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Degradation, destruction, revocation, infamy, \
+dishonour, loss, with the variants and analogues of these."
+          :meanings-rev "The same; burial and obsequies."
+          :image-file "tarot_sw05.jpg")
+     (:id 6
+          :name "Six of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Journey by water, route, way, envoy, \
+commissionary, expedient."
+          :meanings-rev "Declaration, confession, publicity; one \
+account says that it is a proposal of love."
+          :image-file "tarot_sw06.jpg")
+     (:id 7
+          :name "Seven of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Design, attempt, wish, hope, confidence; also \
+quarrelling, a plan that may fail, annoyance. The design is uncertain \
+in its import, because the significations are widely at variance with \
+each other."
+          :meanings-rev "Good advice, counsel, instruction, slander, \
+babbling."
+          :image-file "tarot_sw07.jpg")
+     (:id 8
+          :name "Eight of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Bad news, violent chagrin, crisis, censure, \
+power in trammels, conflict, calumny; also sickness."
+          :meanings-rev "Disquiet, difficulty, opposition, accident, \
+treachery; what is unforeseen; fatality."
+          :image-file "tarot_sw08.jpg")
+     (:id 9
+          :name "Nine of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Death, failure, miscarriage, delay, deception, \
+disappointment, despair."
+          :meanings-rev "Imprisonment, suspicion, doubt, reasonable \
+fear, shame."
+          :image-file "tarot_sw09.jpg")
+     (:id 10
+          :name "Ten of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Whatsoever is intimated by the design; also \
+pain, affliction, tears, sadness, desolation. It is not especially a \
+card of violent death."
+          :meanings-rev "Advantage, profit, success, favour, but none \
+of these are permanent; also power and authority."
+          :image-file "tarot_sw10.jpg")
+     (:id 11
+          :name "Page of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Authority, overseeing, secret service, \
+vigilance, spying, examination, and the qualities thereto belonging."
+          :meanings-rev "More evil side of these qualities; what is \
+unforeseen, unprepared state; sickness is also intimated."
+          :image-file "tarot_swpa.jpg")
+     (:id 12
+          :name "Knight of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Skill, bravery, capacity, defence, address, \
+enmity, wrath, war, destruction, opposition, resistance, ruin. There \
+is therefore a sense in which the card signifies death, but it carries \
+this meaning only in its proximity to other cards of fatality."
+          :meanings-rev "Imprudence, incapacity, extravagance."
+          :image-file "tarot_swkn.jpg")
+     (:id 13
+          :name "Queen of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Widowhood, female sadness and embarrassment, \
+absence, sterility, mourning, privation, separation."
+          :meanings-rev "Malice, bigotry, artifice, prudery, bale, \
+deceit."
+          :image-file "tarot_swqu.jpg")
+     (:id 14
+          :name "King of Swords"
+          :type minor
+          :suit swords
+          :meanings-up "Whatsoever arises out of the idea of judgment \
+and all its connexions-power, command, authority, militant \
+intelligence, law, offices of the crown, and so forth."
+          :meanings-rev "Cruelty, perversity, barbarity, perfidy, evil \
+intention."
+          :image-file "tarot_swki.jpg"))))
 
 ;;; OTHER VARIABLES:
 
@@ -553,6 +1468,9 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
 
 (defvar-local solo-rpg--hud-buffer-name nil
   "Buffer-local variable storing the unique name of this session's HUD.")
+
+(defvar-local solo-rpg-deck-tarot-active nil
+  "The copy of the Tarot deck currently in use.")
 
 
 ;;; FUNCTIONS:
@@ -912,17 +1830,17 @@ If INVERT is non-nil, then output is inverted."
 ;;; GENERATORS:
 ;;; Plot generator:
 
-(defun solo-rpg--generator-plot-text ()
+(defun solo-rpg--gen-plot-text ()
   "Generate and return a plot text."
   (format "%s %s, but %s"
-           (solo-rpg-table-get-random solo-rpg-generator-plot-goal-table)
-           (solo-rpg-table-get-random solo-rpg-generator-plot-focus-table)
-           (solo-rpg-table-get-random solo-rpg-generator-plot-obstacle-table)))
+           (solo-rpg-table-get-random solo-rpg-gen-plot-goal-table)
+           (solo-rpg-table-get-random solo-rpg-gen-plot-focus-table)
+           (solo-rpg-table-get-random solo-rpg-gen-plot-obstacle-table)))
 
-(defun solo-rpg-generator-plot ()
+(defun solo-rpg-gen-plot ()
   "Generate a plot and open it in the staging area."
   (interactive)
-  (solo-rpg--stage #'solo-rpg--generator-plot-text))
+  (solo-rpg--stage #'solo-rpg--gen-plot-text))
 
 ;;; Narrative event generator:
 
@@ -973,7 +1891,7 @@ If INVERT is non-nil, then output is inverted."
 
 ;;; NPC Appearance generator:
 
-(defun solo-rpg--generator-npc-body (mod)
+(defun solo-rpg--gen-npc-body (mod)
   "Return random size affected by MOD."
   (let ((part (+ (+ 1 (random 4))
                  (+ 1 (random 4))
@@ -992,7 +1910,7 @@ If INVERT is non-nil, then output is inverted."
            "very large"
            "extremely large"))))
 
-(defun solo-rpg--generator-npc-appearance-text ()
+(defun solo-rpg--gen-npc-appearance-text ()
   "Generate and return NPC Appearance text."
   (let* ((height           (solo-rpg--table-weighted-get-random
                             solo-rpg-table-npc-height))
@@ -1016,9 +1934,9 @@ If INVERT is non-nil, then output is inverted."
                             solo-rpg-table-npc-special-features))
          (hair  (format "%s, %s" hair-color hair-length))
          (size-mod         (plist-get size :mod))
-         (chest            (solo-rpg--generator-npc-body size-mod))
-         (waist            (solo-rpg--generator-npc-body size-mod))
-         (bottom           (solo-rpg--generator-npc-body size-mod))
+         (chest            (solo-rpg--gen-npc-body size-mod))
+         (waist            (solo-rpg--gen-npc-body size-mod))
+         (bottom           (solo-rpg--gen-npc-body size-mod))
          (output           ""))
     (unless (string= hair-length "short")
       (setq hair (format "%s, %s" hair long-hair-style)))
@@ -1049,10 +1967,10 @@ Bottom          : %s\n"
                            chest waist bottom))))
     output))
 
-(defun solo-rpg-generator-npc-appearance ()
+(defun solo-rpg-gen-npc-appearance ()
   "Generate NPC appearance and open it in the staging area."
   (interactive)
-  (solo-rpg--stage #'solo-rpg--generator-npc-appearance-text))
+  (solo-rpg--stage #'solo-rpg--gen-npc-appearance-text))
 
 
 ;;; NPC Name generator:
@@ -1176,7 +2094,8 @@ Bottom          : %s\n"
       (", with a few chests along the walls" . nil)))
     ("ceremonial chamber" .
      ((" with a ritual circle in the middle" . nil)
-      (" with a bottomless pit at its center" . nil)))
+      (" with a bottomless pit at its center" . nil)
+      (" with a foreboding altar at its center" . nil)))
     ("burial chamber" .
      ((" with tombs along the walls" .
        ((", some of which are cracked open" .
@@ -1243,28 +2162,29 @@ Bottom          : %s\n"
   (solo-rpg--stage #'solo-rpg-gen-dungeon-room-text))
 ;;; Dungeon event generator
 
-(defconst solo-rpg-gen-dungeon-event-adj-table
-  '["Dangerous"
-    "Shadowy"
-    "Unexpected"]
-  "Adjectives for the random dungeon event generator.")
+(defconst solo-rpg-gen-dungeon-event-incident-table
+  ["Sounds of movement echo through the halls"
+   "You think you saw movement in the corner of your eye"
+   "Someone - or something - appear to be approaching"
+   "A sudden cave in alters the layout of the surroundings"
+   "There is a flutter of movement"
+   "There is a sudden draft"]
+  "Incidents for the random dungeon event generator.")
 
-(defconst solo-rpg-gen-dungeon-event-noun-table
-  '["encounter"
-    "echoes"
-    "halls"
-    "movements"
-    "sounds in the distance"
-    "ambush"
-    "surprise meeting"
-    "discovery"]
-  "Nouns for the random dungeon event generator.")
+(defconst solo-rpg-gen-dungeon-event-twist-table
+  ["and a fleeting tactical advantage is revealed"
+   "and there is a sudden, strange smell in the air"
+   "but then the dungeon turns eerily quiet"
+   "and things might be taking a turn for the worse"
+   "but all may not be what they seem"
+   "and an unexpected opportunity presents itself"]
+  "Twists for the random dungeon event generator.")
 
 (defun solo-rpg--gen-dungeon-event-text ()
   "Generate and return a random dungeon event text."
   (format "%s %s"
-          (solo-rpg-table-get-random solo-rpg-gen-dungeon-event-adj-table)
-          (solo-rpg-table-get-random solo-rpg-gen-dungeon-event-noun-table)))
+          (solo-rpg-table-get-random solo-rpg-gen-dungeon-event-incident-table)
+          (solo-rpg-table-get-random solo-rpg-gen-dungeon-event-twist-table)))
 
 (defun solo-rpg-gen-dungeon-event ()
   "Generate a random dungeon event and stage it."
@@ -1624,6 +2544,24 @@ IGNORE-BUF is ignored in the tally."
       (solo-rpg-oracle-yes-no "50/50" invert)))
    ("-" "Worse than 50/50 probability"   solo-rpg-menu-oracle-yes-no-unprobable)])
 
+;;; Tarot dashboard:
+
+;; Define the Tarot dashboard menu
+
+(transient-define-prefix solo-rpg-menu-tarot ()
+  "The solo-rpg Tarot menu."
+  ["Solo-PRG dashboard: Tarot Menu"
+   ["Draw"
+    ("d" "Single tarot card"    solo-rpg-deck-tarot-draw-single
+     :inapt-if                  solo-rpg-deck-tarot-active-empty-p)
+    ("s" solo-rpg-deck-tarot-shuffle
+     :description solo-rpg--deck-tarot-shuffle-desc)
+    ("m" solo-rpg-deck-tarot-meaning-toggle
+     :description solo-rpg--deck-tarot-meaning-desc
+     :transient t)]
+   ["System"
+    ("q" "Go back"              transient-quit-one)]])
+
 ;;; Narrative dashboard:
 
 ;; Define the Plot dashboard menu
@@ -1633,7 +2571,7 @@ IGNORE-BUF is ignored in the tally."
   ["SoloRPG dashboard: Narrative Menu\n"
    ["Generate"
     ("n" "Narrative event" solo-rpg-gen-nar-event)
-    ("p" "Plot"            solo-rpg-generator-plot)]
+    ("p" "Plot"            solo-rpg-gen-plot)]
    ["System"
     ("q" "Go back"         transient-quit-one)]])
 
@@ -1645,7 +2583,7 @@ IGNORE-BUF is ignored in the tally."
   "The solo-rpg NPC menu."
   ["SoloRPG dashboard: NPC Menu\n"
    ["Generate"
-    ("a" "Appearance"        solo-rpg-generator-npc-appearance)
+    ("a" "Appearance"        solo-rpg-gen-npc-appearance)
     ("f" "Female name"       solo-rpg-gen-npc-name-female)
     ("m" "Male name"         solo-rpg-gen-npc-name-male)
     ("h" solo-rpg-toggle-npc-facial-hair
@@ -1665,13 +2603,14 @@ IGNORE-BUF is ignored in the tally."
   "The solo-rpg Dungeon menu."
   ["SoloRPG dashboard: Dungeon Menu\n"
    ["Generate"
-    ("r" "Room"          solo-rpg-gen-dungeon-room)
+    ("r" "Room"            solo-rpg-gen-dungeon-room)
     ("s" solo-rpg-toggle-dungeon-size
      :description solo-rpg--toggle-dungeon-size-desc
      :transient t)
-    ("e" "Event"         solo-rpg-gen-dungeon-event)]
+    ("e" "Event"           solo-rpg-gen-dungeon-event)
+    ("n" "Narrative event" solo-rpg-gen-nar-event)]
    ["System"
-    ("q" "Go back"       transient-quit-one)]])
+    ("q" "Go back"         transient-quit-one)]])
 
 ;; Settlement dashboards
 
@@ -1679,10 +2618,11 @@ IGNORE-BUF is ignored in the tally."
   "The solo-rpg Settlement menu."
   ["SoloRPG dashboard: Settlement Menu\n"
    ["Generate"
-    ("c" "City event"    solo-rpg-gen-city-event)
-    ("w" "Weather"       solo-rpg-gen-weather)]
+    ("c" "City event"      solo-rpg-gen-city-event)
+    ("n" "Narrative event" solo-rpg-gen-nar-event)
+    ("w" "Weather"         solo-rpg-gen-weather)]
    ["System"
-    ("q" "Go back"       transient-quit-one)]])
+    ("q" "Go back"         transient-quit-one)]])
 
 ;; Travel dashboard
 
@@ -1691,6 +2631,7 @@ IGNORE-BUF is ignored in the tally."
   ["SoloRPG dashboard: Travel Menu\n"
    ["Generate"
     ("e" "Wilderness event"  solo-rpg-gen-wild-event)
+    ("n" "Narrative event"   solo-rpg-gen-nar-event)
     ("w" "Weather"           solo-rpg-gen-weather)]
    ["System"
     ("q" "Go back"           transient-quit-one)]])
@@ -1707,7 +2648,8 @@ IGNORE-BUF is ignored in the tally."
     ("n" "NPCs..."       solo-rpg-menu-npc)
     ("a" "Narrative..."  solo-rpg-menu-nar)]
    ["Questions"
-    ("o" "Oracles..."    solo-rpg-menu-oracle)]
+    ("o" "Oracles..."    solo-rpg-menu-oracle)
+    ("t" "Tarot..."      solo-rpg-menu-tarot)]
    ["Environments"
     ("D" "Dungeons..."   solo-rpg-menu-dungeon)
     ("S" "Settlements..." solo-rpg-menu-city)
@@ -1715,7 +2657,7 @@ IGNORE-BUF is ignored in the tally."
    ["System"
     ("h" "Toggle HUD"    solo-rpg-toggle-hud
      :transient t)
-    ("t" solo-rpg-output-method-toggle
+    ("O" solo-rpg-output-method-toggle
      :description solo-rpg--toggle-output-desc
      :transient t)
     ("q" "Quit"          transient-quit-one)]])
@@ -1886,28 +2828,31 @@ https://zeruhur.itch.io/lonelog
       (progn
         (font-lock-add-keywords nil solo-rpg-font-lock-keywords)
         (font-lock-flush)
-
+        
         ;; Check if the buffer name starts with "*Solo-RPG HUD"
         (unless (string-match-p "^\\*Solo-RPG HUD" (buffer-name))
           ;; Generate the unique HUD name for this buffer
           (setq solo-rpg--hud-buffer-name (format "*Solo-RPG HUD: %s*"
-                                                 (buffer-name)))
+                                                  (buffer-name)))
           ;; Start the timer, and hand it the current game buffer.
           (setq solo-rpg--hud-timer
                 (run-with-idle-timer solo-rpg-hud-update-delay t
                                      #'solo-rpg--update-hud-background
                                      (current-buffer)))
-
+          
           ;; Attach the cleanup check to this buffer's death event.
           ;; The last `t' makes it buffer-local.
           (add-hook 'kill-buffer-hook #'solo-rpg--cleanup-on-kill nil t)
           ;; Handle auto-start
           (when solo-rpg-auto-open-hud
             (solo-rpg-update-hud))
-
+          
           (add-hook 'window-selection-change-functions
-                  #'solo-rpg--swap-hud-on-window-change))
-        
+                    #'solo-rpg--swap-hud-on-window-change)
+          
+          ;; Initialize Tarot deck
+          (setq solo-rpg-deck-tarot-active (solo-rpg-deck-tarot-copy)))
+              
         (message "Solo-RPG-mode enabled."))
     ;; If OFF:
     (progn
@@ -1917,11 +2862,11 @@ https://zeruhur.itch.io/lonelog
       (when solo-rpg--hud-timer
         (cancel-timer solo-rpg--hud-timer)
         (setq solo-rpg--hud-timer nil))
-
+      
       ;; Remove our kill-buffer hook hook so it doesn't fire unnecessarily
       ;; The last `t' makes it buffer-local.
       (remove-hook 'kill-buffer-hook #'solo-rpg--cleanup-on-kill t)
-
+      
       ;; Run the cleanup check
       (solo-rpg--cleanup-hud-if-last)
       
