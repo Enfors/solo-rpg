@@ -544,22 +544,52 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
   (if (solo-rpg-deck-cards tarot-deck)
       (let ((card (nth (random (length (solo-rpg-deck-cards tarot-deck)))
                        (solo-rpg-deck-cards tarot-deck)))
-            (metadata (list :reversed (= (random 2) 0))))
+            (reversed (= (random 2) 0)))
         (setf (solo-rpg-deck-cards tarot-deck)
               (delq card (solo-rpg-deck-cards tarot-deck)))
-        (list :card card :metadata metadata))
+        ;; This next part is something I just learned, and I need to
+        ;; document it for my future self.
+        ;;
+        ;; `card' is not a copy from the original deck. It is just a
+        ;; pointer. And I want to store in it whether or not it was
+        ;; drawn as reversed, in a `reversed' field. The obvious (to
+        ;; me) way of doing that is to copy the card, and add the
+        ;; metadata to my copy. But there is a better way - append.
+        ;; Since card is a plist (:key value) - that is, a list of key
+        ;; value pairs - I can just create a new list which includes
+        ;; the metadata I want to add (`reversed') as well as the old
+        ;; card plist.
+        ;;
+        ;; Simple proof of concept:
+        ;;
+        ;; (setq card (list :name "foo" :data 1))
+        ;;
+        ;; `card' is now a valid plist. We can get data form it:
+        ;;
+        ;; (plist-get card :name)
+        ;;
+        ;; And now the append that this whole long-ass comment is about:
+        ;;
+        ;; (append (list :reversed 1) card)
+        ;;
+        ;; Also, I'm going to use the same trick to set a :meaning
+        ;; field, as well as update the name:
+
+        (append (if reversed
+                    (list :meanings (plist-get card :meanings-rev)
+                          :name     (concat (plist-get card :name)
+                                            ", reversed")
+                          :reversed t)
+                  (list :meanings (plist-get card :meanings-up)
+                        :reversed nil))
+                card))
     nil))
 
-(defun solo-rpg-deck-tarot-card-text (card metadata)
-  "Return a string representing CARD using METADATA."
-  (format "%s%s\n%s"
+(defun solo-rpg-deck-tarot-card-text (card)
+  "Return a string representing CARD."
+  (format "Tarot card: %s\nMeaning   : %s\n"
           (plist-get card :name)
-          (if (plist-get metadata :reversed)
-              ", reversed"
-            "")
-          (if (plist-get metadata :reversed)
-              (plist-get card :meanings-rev)
-            (plist-get card :meanings-up))))
+          (plist-get card :meanings)))
 
 (defun solo-rpg-deck-tarot-copy ()
   "Return a deep copy of `solo-rpg-deck-tarot'."
@@ -568,17 +598,33 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
           (copy-sequence (solo-rpg-deck-cards solo-rpg-deck-tarot)))
     new-deck))
 
-;; Tarot draw functions
+(defun solo-rpg-deck-tarot-active-empty-p ()
+  "Return t if there are no cards left in `solo-rpg-deck-tarot-active'.
+Otherwise, nil is returned."
+  (null (solo-rpg-deck-cards solo-rpg-deck-tarot-active)))
+
+;; Tarot dashboard button functions
+
+(defun solo-rpg--deck-tarot-shuffle-desc ()
+  "Return a string for the shuffle tarot deck button."
+  (format "Shuffle (%d cards left)"
+          (length (solo-rpg-deck-cards solo-rpg-deck-tarot-active))))
+
+(defun solo-rpg-deck-tarot-shuffle ()
+  "Shuffle `solo-rpg-deck-tarot-active', to get all the cards back."
+  (interactive)
+  (setq solo-rpg-deck-tarot-active (solo-rpg-deck-tarot-copy))
+  ;; Since buttons may need updating, we must manually restart the menu.
+  (solo-rpg-menu-tarot))
 
 (defun solo-rpg-deck-tarot-draw-single (&optional invert)
   "Draw a single Tarot card from DECK.
 If INVERT is non-nil, then invert the output method."
   (interactive "P")
   (let ((card (solo-rpg-deck-tarot-card-draw solo-rpg-deck-tarot-active)))
-    (solo-rpg--output (format "%s\n"
-                              (solo-rpg-deck-tarot-card-text
-                               (plist-get card :card)
-                               (plist-get card :metadata))))))
+    (solo-rpg--output (solo-rpg-deck-tarot-card-text card)))
+  ;; Since buttons may need updating, we must manually restart the menu.
+  (solo-rpg-menu-tarot))
 
 (defconst solo-rpg-deck-tarot
   (make-solo-rpg-deck
@@ -2487,11 +2533,12 @@ IGNORE-BUF is ignored in the tally."
   "The solo-rpg Tarot menu."
   ["Solo-PRG dashboard: Tarot Menu"
    ["Draw"
-    ("s" "Single tarot card"    solo-rpg-deck-tarot-draw-single
-     :transient t)]
+    ("d" "Single tarot card"    solo-rpg-deck-tarot-draw-single
+     :inapt-if                  solo-rpg-deck-tarot-active-empty-p)
+    ("s" solo-rpg-deck-tarot-shuffle
+     :description solo-rpg--deck-tarot-shuffle-desc)]
    ["System"
     ("q" "Go back"              transient-quit-one)]])
-
 
 ;;; Narrative dashboard:
 
