@@ -545,7 +545,6 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
       (let ((card (nth (random (length (solo-rpg-deck-cards tarot-deck)))
                        (solo-rpg-deck-cards tarot-deck)))
             (metadata (list :reversed (= (random 2) 0))))
-        (message "There are cards.")
         (setf (solo-rpg-deck-cards tarot-deck)
               (delq card (solo-rpg-deck-cards tarot-deck)))
         (list :card card :metadata metadata))
@@ -553,8 +552,11 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
 
 (defun solo-rpg-deck-tarot-card-text (card metadata)
   "Return a string representing CARD using METADATA."
-  (format "%s\n%s"
+  (format "%s%s\n%s"
           (plist-get card :name)
+          (if (plist-get metadata :reversed)
+              ", reversed"
+            "")
           (if (plist-get metadata :reversed)
               (plist-get card :meanings-rev)
             (plist-get card :meanings-up))))
@@ -565,6 +567,18 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
     (setf (solo-rpg-deck-cards new-deck)
           (copy-sequence (solo-rpg-deck-cards solo-rpg-deck-tarot)))
     new-deck))
+
+;; Tarot draw functions
+
+(defun solo-rpg-deck-tarot-draw-single (&optional invert)
+  "Draw a single Tarot card from DECK.
+If INVERT is non-nil, then invert the output method."
+  (interactive "P")
+  (let ((card (solo-rpg-deck-tarot-card-draw solo-rpg-deck-tarot-active)))
+    (solo-rpg--output (format "%s\n"
+                              (solo-rpg-deck-tarot-card-text
+                               (plist-get card :card)
+                               (plist-get card :metadata))))))
 
 (defconst solo-rpg-deck-tarot
   (make-solo-rpg-deck
@@ -1389,6 +1403,9 @@ intention."
 
 (defvar-local solo-rpg--hud-buffer-name nil
   "Buffer-local variable storing the unique name of this session's HUD.")
+
+(defvar-local solo-rpg-deck-tarot-active nil
+  "The copy of the Tarot deck currently in use.")
 
 
 ;;; FUNCTIONS:
@@ -2462,6 +2479,20 @@ IGNORE-BUF is ignored in the tally."
       (solo-rpg-oracle-yes-no "50/50" invert)))
    ("-" "Worse than 50/50 probability"   solo-rpg-menu-oracle-yes-no-unprobable)])
 
+;;; Tarot dashboard:
+
+;; Define the Tarot dashboard menu
+
+(transient-define-prefix solo-rpg-menu-tarot ()
+  "The solo-rpg Tarot menu."
+  ["Solo-PRG dashboard: Tarot Menu"
+   ["Draw"
+    ("s" "Single tarot card"    solo-rpg-deck-tarot-draw-single
+     :transient t)]
+   ["System"
+    ("q" "Go back"              transient-quit-one)]])
+
+
 ;;; Narrative dashboard:
 
 ;; Define the Plot dashboard menu
@@ -2548,7 +2579,8 @@ IGNORE-BUF is ignored in the tally."
     ("n" "NPCs..."       solo-rpg-menu-npc)
     ("a" "Narrative..."  solo-rpg-menu-nar)]
    ["Questions"
-    ("o" "Oracles..."    solo-rpg-menu-oracle)]
+    ("o" "Oracles..."    solo-rpg-menu-oracle)
+    ("t" "Tarot..."      solo-rpg-menu-tarot)]
    ["Environments"
     ("D" "Dungeons..."   solo-rpg-menu-dungeon)
     ("S" "Settlements..." solo-rpg-menu-city)
@@ -2556,7 +2588,7 @@ IGNORE-BUF is ignored in the tally."
    ["System"
     ("h" "Toggle HUD"    solo-rpg-toggle-hud
      :transient t)
-    ("t" solo-rpg-output-method-toggle
+    ("O" solo-rpg-output-method-toggle
      :description solo-rpg--toggle-output-desc
      :transient t)
     ("q" "Quit"          transient-quit-one)]])
@@ -2727,28 +2759,31 @@ https://zeruhur.itch.io/lonelog
       (progn
         (font-lock-add-keywords nil solo-rpg-font-lock-keywords)
         (font-lock-flush)
-
+        
         ;; Check if the buffer name starts with "*Solo-RPG HUD"
         (unless (string-match-p "^\\*Solo-RPG HUD" (buffer-name))
           ;; Generate the unique HUD name for this buffer
           (setq solo-rpg--hud-buffer-name (format "*Solo-RPG HUD: %s*"
-                                                 (buffer-name)))
+                                                  (buffer-name)))
           ;; Start the timer, and hand it the current game buffer.
           (setq solo-rpg--hud-timer
                 (run-with-idle-timer solo-rpg-hud-update-delay t
                                      #'solo-rpg--update-hud-background
                                      (current-buffer)))
-
+          
           ;; Attach the cleanup check to this buffer's death event.
           ;; The last `t' makes it buffer-local.
           (add-hook 'kill-buffer-hook #'solo-rpg--cleanup-on-kill nil t)
           ;; Handle auto-start
           (when solo-rpg-auto-open-hud
             (solo-rpg-update-hud))
-
+          
           (add-hook 'window-selection-change-functions
-                  #'solo-rpg--swap-hud-on-window-change))
-        
+                    #'solo-rpg--swap-hud-on-window-change)
+          
+          ;; Initialize Tarot deck
+          (setq solo-rpg-deck-tarot-active (solo-rpg-deck-tarot-copy)))
+              
         (message "Solo-RPG-mode enabled."))
     ;; If OFF:
     (progn
@@ -2758,11 +2793,11 @@ https://zeruhur.itch.io/lonelog
       (when solo-rpg--hud-timer
         (cancel-timer solo-rpg--hud-timer)
         (setq solo-rpg--hud-timer nil))
-
+      
       ;; Remove our kill-buffer hook hook so it doesn't fire unnecessarily
       ;; The last `t' makes it buffer-local.
       (remove-hook 'kill-buffer-hook #'solo-rpg--cleanup-on-kill t)
-
+      
       ;; Run the cleanup check
       (solo-rpg--cleanup-hud-if-last)
       
