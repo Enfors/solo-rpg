@@ -3,7 +3,7 @@
 ;; Author: Christer Enfors <christer.enfors@gmail.com>
 ;; Maintainer: Christer Enfors <christer.enfors@gmail.com>
 ;; Created: 2026
-;; Version: 0.1.1
+;; Version: 0.2.0
 ;; Package-Requires: ((emacs "27.1") (transient "0.3.7"))
 ;; Keywords: games
 ;; URL: https://github.com/enfors/solo-rpg
