@@ -497,6 +497,63 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
     "broken/misshaped nose"]
   "Special features data table for the NPC Appearance generator.")
 
+;;; - Personality:
+
+(defconst solo-rpg-npc-ocean-openness-table
+  '(("Openness: "
+     ("1/7: " ("Authoritarian") ("Intolerant") ("Cynical") ("Narrow-minded"))
+     ("2/7: " ("Inflexible") ("Pessimistic") ("Hard-headed") ("Prejudiced"))
+     ("3/7: " ("Dogmatic") ("Conservative") ("Stubborn") ("Traditional"))
+     ("4/7: " ("Skeptical") ("Resistant") ("Realistic") ("Pragmatic"))
+     ("5/7: " ("Unbiased") ("Receptive") ("Open-minded") ("Curious"))
+     ("6/7: " ("Philosophical") ("Flexible") ("Creative") ("Inquisitive"))
+     ("7/7: " ("Tolerant") ("Progressive") ("Optimistic") ("Adventurous"))))
+  "OCEAN trait table for Openness.")
+
+(defconst solo-rpg-npc-ocean-conscientiousness-table
+  '(("Conscientiousness: "
+     ("1/7: " ("Negligent") ("Irresponsible") ("Careless") ("Lazy"))
+     ("2/7: " ("Hedonistic") ("Impulsive") ("Disorganized") ("Unreliable"))
+     ("3/7: " ("Procrastinating") ("Impatient") ("Unorganized") ("Indecisive"))
+     ("4/7: " ("Distracted") ("Casual") ("Practical") ("Diligent"))
+     ("5/7: " ("Punctual") ("Patient") ("Responsible") ("Dependable"))
+     ("6/7: " ("Disciplined") ("Thorough") ("Efficient") ("Goal-oriented"))
+     ("7/7: " ("Ambitious") ("Persevering") ("Methodical") ("Perfectionist"))))
+  "OCEAN trait table for Conscientiousness.")
+
+(defconst solo-rpg-npc-ocean-extraversion-table
+  '(("Extraversion: "
+     ("1/7: " ("Solitary") ("Reclusive") ("Private") ("Withdrawn"))
+     ("2/7: " ("Reserved") ("Shy") ("Introspective") ("Independent"))
+     ("3/7: " ("Submissive") ("Reflective") ("Quiet") ("Serious"))
+     ("4/7: " ("Aloof") ("Contemplative") ("Ambivert") ("Easy-going"))
+     ("5/7: " ("Outgoing") ("Sociable") ("Expressive") ("Lively"))
+     ("6/7: " ("Jovial") ("Cheerful") ("Listener") ("Bubbly"))
+     ("7/7: " ("Energetic") ("Passionate") ("Flamboyant") ("Flirtatious"))))
+  "OCEAN trait table for Extraversion.")
+
+(defconst solo-rpg-npc-ocean-agreeableness
+  '(("Agreeableness: "
+     ("1/7: " ("Cruel") ("Greedy") ("Deceptive") ("Manipulative"))
+     ("2/7: " ("Selfish") ("Boastful") ("Jealous") ("Cynical"))
+     ("3/7: " ("Rude") ("Sarcastic") ("Vain") ("Competitive"))
+     ("4/7: " ("Arrogant") ("Argumentative") ("Polite") ("Diplomatic"))
+     ("5/7: " ("Cooperative") ("Trusting") ("Honest") ("Loyal"))
+     ("6/7: " ("Kind") ("Caring") ("Compassionate") ("Generous"))
+     ("7/7: " ("Humorous") ("Forgiving") ("Charming") ("Altruistic"))))
+  "OCEAN trait table for Agreeableness.")
+
+(defconst solo-rpg-npc-ocean-neuroticism-table
+  '(("Neuroticism: "
+     ("1/7: " ("Serene") ("Stoic") ("Hardy") ("Poised"))
+     ("2/7: " ("Grounded") ("Calm") ("Adaptable") ("Sensible"))
+     ("3/7: " ("Confident") ("Focused") ("Stable") ("Resilient"))
+     ("4/7: " ("Relaxed") ("Concerned") ("Restless") ("Fickle"))
+     ("5/7: " ("Wary") ("Tense") ("Anxious") ("Vulnerable"))
+     ("6/7: " ("Sensitive") ("Irritable") ("Moody") ("Nervous"))
+     ("7/7: " ("Insecure") ("Self-critical") ("Depressed") ("Panicky"))))
+  "OCEAN trait table for Neuroticism.")
+
 ;;; Dungeon rooms:
 
 (defvar solo-rpg-dungeon-room-exit-probs
