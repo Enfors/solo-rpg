@@ -33,8 +33,11 @@
 ;; - Oracles:
 ;;   - Yes/No Oracle with probabilities
 ;;   - Action/Theme Oracle, inspired by the Mythic Game Master Emulator
+;;   - Tarot cards with meanings
 ;; - Generators:
-;;   - NPC name and appearance
+;;   - NPC name, appearance, and personality
+;;   - Narrative events
+;;   - Weather
 ;;   - Dungeon rooms and random events
 ;;   - Wilderness random events
 ;;   - City random events
@@ -500,7 +503,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
 ;;; - Personality:
 
 (defconst solo-rpg-npc-ocean-openness-table
-  '(("Openness: "
+  '(("Openness         : "
      ("1/7: " ("Authoritarian") ("Intolerant") ("Cynical") ("Narrow-minded"))
      ("2/7: " ("Inflexible") ("Pessimistic") ("Hard-headed") ("Prejudiced"))
      ("3/7: " ("Dogmatic") ("Conservative") ("Stubborn") ("Traditional"))
@@ -522,7 +525,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
   "OCEAN trait table for Conscientiousness.")
 
 (defconst solo-rpg-npc-ocean-extraversion-table
-  '(("Extraversion: "
+  '(("Extraversion     : "
      ("1/7: " ("Solitary") ("Reclusive") ("Private") ("Withdrawn"))
      ("2/7: " ("Reserved") ("Shy") ("Introspective") ("Independent"))
      ("3/7: " ("Submissive") ("Reflective") ("Quiet") ("Serious"))
@@ -533,7 +536,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
   "OCEAN trait table for Extraversion.")
 
 (defconst solo-rpg-npc-ocean-agreeableness
-  '(("Agreeableness: "
+  '(("Agreeableness    : "
      ("1/7: " ("Cruel") ("Greedy") ("Deceptive") ("Manipulative"))
      ("2/7: " ("Selfish") ("Boastful") ("Jealous") ("Cynical"))
      ("3/7: " ("Rude") ("Sarcastic") ("Vain") ("Competitive"))
@@ -544,7 +547,7 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
   "OCEAN trait table for Agreeableness.")
 
 (defconst solo-rpg-npc-ocean-neuroticism-table
-  '(("Neuroticism: "
+  '(("Neuroticism      : "
      ("1/7: " ("Serene") ("Stoic") ("Hardy") ("Poised"))
      ("2/7: " ("Grounded") ("Calm") ("Adaptable") ("Sensible"))
      ("3/7: " ("Confident") ("Focused") ("Stable") ("Resilient"))
@@ -2634,6 +2637,20 @@ IGNORE-BUF is ignored in the tally."
 
 ;;; NPC dashboard:
 
+;; Supporting functions
+
+(defun solo-rpg-gen-npc-ocean (&optional invert)
+  "Generate OCEAN personality for NPC.
+If INVERT is non-nil, then invert the output."
+  (interactive)
+  (solo-rpg--output
+   (format "%s\n%s\n%s\n%s\n%s\n"
+           (solo-rpg-gen-desc solo-rpg-npc-ocean-openness-table)
+           (solo-rpg-gen-desc solo-rpg-npc-ocean-conscientiousness-table)
+           (solo-rpg-gen-desc solo-rpg-npc-ocean-extraversion-table)
+           (solo-rpg-gen-desc solo-rpg-npc-ocean-agreeableness)
+           (solo-rpg-gen-desc solo-rpg-npc-ocean-neuroticism-table))))
+
 ;; Define the NPC dashboard menu
 
 (transient-define-prefix solo-rpg-menu-npc ()
@@ -2641,6 +2658,7 @@ IGNORE-BUF is ignored in the tally."
   ["SoloRPG dashboard: NPC Menu\n"
    ["Generate"
     ("a" "Appearance"        solo-rpg-gen-npc-appearance)
+    ("p" "Personality"       solo-rpg-gen-npc-ocean)
     ("f" "Female name"       solo-rpg-gen-npc-name-female)
     ("m" "Male name"         solo-rpg-gen-npc-name-male)
     ("h" solo-rpg-toggle-npc-facial-hair
