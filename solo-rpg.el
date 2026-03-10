@@ -2639,17 +2639,19 @@ IGNORE-BUF is ignored in the tally."
 
 ;; Supporting functions
 
-(defun solo-rpg-gen-npc-ocean (&optional invert)
-  "Generate OCEAN personality for NPC.
-If INVERT is non-nil, then invert the output."
+(defun solo-rpg--gen-npc-ocean-text ()
+  "Generate NPC ocean text and return it."
+  (format "%s\n%s\n%s\n%s\n%s\n"
+          (solo-rpg-gen-desc solo-rpg-npc-ocean-openness-table)
+          (solo-rpg-gen-desc solo-rpg-npc-ocean-conscientiousness-table)
+          (solo-rpg-gen-desc solo-rpg-npc-ocean-extraversion-table)
+          (solo-rpg-gen-desc solo-rpg-npc-ocean-agreeableness)
+          (solo-rpg-gen-desc solo-rpg-npc-ocean-neuroticism-table)))
+
+(defun solo-rpg-gen-npc-ocean ()
+  "Generate OCEAN personality for NPC."
   (interactive)
-  (solo-rpg--output
-   (format "%s\n%s\n%s\n%s\n%s\n"
-           (solo-rpg-gen-desc solo-rpg-npc-ocean-openness-table)
-           (solo-rpg-gen-desc solo-rpg-npc-ocean-conscientiousness-table)
-           (solo-rpg-gen-desc solo-rpg-npc-ocean-extraversion-table)
-           (solo-rpg-gen-desc solo-rpg-npc-ocean-agreeableness)
-           (solo-rpg-gen-desc solo-rpg-npc-ocean-neuroticism-table))))
+  (solo-rpg--stage #'solo-rpg--gen-npc-ocean-text))
 
 ;; Define the NPC dashboard menu
 
