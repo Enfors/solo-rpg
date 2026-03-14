@@ -12,6 +12,7 @@ A set of support functions and Transient-based dashboards for playing solo rolep
 - *Oracles:*
   - *Yes/No Oracle:* Probability-weighted answers (e.g., "Highly Likely", "50/50") with critical event triggers.
   - *Action/Theme Oracle:* Abstract prompt generator inspired by the Mythic Game Master Emulator.
+  - *Tarot cards:* Draw tarot cards, upright or reversed, with their meanings explained (no pictures - yet).
   - *Quantity Oracle:* Quickly determine how much or how many of something there are.
 - *Generators:* Generate standard RPG elements:
   - Plots and Quest Hooks
