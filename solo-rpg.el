@@ -1591,7 +1591,7 @@ GENERATE-FUN is a function pointer to function which returns generated text."
     ;; Only ask Emacs to arrange the window if it isn't already visible!
     (unless (get-buffer-window (current-buffer))
       (display-buffer (current-buffer)
-                      '(display-buffer-at-bottom . ((window-height . 14)))))))
+                      '(display-buffer-at-bottom . ((window-height . 13)))))))
 
 ;; Standard function for regeneration
 
