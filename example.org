@@ -51,8 +51,9 @@ d: Azura rolls against Agreeableness 1+2=3. 1d8: 1 -> Azura agrees to help, give
 d: Zolana rolls against Neuroticism 6-2=4 (circumstances). 1d8: 4 -> She manages to gather enough courage to help, given the plight of the slaves.
 d: How many goblins are outside the cave? 1d6: 1 -> Just one guard outside.
 
-There is only one guard outside. The party realizes that they have to trick the goblin to cross the clearing in front of the mine entrance to approach their hiding spot in the woods, so that they have a chance to kill him before he can alert the other goblins. The party makes some noise to draw his attention.
+There is only one guard outside. The party realizes that they have to trick the goblin to cross the clearing in front of the mine entrance to approach their hiding spot in the woods, so that they have a chance to kill him before he can alert the other goblins.
 
+@ The party makes some noise to draw the goblin's attention.
 ? Does the goblin approach? Probably. 1d20: 5 -> No.
 ? Did the goblin detect the noise at all? Probably. 1d20: 14 -> Yes.
 ? What does the goblin do? Endanger / Happiness -> He alerts the others.
