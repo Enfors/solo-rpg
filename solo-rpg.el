@@ -1,4 +1,4 @@
-;;; solo-rpg.el --- Solo roleplaying games support functions  -*- lexical-binding: t; -*-
+;;; solo-rpg.el --- Solo roleplaying games and Lonelog support  -*- lexical-binding: t; -*-
 
 ;; Author: Christer Enfors <christer.enfors@gmail.com>
 ;; Maintainer: Christer Enfors <christer.enfors@gmail.com>
@@ -29,6 +29,7 @@
 ;; in Emacs.
 
 ;; Features include:
+;; - Syntax highlighting of the Lonelog Solo RPG notation system
 ;; - Dice rolling
 ;; - Oracles:
 ;;   - Yes/No Oracle with probabilities
