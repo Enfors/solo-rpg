@@ -1,9 +1,9 @@
-;;; solo-rpg.el --- Solo roleplaying games support functions  -*- lexical-binding: t; -*-
+;;; solo-rpg.el --- Solo roleplaying games and Lonelog support  -*- lexical-binding: t; -*-
 
 ;; Author: Christer Enfors <christer.enfors@gmail.com>
 ;; Maintainer: Christer Enfors <christer.enfors@gmail.com>
 ;; Created: 2026
-;; Version: 0.2.0
+;; Version: 0.2.1
 ;; Package-Requires: ((emacs "27.1") (transient "0.3.7"))
 ;; Keywords: games
 ;; URL: https://github.com/enfors/solo-rpg
@@ -29,12 +29,16 @@
 ;; in Emacs.
 
 ;; Features include:
+;; - Syntax highlighting of the Lonelog Solo RPG notation system
 ;; - Dice rolling
 ;; - Oracles:
 ;;   - Yes/No Oracle with probabilities
 ;;   - Action/Theme Oracle, inspired by the Mythic Game Master Emulator
+;;   - Tarot cards with meanings
 ;; - Generators:
-;;   - NPC name and appearance
+;;   - NPC name, appearance, and personality
+;;   - Narrative events
+;;   - Weather
 ;;   - Dungeon rooms and random events
 ;;   - Wilderness random events
 ;;   - City random events
@@ -496,6 +500,63 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
     "missing tooth"
     "broken/misshaped nose"]
   "Special features data table for the NPC Appearance generator.")
+
+;;; - Personality:
+
+(defconst solo-rpg-npc-ocean-openness-table
+  '(("Openness         : "
+     ("1/7: " ("Authoritarian") ("Intolerant") ("Cynical") ("Narrow-minded"))
+     ("2/7: " ("Inflexible") ("Pessimistic") ("Hard-headed") ("Prejudiced"))
+     ("3/7: " ("Dogmatic") ("Conservative") ("Stubborn") ("Traditional"))
+     ("4/7: " ("Skeptical") ("Resistant") ("Realistic") ("Pragmatic"))
+     ("5/7: " ("Unbiased") ("Receptive") ("Open-minded") ("Curious"))
+     ("6/7: " ("Philosophical") ("Flexible") ("Creative") ("Inquisitive"))
+     ("7/7: " ("Tolerant") ("Progressive") ("Optimistic") ("Adventurous"))))
+  "OCEAN trait table for Openness.")
+
+(defconst solo-rpg-npc-ocean-conscientiousness-table
+  '(("Conscientiousness: "
+     ("1/7: " ("Negligent") ("Irresponsible") ("Careless") ("Lazy"))
+     ("2/7: " ("Hedonistic") ("Impulsive") ("Disorganized") ("Unreliable"))
+     ("3/7: " ("Procrastinating") ("Impatient") ("Unorganized") ("Indecisive"))
+     ("4/7: " ("Distracted") ("Casual") ("Practical") ("Diligent"))
+     ("5/7: " ("Punctual") ("Patient") ("Responsible") ("Dependable"))
+     ("6/7: " ("Disciplined") ("Thorough") ("Efficient") ("Goal-oriented"))
+     ("7/7: " ("Ambitious") ("Persevering") ("Methodical") ("Perfectionist"))))
+  "OCEAN trait table for Conscientiousness.")
+
+(defconst solo-rpg-npc-ocean-extraversion-table
+  '(("Extraversion     : "
+     ("1/7: " ("Solitary") ("Reclusive") ("Private") ("Withdrawn"))
+     ("2/7: " ("Reserved") ("Shy") ("Introspective") ("Independent"))
+     ("3/7: " ("Submissive") ("Reflective") ("Quiet") ("Serious"))
+     ("4/7: " ("Aloof") ("Contemplative") ("Ambivert") ("Easy-going"))
+     ("5/7: " ("Outgoing") ("Sociable") ("Expressive") ("Lively"))
+     ("6/7: " ("Jovial") ("Cheerful") ("Listener") ("Bubbly"))
+     ("7/7: " ("Energetic") ("Passionate") ("Flamboyant") ("Flirtatious"))))
+  "OCEAN trait table for Extraversion.")
+
+(defconst solo-rpg-npc-ocean-agreeableness
+  '(("Agreeableness    : "
+     ("1/7: " ("Cruel") ("Greedy") ("Deceptive") ("Manipulative"))
+     ("2/7: " ("Selfish") ("Boastful") ("Jealous") ("Cynical"))
+     ("3/7: " ("Rude") ("Sarcastic") ("Vain") ("Competitive"))
+     ("4/7: " ("Arrogant") ("Argumentative") ("Polite") ("Diplomatic"))
+     ("5/7: " ("Cooperative") ("Trusting") ("Honest") ("Loyal"))
+     ("6/7: " ("Kind") ("Caring") ("Compassionate") ("Generous"))
+     ("7/7: " ("Humorous") ("Forgiving") ("Charming") ("Altruistic"))))
+  "OCEAN trait table for Agreeableness.")
+
+(defconst solo-rpg-npc-ocean-neuroticism-table
+  '(("Neuroticism      : "
+     ("1/7: " ("Serene") ("Stoic") ("Hardy") ("Poised"))
+     ("2/7: " ("Grounded") ("Calm") ("Adaptable") ("Sensible"))
+     ("3/7: " ("Confident") ("Focused") ("Stable") ("Resilient"))
+     ("4/7: " ("Relaxed") ("Concerned") ("Restless") ("Fickle"))
+     ("5/7: " ("Wary") ("Tense") ("Anxious") ("Vulnerable"))
+     ("6/7: " ("Sensitive") ("Irritable") ("Moody") ("Nervous"))
+     ("7/7: " ("Insecure") ("Self-critical") ("Depressed") ("Panicky"))))
+  "OCEAN trait table for Neuroticism.")
 
 ;;; Dungeon rooms:
 
@@ -1531,7 +1592,7 @@ GENERATE-FUN is a function pointer to function which returns generated text."
     ;; Only ask Emacs to arrange the window if it isn't already visible!
     (unless (get-buffer-window (current-buffer))
       (display-buffer (current-buffer)
-                      '(display-buffer-at-bottom . ((window-height . 14)))))))
+                      '(display-buffer-at-bottom . ((window-height . 13)))))))
 
 ;; Standard function for regeneration
 
@@ -2577,6 +2638,22 @@ IGNORE-BUF is ignored in the tally."
 
 ;;; NPC dashboard:
 
+;; Supporting functions
+
+(defun solo-rpg--gen-npc-ocean-text ()
+  "Generate NPC ocean text and return it."
+  (format "%s\n%s\n%s\n%s\n%s\n"
+          (solo-rpg-gen-desc solo-rpg-npc-ocean-openness-table)
+          (solo-rpg-gen-desc solo-rpg-npc-ocean-conscientiousness-table)
+          (solo-rpg-gen-desc solo-rpg-npc-ocean-extraversion-table)
+          (solo-rpg-gen-desc solo-rpg-npc-ocean-agreeableness)
+          (solo-rpg-gen-desc solo-rpg-npc-ocean-neuroticism-table)))
+
+(defun solo-rpg-gen-npc-ocean ()
+  "Generate OCEAN personality for NPC."
+  (interactive)
+  (solo-rpg--stage #'solo-rpg--gen-npc-ocean-text))
+
 ;; Define the NPC dashboard menu
 
 (transient-define-prefix solo-rpg-menu-npc ()
@@ -2584,6 +2661,7 @@ IGNORE-BUF is ignored in the tally."
   ["SoloRPG dashboard: NPC Menu\n"
    ["Generate"
     ("a" "Appearance"        solo-rpg-gen-npc-appearance)
+    ("p" "Personality"       solo-rpg-gen-npc-ocean)
     ("f" "Female name"       solo-rpg-gen-npc-name-female)
     ("m" "Male name"         solo-rpg-gen-npc-name-male)
     ("h" solo-rpg-toggle-npc-facial-hair

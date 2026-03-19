@@ -1,0 +1,35 @@
+* Notes
+
+These are notes by the author of the package for planning of new features, etc.
+
+* Hexcrawl support
+
+** Goal
+
+- Ability to make hexcrawl rolls, according to my own rules, which take the following into account:
+  - Target hex terrain
+  - Day or night (has different effect depending on terrain)
+  - Type of action (Travel, explore, visit, locate, forage, confront, rest)
+- Outputs:
+  - Time taken
+  - Event - one of:
+    - Encounter
+    - Nothing
+    - Find location
+    - Find resource
+    - Special
+
+** Dashboard
+
+- Switches:
+  - Target hex terrain
+  - Day or night
+- Buttons
+  - Make roll for
+    - Travel
+    - Explore
+    - Visit
+    - Locate
+    - Forage
+    - Confront
+    - Rest
