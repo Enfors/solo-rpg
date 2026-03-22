@@ -33,3 +33,7 @@ These are notes by the author of the package for planning of new features, etc.
     - Forage
     - Confront
     - Rest
+
+** Data structure
+
+- alist with '((terrain-type . plist-data-about-terrain))
