@@ -1649,6 +1649,15 @@ GENERATE-FUN is a function pointer to function which returns generated text."
   "Return random element from TABLE."
   (aref table (random (length table))))
 
+(defun solo-rpg--table-weighted-get (weighted-table num)
+  "Return element with NUM within its range from WEIGHTED-TABLE."
+  (let* ((max-value (caar (last weighted-table))))
+    (cl-loop for cell in weighted-table
+             for threshold = (car cell)
+             for label     = (cdr cell)
+             if (<= num threshold)
+             return label)))
+
 (defun solo-rpg--table-weighted-get-random (weighted-table)
   "Return random element from WEIGHTED-TABLE."
   (let* ((max-value (caar (last weighted-table)))
@@ -2372,7 +2381,54 @@ Bottom          : %s\n"
   "Generate random weather and stage it."
   (interactive)
   (solo-rpg--stage #'solo-rpg--gen-weather-text))
-  
+
+;;; HEXCRAWL:
+
+;; Hexcrawl data
+
+(defconst solo-rpg-hexcrawl-terrain-table
+  '((road     . (:time 2 :day-enc 2 :night-enc 1))
+    (plains   . (:time 3 :day-enc 3 :night-enc 4))
+    (hill     . (:time 4 :day-enc 2 :night-enc 3))
+    (desert   . (:time 4 :day-enc 2 :night-enc 4))
+    (forest   . (:time 4 :day-enc 5 :night-enc 8))
+    (swamp    . (:time 6 :day-enc 3 :night-enc 3))
+    (mountain . (:time 8 :day-enc 2 :night-enc 2)))
+  "Data for the hexcrawl terrain types.")
+
+(defconst solo-rpg-hexcrawl-event-table
+  '((travel  .
+             ((2  . nothing)
+              (8  . location)
+              (11 . resource)
+              (12 . special)))
+    (explore .
+             ((1  . nothing)
+              (9  . location)
+              (11 . resource)
+              (12 . special)))
+    (visit   .
+             ((11 . location)
+              (12 . special)))
+    (forage  .
+             ((1  . nothing)
+              (3  . location)
+              (11 . resource)
+              (12 . special))))
+  "Data for the hexcrawl event table.")
+
+;; Functions
+
+(defun solo-rpg-hexcrawl-event-get (action num)
+  "Get event NUM corresponding to hexcrawl ACTION."
+  (solo-rpg--table-weighted-get (alist-get action solo-rpg-hexcrawl-event-table)
+                                num))
+
+(defun solo-rpg-hexcrawl-event-get-random (action)
+  "Get random event for hexcrawl ACTION."
+  (solo-rpg--table-weighted-get-random
+   (alist-get action solo-rpg-hexcrawl-event-table)))
+
 ;;; LONELOG:
 ;;; Tag handling:
 
