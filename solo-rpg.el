@@ -2197,6 +2197,7 @@ Bottom          : %s\n"
   "Return text describing a dungeon room."
   (let* ((room-data (solo-rpg--table-weighted-get-random-list "gen-dungeon-room"
                                                               '("size" "shape")))
+         (is-corridor   (= 0 (random 3)))
          (room-desc     (solo-rpg-gen-desc solo-rpg-dungeon-room-descs))
          (exit-probs    (alist-get solo-rpg-dungeon-size
                                    solo-rpg-dungeon-room-exit-probs))
@@ -2220,11 +2221,14 @@ Bottom          : %s\n"
                        "dead end"))
     (setq geometry-text (let-alist room-data
                           (format "%s %s" .size .shape)))
-    (concat (string-join (list
-                          (format "Dungeon room: %s %s." geometry-text room-desc)
-                          (format "Exits       : %s." exits-text))
-                         "\n")
-            "\n")))
+    (if is-corridor
+        (format "Corridor with exits leading %s." exits-text) ; Is corridor
+      (concat (string-join (list                              ; Is room
+                            (format "Dungeon room: %s %s." geometry-text
+                                    room-desc)
+                            (format "Exits       : %s." exits-text))
+                           "\n")
+              "\n"))))
 
 (defun solo-rpg-gen-dungeon-room ()
   "Command for returning a dungeon room for staging."
