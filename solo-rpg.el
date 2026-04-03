@@ -2584,7 +2584,7 @@ IGNORE-BUF is ignored in the tally."
     (save-excursion
       (when (re-search-backward scene-search-string nil t)
         (setq prev-scene-num (string-to-number (or (match-string 1) "0")))))
-    (insert (format "S%d *%s*" (+ 1 prev-scene-num) scene-title))))
+    (insert (format "S%d *%s*±n" (+ 1 prev-scene-num) scene-title))))
 
 ;;; DASHBOARDS:
 ;;; Dice dashboard:
@@ -2771,6 +2771,23 @@ IGNORE-BUF is ignored in the tally."
    ["System"
     ("q" "Go back"           transient-quit-one)]])
 
+;;; Lonelog dashboard:
+
+(transient-define-prefix solo-rpg-menu-lonelog ()
+  "The solo-rpg Lonelog menu."
+  ["SoloRPG dashboard: Lonelog\n\
+\nThis menu lets you insert Lonelog symbols.\n\
+For actual rolls and oracle questions, use the appropriate menus elsewhere.\n"
+   ["Lonelog symbols"
+    ("@" "@ Action"          (lambda () (interactive) (insert "@ ")))
+    ("?" "? Oracle question" (lambda () (interactive) (insert "? ")))
+    ("d" "d: Mechanics roll"  (lambda () (interactive) (insert "d: ")))
+    ("-" "-> Oracle/dice results" (lambda () (interactive) (insert "-> ")))
+    ("=" "=> Consequences"        (lambda () (interactive) (insert "=> ")))
+    ("s" "S *Scene*"              solo-rpg-scene-start)]
+   ["System"
+    ("q" "Go back"                transient-quit-one)]])
+
 ;;; Main menu dashboard:
 
 ;; Define the main dashboard menu
@@ -2781,7 +2798,8 @@ IGNORE-BUF is ignored in the tally."
    ["Misc"
     ("d" "Dice..."       solo-rpg-menu-dice)
     ("n" "NPCs..."       solo-rpg-menu-npc)
-    ("a" "Narrative..."  solo-rpg-menu-nar)]
+    ("a" "Narrative..."  solo-rpg-menu-nar)
+    ("l" "Lonelog..."    solo-rpg-menu-lonelog)]
    ["Questions"
     ("o" "Oracles..."    solo-rpg-menu-oracle)
     ("t" "Tarot..."      solo-rpg-menu-tarot)]
