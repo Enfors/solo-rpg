@@ -2876,6 +2876,17 @@ This is the part that comes after the \"->\".")
   "Foreground color for the Solo-RPG consequence itself.
 This is the part that comes after the \"=>\".")
 
+;; Scene (S1 *Scene name*))
+(solo-rpg-define-face solo-rpg-scene-symbol-face
+  "#d04433" "#c06a33"
+  "Foreground color for the SoloRPG scene symbol."
+  t) ; Bold
+
+(solo-rpg-define-face solo-rpg-scene-name-face
+  "#e87066" "#d87866"
+  "Foreground color for the Solo-RPG scene name."
+  t) ; Bold
+
 ;; Tags ([..:..|..])
 (solo-rpg-define-face solo-rpg-tag-symbol-face
                      "#00ff00" "#00cc00"
@@ -2913,6 +2924,10 @@ They are the `[' and `]' characters.")
    '("\\(=>\\)\\s-*\\(.*\\)"
      (1 'solo-rpg-consequence-symbol-face t)     ; t = Override
      (2 'solo-rpg-consequence-content-face t)) ; t = Override
+   ;; Scene:
+   '("\\(S[0-9]+\\) \\*\\([^\\*]+\\)\\*"
+     (1 'solo-rpg-scene-symbol-face)
+     (2 'solo-rpg-scene-name-face))
    ;; Tags (with anchored mini-search for | and :):
    '("\\(\\[\\)\\([^]]+\\)\\(\\]\\)"
      (1 'solo-rpg-tag-symbol-face t)
