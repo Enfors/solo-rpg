@@ -1,331 +1,10 @@
-* Campaign log
-
-** Session 5: Actual travel to Westhammer Peak - 2026-02-08
-
-From now on, I will be using [[https://zeruhur.itch.io/lonelog][Lonelog]] notation.
-
-Quick recap: Previously, the party had learned that the Outwest Mining Company is looking to extract [[id:c34e983b-7570-41a7-bcbd-52fb3138f996][Westhammer Peak crystals]] from [[id:a87eb300-f50a-475e-970e-297a556eb2be][Daggerwood]]. Through a visit to the local library, they learned that this mineral was first found in [[id:0641317e-eb3a-49d3-82dc-98d9d8e9ce90][Westhammer Peak]]. Intrigued, they've decided to travel there to investigate this strange mineral.
-
-*** 813-06-27: Travel to Westhammer Peak
-
-**** 04:00
-
-@ The party wakes up and gets ready to head out to Westhammer Peak.
-
-**** 05:00/Springhaven
-
-@ The party heads north.
-d: Hexcrawl roll for 021.011 North of Springhaven: 1d20: 15 -> Find location
-=> They find the old silver mine, but decide to press on knowing that this is not their destination.
-
-**** 08:00/020.011
-
-@ The party heads northwest.
-d: Hexcrawl roll for 019.010 Southeast Westhammer Woods: 1d20: 14 -> Nothing happens.
-
-**** 12:00/019.011 Southeast Westhammer Woods
-
-@ The party heads north, having spotted the Westhammer Peak.
-d: Hexcrawl roll for 019.009 Northeast Westhammer woods: 1d20: 9 -> Nothing happens.
-
-**** 16:00/019.009 Northeast Westhammer Woods
-
-The party arrives at the peak - it is easy to spot, and navigate to. There is a mine at the base of the peak, where goblins hold humans as slaves to mine the crystals.
-
-@ Azura, being the navigator, rolls Wisdom to see if she spots the goblins.
-d: She has a Wisdom of 12. 1d20: 2 -> She easily spots them and warns the party.
-
-The party deliberates on what to do. Dannil wants to liberate them. Let's roll for Agreeableness for the others at +2 to see if they want to help.
-
-d: Azura rolls against 1+2=3. 1d8: 7 -> No.
-d: Zolana rolls against 4+2=6. 1d8: 6 -> Yes, with some hesitation.
-
-But is Zolana too afraid to help? Let's roll for neuroticism.
-
-d: Zolana rolls against 6. 1d8: 3 -> Yes, she's too afraid.
-
-Dannil wants to try to change their mind. If he succeeds on a Charisma roll, they will reroll their rolls.
-
-d: Dannil rolls against Charisma 15. 1d20: 15 -> He manages to get them to roll again.
-d: Azura rolls against Agreeableness 1+2=3. 1d8: 1 -> Azura agrees to help, given the circumstances.
-d: Zolana rolls against Neuroticism 6-2=4 (circumstances). 1d8: 4 -> She manages to gather enough courage to help, given the plight of the slaves.
-d: How many goblins are outside the cave? 1d6: 1 -> Just one guard outside.
-
-There is only one guard outside. The party realizes that they have to trick the goblin to cross the clearing in front of the mine entrance to approach their hiding spot in the woods, so that they have a chance to kill him before he can alert the other goblins.
-
-@ The party makes some noise to draw the goblin's attention.
-? Does the goblin approach? Probably. 1d20: 5 -> No.
-? Did the goblin detect the noise at all? Probably. 1d20: 14 -> Yes.
-? What does the goblin do? Endanger / Happiness -> He alerts the others.
-d: How many will come to his aid? 1d6: 3 -> 3 other goblins emerges to help him.
-
-At this point, the goblins are alert but the party is hidden. I'm just going to roll initiative, and give the goblins 2-in-6 chances of being surprised.
-
-d: Are the goblins surprised? 1d6: 6 -> No
-
-***** Goblin combat
-
-****** Goblin stats
-
-AC 13, HP 3, Atk 0, Dmg 1d6
-
-****** Round 1
-
-d: Goblin initiative: 1d6: 3
-d: Party initiative: 1d6: 6
-
-d: Azura attacks G1. 1d20+2: 5 -> Miss
-d: Zolana attacks G2. 1d20: 2 -> Miss
-d: Dannil attacks G3. 1d20-1: 1 -> Miss
-
-d: G1 attacks Azura. 1d20: 15 -> Miss
-d: G2 attacks Zolana. 1d20: 7 -> Miss
-d: G3 attacks Dannil. 1d20: 6 -> Miss
-? Who does G4 attack? 1d3: 3 -> Dannil
-d: G4 attacks Dannil. 1d20: 12 -> Miss - just barely!
-
-****** Round 2
-
-d: Goblin initiative: 1d6: 3
-d: Party initiative: 1d6: 4
-
-d: Azura attacks G1. 1d20+2: 6 -> Miss
-d: Zolana attacks G2. 1d20: 14 -> Hit, dmg 1d4: 2, G2 has 1 HP left.
-d: Dannil attacks G3. 1d20-1: 5 -> Miss
-
-d: G1 attacks Azura. 1d20: 1 -> Crit fail. G1 will miss his next turn as he drops his shortsword.
-d: G2 attacks Zolana. 1d20: 5 -> Miss
-d: G3 attacks Dannil. 1d20: 1 -> Crit fail. G3 will also miss his next turn, since he got his shortsword tangled in a bush.
-d: G4 attacks Dannil. 1d20-1: 9 -> Miss
-
-****** Round 3
-
-d: Goblin initiative: 1d6: 6
-d: Party initiative: 1d6: 2
-
-d: G2 attacks Zolana: 1d20: 9 -> Miss
-d: G4 attacks Dannil: 1d20: 14 -> Hit, dmg 1d6: 6. A vicious in Dannil's chest. He has 15 HP left.
-
-d: Azura attacks G1. 1d20+2: 16 -> Hit, dmg 1d8+2: 10. Azura decapitates G2 as he tries to pick up his sword.
-d: Zolana attacks G2. 1d20: 7 -> Miss
-d: Dannil attacks G3. 1d20-1: 4 -> Miss
-
-Remaining goblins: G2 1, G3 3, G4 3.
-
-****** Round 4
-
-d: Goblin initiative: 1d6: 2
-d: Party initiative: 1d6: 3
-
-The goblins are shaken by the loss of G1, and the party takes the initiative.
-
-d: Azura attacks G4: 1d20+2: 7 -> Miss
-d: Zolana attacks G2: 1d20: 4 -> Miss
-d: Dannil attacks G3: 1d20-1: 17 -> Hit, dmg 1d4-1: 0. Only a scratch, no read damage.
-
-d: G2 attacks Zolana: 1d20: 5 -> Miss
-d: G3 attacks Dannil: 1d20: 9 -> Miss
-d: G4 attacks Azura: 1d20: 16 -> Miss
-
-****** Round 5
-
-d: Goblin initiative: 1d6: 2
-d: Party initiative: 1d6: 2
-
-Simultaneous resolution.
-
-d: Azura attacks G4. 1d20+2: 19 -> Hit, dmg 1d8+2: 8. Azura pierces G4's chest, who crumples over dead.
-d: Zolana attacks G2: 1d20: 19 -> Hit, dmg 1d4: 2. Zolana kills G2 with a solid stab to the chest.
-d: Dannil attacks G3: 1d20-1: 10 -> Miss
-
-d: G2 attacks Zolana: 1d20: 12 -> Hit, dmg 1d6: 3. Zolana has 7 HP left.
-d: G3 attacks Dannil: 1d20: 2 -> Miss
-d: G4 attacks Azura: 1d20: 17 -> Hit, dmg 1d6: 1. Just as he dies, he manages to scratch Azura's arm. She has 20 HP left.
-
-Remaining goblins: G2 1, G3 3.
-
-****** Round 6
-
-d: Goblin initiative: 1d6: 3
-d: Party initiative: 1d6: 5
-
-d: Azura attacks G2. 1d20+2: 5 -> Miss
-d: Zolana attacks G2. 1d20: 4 -> Miss
-d: Dannil attacks G3. 1d20-1: 2 -> Miss
-
-d: G2 morale check against 7: 2d6: 5 -> Success
-d: G2 attacks Zolana. 1d20: 2 -> Miss
-d: G3 morale check against 7: 2d6: 10 -> Fail
-=> G3 flees.
-
-****** Round 7
-
-G3 is fleeing towards the cave. It is imperative that the party manages to stop him before he can alert any other goblins inside.
-
-d: Goblin initiative: 1d6: 1
-d: Party initiative: 1d6: 4
-
-@ Azura runs after G3, not wanting to let him alert others in the cave.
-d: Azura attacks G3. 1d20+2: 19 -> Hit. 1d8+2: 10. She decapitates the fleeing goblin.
-d: Zolana attacks G2. 1d20: 1 -> Crit miss - she drops her dagger, and will miss her next turn.
-d: Dannil attacks G2. 1d20-1: 19 -> Hit, dmg 1d4-1: 2. He cracks G2 over the head, severely wounding him.
-
-Goblins remaining: G2 1
-
-****** Round 8
-
-d: Goblin initiative: 1d6: 6
-d: Party initiative: 1d6: 4
-
-The last goblins fiercely fights on.
-
-d: G2 attacks Zolana. 1d20: 9 -> Miss
-
-d: Azura attacks G2. 1d20+2: 16 -> Hit, 1d8+2: 10. Azura decapitates the last goblin.
-
-****** End of combat
-
-***** Combat aftermath
-
-? Are there any slaves here who witnessed the combat? Likely. 1d20: 19 -> Yes and more are coming out of the cave.
-d: How many slaves are here? 2d4: 4 -> 2 where here initially and 2 more come out following the goblins.
-? Are any of the slaves gravely wounded? Probably not. 1d20: 6 -> No.
-@ Dannil asks if there are more slaves in the cave.
-? Are there more? Probably. 1d20: 1 -> Negative random event
-? What does the event pertain to? 1d4: 3 -> Faction
-
-Okay, I need to make a list of which factions this could pertain to.
-
-1. Outwest mining company
-2. Rangers of Lestaria
-3. The goblins
-4. The sprites
-5. The dryads
-6. The leshies
-
-d: Which faction does the negative event pertain to? 1d6: 4 -> The sprites.
-? What is happening with the sprites? Cancel / Enemies -> There are also sprites being held as slaves in the mine.
-
-*** End of session
-
-Exp awarded: 1000.
-- Azura advances to level 4.
-d: Roll for new hp: 1d8: 1 -> Mins out to 4 => Azura's max HP increases from 21 to 25, and her HP from 20 to 24.
-
-Current situation:
-- The party is outside the mine at Westhammer Peak.
-- The party has defeated four goblins - none escaped.
-- There are four human slaves here with the party.
-- The slaves said that there are also sprites being held captive in the mine.
-
-** Session 6: At the Westhammer Peak - 2026-02-14
-
-*** 813-06-27: Investigating the mine
-
-**** 16:00/019.009 Northeast Westhammer Woods
-
-Dannil wants to go into mine, to try to rescue the spites. Do the other party members agree? Let's make Agreeableness rolls at +2 given the circumstances.
-
-d: Azura rolls against 1+2: 1d8: 7 -> She strongly disagrees.
-d: Zolana rolls against 4+6: 1d8: 6 -> She agrees, but just barely.
-? Why does Azura disagree? -> Flee / Lord => She thinks they should return (Flee) to Springhaven to get the authorities (Lord) to help.
-@ Azura, being voted down, agrees to proceed with a sigh.
-@ The party decides to enter the mine cautiously.
-
-? Do the liberated civilians have any advice before they head in? -> Erase / Allegations
-=> The civilians say that the goblins used a forged debt to trick the sprites to come here.
-
-New quest: Find and eliminate the forged debt document.
-
-**** 17:00/019.009 Inside the mine at Westhammer Peak
-
-Now I need to determine how to generate the mine. Hmm. I think I'll wing it.
-
-***** Room 1: Entrance
-
-? Is there anything special about the entrance? Probably not -> 18: Yes
-? Is it guarded by goblins, trying to ambush? 50/50 -> No
-? What's special about the room then? -> Reveal / Malice => It is trapped!
-
-Okay, before I can sort out if anyone spots the trap, I need to figure out some things:
-1. Marching order, and
-2. Who does what, and
-3. The rules for that.
-
-|-----+--------+-------------|
-| Pos | Char   | Activity    |
-|-----+--------+-------------|
-|   1 | Azura  | Lookout     |
-|   2 | Zolana | Torchbearer |
-|   3 | Dannil | Trap watch  |
-|-----+--------+-------------|
-
-(I'm abstracting torch inventory - I don't care about that)
-
-d: Dannil rolls against his Wisdom +2 (15+2) to see if he spots the trap: 1d20: 8 -> Success.
-=> Dannil spots the trap, and the party avoids it.
-d: How many additional exits are there here? 1d2: 1 -> There is one exit.
-
-The entrance is a tunnel leading further into the mountain.
-
-***** Room 2
-
-d: The party enters the next room.
-? Is there anything special about this room? Probably not. 16 -> Yes.
-? What's special about it? -> Endanger / Hate => There are monsters here.
-? Is it goblins? Most likely -> 1 Negative Event, focus PC
-d: Which party member is affected? 1d3: 2 -> Zolana
-? What happened to Zolana? -> Mediate / Artifact
-=> Someone is trying to control (Mediate) Zolana using a magic item (Artifact).
-d: Zolana rolls against her Save vs spells of 15: 1d20: 9 -> Fail
-? Is this a possession? Probably. 16 -> Yes.
-d: Dannil rolls against Cha 15 to notice: 1d20: 13 -> He notices.
-@ Dannil halts the party, telling Azura something happened to Zolana.
-d: Rolling reaction from Zolana: 1d20: 16 -> Friendly
-=> Zolana still acts friendly.
-
-What's going on here? Wait, is this a sprite, charming Zolana to help them?
-
-? Is this a sprite charming Zolana? Somewhat likely. -> 17 Yes.
-? Does the sprite make itself known? Very likely. -> 13 Yes.
-? Is the sprite male(1) or female(2)? 1d2: 2 -> female.
-
-Plix appears.
-
-@ Dannil explains that they are there to help, and there's no need to charm Zolana.
-d: Reaction roll for Plix at +2: 1d20: 11 -> Indifferent
-=> Plix is not convinced, so she choses to maintain the charm on Zolana.
-
-1/4 progress marked on Eliminate the forged debt quest.
-
-@ Dannil asks Plix if she knows where the forged document is.
-d: Reaction at +2 (Dannil's Cha) to see if she answers truthfully: 1d20: 9 -> Unclear
-=> She does not answer at all.
-@ Dannil asks if she will come with them to try to find it.
-d: Reaction at +2: 1d20: 15 -> Friendly => She agrees to come with them.
-
-*** End of session
-
-Exp awarded: 1000.
-
-Current situation:
-- The party is in Room 2 of the Westhammer Peak mine.
-- Zolana has been charmed by the sprite Plix.
-- She (Plix) has agreed to help find the forged debt.
-- When asked if she knew where it was, she did not respond.
-  
-** Session 7: Going deeper into the Westhammer Peak mine - 2026-02-24
-
-This will be the first session since I added [Tag support] to Solo-RPG-mode.
-
-*** 816-06-27: Continued mine investigation
-
-**** Room 2
+S1 *Room 2*
 
 ? Other than the continued tunnel, are there any extra doors here? -2 Probably not: 1d20=5 -> No.
 @ The party continues to the next room.
+@ (Azura) Scouts.
 
-**** Room 3: Tunnel
+S2 *Tunnel*
 
 ? Is there anything special about this room? -3 Unlikely: 1d20=5 -> No
 ? Are there any goblins here in ambush? -1 Somewhat unlikely: 1d20=9 -> No
@@ -333,14 +12,14 @@ This will be the first session since I added [Tag support] to Solo-RPG-mode.
 ? Does [N:Plix|Friendly] know which way to go? +3 Likely: 1d20=13 -> Yes
 @ Plix says that we should go right, so the party proceeds in that direction.
 
-**** Room 4: Almost at the forged documents
+S3 *Room 4: Almost at the forged documents*
 
 ? Is there anything special about this room? 50/50: 1d20=11 -> Yes, but...
 ? What's special about it? -> Leverage / Leadership => Plix has something to say about this room.
 ? Is this were the forged debt document is? -2 Probably not: 1d20=12 -> No, but it is in the next room.
 @ Plix warns us to be careful as we proceed to the next room.
 
-**** Room 5: At the forged documents
+S4 *Room 5: Almost at the forged documents*
 
 ? Are goblins trying to ambush us? +3 Likely: 1d20=19 -> Yes, and they attack immediately
 d: Number of goblins: 1d6=6
@@ -381,7 +60,7 @@ d: Dannil casts Cure light wounds on Zolana -> 1d6+1=4 => Zolana is healed for 4
 @ The party searches for the forged document, and they soon find it.
 @ The party returns to the surface.
 
-*** End of session
+S5 *End of session*
 
 Exp awarded: 1000.
 
@@ -392,3 +71,9 @@ d: Roll to complete quest: 1d4=4
 - There is a complication; the quest is not solved yet.
 - [Q:Eliminate debt|Status:2/4]
 ? What is the complication? Fear / Opposition -> Plix is afraid of the goblins, and wants to be escorted home before the quest can be completed.
+
+
+
+
+(enfors-set-theme "dark")
+(enfors-set-theme "white")
