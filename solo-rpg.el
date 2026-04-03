@@ -2678,7 +2678,7 @@ IGNORE-BUF is ignored in the tally."
      :description solo-rpg--deck-tarot-meaning-desc
      :transient t)]
    ["System"
-    ("q" "Go back"              transient-quit-one)]])
+    ("q" "Go back"              solo-rpg-menu)]])
 
 ;;; Narrative dashboard:
 
@@ -2779,9 +2779,9 @@ IGNORE-BUF is ignored in the tally."
 \nThis menu lets you insert Lonelog symbols.\n\
 For actual rolls and oracle questions, use the appropriate menus elsewhere.\n"
    ["Lonelog symbols"
-    ("@" "@ Action"          (lambda () (interactive) (insert "@ ")))
-    ("?" "? Oracle question" (lambda () (interactive) (insert "? ")))
-    ("d" "d: Mechanics roll"  (lambda () (interactive) (insert "d: ")))
+    ("@" "@ Action"               (lambda () (interactive) (insert "@ ")))
+    ("?" "? Oracle question"      (lambda () (interactive) (insert "? ")))
+    ("d" "d: Mechanics roll"      (lambda () (interactive) (insert "d: ")))
     ("-" "-> Oracle/dice results" (lambda () (interactive) (insert "-> ")))
     ("=" "=> Consequences"        (lambda () (interactive) (insert "=> ")))
     ("s" "S *Scene*"              solo-rpg-scene-start)]
@@ -2813,7 +2813,7 @@ For actual rolls and oracle questions, use the appropriate menus elsewhere.\n"
     ("O" solo-rpg-output-method-toggle
      :description solo-rpg--toggle-output-desc
      :transient t)
-    ("q" "Quit"          transient-quit-one)]])
+    ("q" "Quit"          transient-quit-all)]])
 
 
 ;;; FACES:
@@ -2900,7 +2900,7 @@ This is the part that comes after the \"=>\".")
   "Foreground color for the SoloRPG scene symbol."
   t) ; Bold
 
-(solo-rpg-define-face solo-rpg-scene-name-face
+(solo-rpg-define-face solo-rpg-scene-title-face
   "#e87066" "#d87866"
   "Foreground color for the Solo-RPG scene name."
   t) ; Bold
@@ -2945,7 +2945,7 @@ They are the `[' and `]' characters.")
    ;; Scene:
    '("\\(S[0-9]+\\) \\*\\([^\\*]+\\)\\*"
      (1 'solo-rpg-scene-symbol-face)
-     (2 'solo-rpg-scene-name-face))
+     (2 'solo-rpg-scene-title-face))
    ;; Tags (with anchored mini-search for | and :):
    '("\\(\\[\\)\\([^]]+\\)\\(\\]\\)"
      (1 'solo-rpg-tag-symbol-face t)
