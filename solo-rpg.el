@@ -2584,7 +2584,7 @@ IGNORE-BUF is ignored in the tally."
     (save-excursion
       (when (re-search-backward scene-search-string nil t)
         (setq prev-scene-num (string-to-number (or (match-string 1) "0")))))
-    (insert (format "S%d *%s*±n" (+ 1 prev-scene-num) scene-title))))
+    (insert (format "S%d *%s*\n" (+ 1 prev-scene-num) scene-title))))
 
 ;;; DASHBOARDS:
 ;;; Dice dashboard:
