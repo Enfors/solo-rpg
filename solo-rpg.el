@@ -2397,37 +2397,38 @@ Bottom          : %s\n"
   "Data for the hexcrawl terrain types.")
 
 (defconst solo-rpg-hexcrawl-event-table
-  '((travel  .
-             ((2  . nothing)
-              (8  . location)
-              (11 . resource)
-              (12 . special)))
-    (explore .
-             ((1  . nothing)
-              (9  . location)
-              (11 . resource)
-              (12 . special)))
-    (visit   .
-             ((11 . location)
-              (12 . special)))
-    (forage  .
-             ((1  . nothing)
-              (3  . location)
-              (11 . resource)
-              (12 . special))))
+  '((travel  . (:result
+                ((2  . nothing)
+                 (8  . location)
+                 (11 . resource)
+                 (12 . special))))
+    (explore . (:result
+                ((1  . nothing)
+                 (9  . location)
+                 (11 . resource)
+                 (12 . special))))
+    (visit   . (:result
+                ((11 . location)
+                 (12 . special))))
+    (forage  . (:result
+                ((1  . nothing)
+                 (3  . location)
+                 (11 . resource)
+                 (12 . special)))))
   "Data for the hexcrawl event table.")
 
-;; Functions
+;; Hexcrawl functions
 
 (defun solo-rpg-hexcrawl-event-get (action num)
   "Get event NUM corresponding to hexcrawl ACTION."
-  (solo-rpg--table-weighted-get (alist-get action solo-rpg-hexcrawl-event-table)
-                                num))
+  (solo-rpg--table-weighted-get
+   (plist-get (alist-get action solo-rpg-hexcrawl-event-table) :result)
+              num))
 
 (defun solo-rpg-hexcrawl-event-get-random (action)
   "Get random event for hexcrawl ACTION."
   (solo-rpg--table-weighted-get-random
-   (alist-get action solo-rpg-hexcrawl-event-table)))
+   (plist-get (alist-get action solo-rpg-hexcrawl-event-table) :result)))
 
 ;;; LONELOG:
 ;;; Tag handling:
@@ -2887,12 +2888,15 @@ They are the `[' and `]' characters.")
 
 ;; Face rules:
 
+;; Since this is a defvar, it needs to be forcefully updated if it's been edited
+;; after it was loaded. With point inside it: C-M-x
 (defvar solo-rpg-font-lock-keywords
   (list
    ;; Action:
-   '("^\\(@\\)\\s-*\\(.*\\)"
+   '("^\\(@\\)\\s-*\\(?:(\\([^)]+\\))\\s-*\\)?\\(.*\\)"
      (1 'solo-rpg-action-symbol-face)
-     (2 'solo-rpg-action-content-face))
+     (2 'default nil t)
+     (3 'solo-rpg-action-content-face))
    ;; Oracle question:
    '("^\\(\\?\\)\\s-*\\(.*\\)"
      (1 'solo-rpg-oracle-question-symbol-face)
