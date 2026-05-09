@@ -688,16 +688,16 @@ Otherwise, nil is returned."
   (interactive)
   (setq solo-rpg-deck-tarot-active (solo-rpg-deck-tarot-copy))
   ;; Since buttons may need updating, we must manually restart the menu.
-  (solo-rpg-menu-tarot))
+  (call-interactively #'solo-rpg-menu-tarot))
 
 (defun solo-rpg-deck-tarot-draw-single (&optional invert)
   "Draw a single Tarot card from DECK.
 If INVERT is non-nil, then invert the output method."
   (interactive "P")
   (let ((card (solo-rpg-deck-tarot-card-draw solo-rpg-deck-tarot-active)))
-    (solo-rpg--output (solo-rpg-deck-tarot-card-text card)))
+    (solo-rpg--output (solo-rpg-deck-tarot-card-text card) invert))
   ;; Since buttons may need updating, we must manually restart the menu.
-  (solo-rpg-menu-tarot))
+  (call-interactively #'solo-rpg-menu-tarot))
 
 (defun solo-rpg--deck-tarot-meaning-desc ()
   "Return a string for the meanings on/off button."
@@ -1657,12 +1657,11 @@ GENERATE-FUN is a function pointer to function which returns generated text."
 
 (defun solo-rpg--table-weighted-get (weighted-table num)
   "Return element with NUM within its range from WEIGHTED-TABLE."
-  (let* ((max-value (caar (last weighted-table))))
-    (cl-loop for cell in weighted-table
-             for threshold = (car cell)
-             for label     = (cdr cell)
-             if (<= num threshold)
-             return label)))
+  (cl-loop for cell in weighted-table
+           for threshold = (car cell)
+           for label     = (cdr cell)
+           if (<= num threshold)
+           return label))
 
 (defun solo-rpg--table-weighted-get-random (weighted-table)
   "Return random element from WEIGHTED-TABLE."
