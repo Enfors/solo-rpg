@@ -48,7 +48,7 @@
 ;;   (require 'solo-rpg)
 ;;   (with-eval-after-load 'solo-rpg
 ;;     ;; Note - you can replace "C-c r" with another key if you prefer
-;;     (define-key solo-rpg-mode-map (kbd "C-c r") 'solo-rpg-menu)
+;;     (define-key solo-rpg-mode-map (kbd "C-c r") 'solo-rpg-menu))
 ;;
 ;; To start solo-rpg-mode, type:
 ;;
@@ -565,6 +565,12 @@ The `car` of each cell is the upper threshold for the `cdr` entry.")
     (medium . ((forward . 50) (center . 50) (away . 50) (down . 10)))
     (large  . ((forward . 60) (center . 40) (away . 60) (down .  5))))
   "The probabilities for each exit direction in each dungeon size.")
+
+(defvar solo-rpg-dungeon-data
+  '((small .  (:plot-chance 26))
+    (medium . (:plot-chance 18))
+    (large  . (:plot-chance 10)))
+  "Data for the dungeon room generator.")
 
 (defvar solo-rpg-dungeon-room-type-table
   '(( 8 . "corridor")
@@ -2199,6 +2205,8 @@ Bottom          : %s\n"
                                                               '("size" "shape")))
          (is-corridor   (= 0 (random 3)))
          (room-desc     (solo-rpg-gen-desc solo-rpg-dungeon-room-descs))
+         (dungeon-data  (alist-get solo-rpg-dungeon-size solo-rpg-dungeon-data))
+         (plot-relevant (< (random 100) (plist-get dungeon-data :plot-chance)))
          (exit-probs    (alist-get solo-rpg-dungeon-size
                                    solo-rpg-dungeon-room-exit-probs))
          (forward-exit  (<= (+ 1 (random 100)) (alist-get 'forward exit-probs)))
@@ -2222,13 +2230,12 @@ Bottom          : %s\n"
     (setq geometry-text (let-alist room-data
                           (format "%s %s" .size .shape)))
     (if is-corridor
-        (format "Corridor with exits leading %s." exits-text) ; Is corridor
-      (concat (string-join (list                              ; Is room
-                            (format "Dungeon room: %s %s." geometry-text
-                                    room-desc)
-                            (format "Exits       : %s." exits-text))
-                           "\n")
-              "\n"))))
+        (format "A corridor.\nExits: %s.\n" exits-text) ; Is corridor
+      (concat (format "Dungeon room: %s %s.\n" geometry-text ; Is room
+                      room-desc)
+              (format "Exits       : %s.\n" exits-text)
+              (when plot-relevant
+                "There may be something plot-relevant here.\n")))))
 
 (defun solo-rpg-gen-dungeon-room ()
   "Command for returning a dungeon room for staging."
@@ -2584,7 +2591,7 @@ IGNORE-BUF is ignored in the tally."
   "Ask for SCENE-TITLE, insert a Solo-RPG scene heading in the current buffer."
   (interactive "sEnter new scene title: ")
   (let ((prev-scene-num 0)
-        (scene-search-string "^S\\([0-9]+\\) \\*"))
+        (scene-search-string "S\\([0-9]+\\) \\*"))
     (save-excursion
       (when (re-search-backward scene-search-string nil t)
         (setq prev-scene-num (string-to-number (or (match-string 1) "0")))))
