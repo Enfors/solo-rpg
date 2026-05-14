@@ -2060,7 +2060,10 @@ Bottom          : %s\n"
     "Van"
     "Ren"
     "Le"
-    "Lo"]
+    "Lo"
+    "San"
+    "Yen"
+    "Ya"]
   "First name part data for the female NPC name generator.")
 
 (defconst solo-rpg-gen-npc-name-female-second-table
@@ -2071,7 +2074,12 @@ Bottom          : %s\n"
     "sinni"
     "bava"
     "sani"
-    "vanna"]
+    "vanna"
+    "mana"
+    "rani"
+    "lemi"
+    "lous"
+    "etta"]
   "Second name part for the female NPC name generator.")
 
 (defun solo-rpg--gen-npc-name-female-text ()
