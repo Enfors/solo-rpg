@@ -1,4 +1,5 @@
-;;; solo-rpg.el --- Solo roleplaying games and Lonelog support  -*- lexical-binding: t; -*-
+;;; solo-rpg.el --- Solo roleplaying games and Lonelog support
+;;; -*- lexical-binding: t; -*-
 
 ;; Author: Christer Enfors <christer.enfors@gmail.com>
 ;; Maintainer: Christer Enfors <christer.enfors@gmail.com>
@@ -2603,6 +2604,52 @@ IGNORE-BUF is ignored in the tally."
       (when (re-search-backward scene-search-string nil t)
         (setq prev-scene-num (string-to-number (or (match-string 1) "0")))))
     (insert (format "S%d *%s*\n" (+ 1 prev-scene-num) scene-title))))
+
+;;; HTML EXPORT ===============================================================
+(defun solo-rpg-export-region-to-html ()
+  "Export the active region to HTML."
+  (interactive)
+  (unless (require 'htmlize nil 'noerror)
+    (user-error "This function requires the 'htmlize' package to work"))
+  (unless (use-region-p)
+    (user-error "You have to select a region to export first"))
+  (let ((beg (region-beginning))
+        (end (region-end)))
+    (deactivate-mark)
+    (let ((html-buf (htmlize-region beg end)))
+      (unwind-protect
+          (with-current-buffer html-buf
+            (let ((css-start)
+                  (css-string)
+                  (pre-start)
+                  (pre-string))
+              ;; 1. Go to the top.
+              (goto-char (point-min))
+              ;; 2. Search for <style type="text/css">.
+              (search-forward "<style type=\"text/css\">")
+              ;; 3. Set css-start to the current point.
+              (setq css-start (point))
+              ;; 4. Search for </style>.
+              (search-forward "</style>")
+              ;; 5. Set css-string using css-start and match-beginning.
+              (setq css-string (buffer-substring-no-properties
+                                css-start (match-beginning 0)))
+              ;; 6. Search for <pre>.
+              (search-forward "<pre>")
+              ;; 7. Set pre-start to the current point.
+              (setq pre-start (point))
+              ;; 8. Search for </pre>.
+              (search-forward "</pre>")
+              ;; 9. Set pre-string using pre-start and match-beginning.
+              (setq pre-string (buffer-substring-no-properties
+                                pre-start (match-beginning 0)))
+              ;; 10. Send HTML to the kill ring.
+              (kill-new (format "<style>%s</style>\n<div class=\"solo-rpg-session\">\n<pre>%s</pre>\n</div>\n"
+                                css-string pre-string)))))
+      ;; 11. Clean up.
+      (kill-buffer html-buf)))
+  ;; 12. User feedback.
+  (message "Region exported to HTML and copied to clipboard."))
 
 ;;; DASHBOARDS:
 ;;; Dice dashboard:
