@@ -2625,10 +2625,11 @@ IGNORE-BUF is ignored in the tally."
                   (pre-string))
               ;; 1. Go to the top.
               (goto-char (point-min))
-              ;; 2. Search for <style type="text/css">.
-              (search-forward "<style type=\"text/css\">")
+              ;; 2. Search for the first .solo-rpg element..
+              ;; (search-forward "<style type=\"text/css\">")
+              (search-forward ".solo-rpg-")
               ;; 3. Set css-start to the current point.
-              (setq css-start (point))
+              (setq css-start (match-beginning 0))
               ;; 4. Search for </style>.
               (search-forward "</style>")
               ;; 5. Set css-string using css-start and match-beginning.
@@ -2643,8 +2644,9 @@ IGNORE-BUF is ignored in the tally."
               ;; 9. Set pre-string using pre-start and match-beginning.
               (setq pre-string (buffer-substring-no-properties
                                 pre-start (match-beginning 0)))
+              (setq pre-string (string-replace "\n" "<br>" pre-string))
               ;; 10. Send HTML to the kill ring.
-              (kill-new (format "<style>%s</style>\n<div class=\"solo-rpg-session\">\n<pre>%s</pre>\n</div>\n"
+              (kill-new (format "<style>\n    <!--\n      %s</style>\n<div class=\"solo-rpg-session\">\n%s\n</div>\n"
                                 css-string pre-string)))))
       ;; 11. Clean up.
       (kill-buffer html-buf)))
